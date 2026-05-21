@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { callAI } from '../services/aiService';
 import { SYSTEM_PROMPT_SCRIPT_WRITER, SYSTEM_PROMPT_AUDIO_REENGINEERING, getStyleRecPrompt } from '../data/prompts';
-import { TARGET_MARKETS, VISUAL_STYLES, SECONDS_PER_SCENE, SOLFEGGIO_FREQUENCIES } from '../data/constants';
+import { TARGET_MARKETS, VISUAL_STYLES,  SOLFEGGIO_FREQUENCIES } from '../data/constants';
 import { showToast } from '../components/Toast';
 
 const STYLE_RECOMMENDATION_PROMPT = `
@@ -128,6 +128,7 @@ const ScriptModule: React.FC<Props> = ({
 }) => {
   const [topic, setTopic] = useState(initialTopic);
   const [duration, setDuration] = useState<number | string>(1);
+  const [secondsPerScene, setSecondsPerScene] = useState(8);
   const [market, setMarket] = useState('vn_dharma');
   const [style, setStyle] = useState('auto');
   const [frequency, setFrequency] = useState('528hz');
@@ -159,7 +160,7 @@ const ScriptModule: React.FC<Props> = ({
   }, [initialTopic]);
 
   const durationNum = parseFloat(duration as string) || 0;
-  const scenes = Math.ceil((Math.max(0.1, durationNum) * 60) / SECONDS_PER_SCENE);
+  const scenes = Math.ceil((Math.max(0.1, durationNum) * 60) / secondsPerScene);
   const mode = durationNum < 3 ? { name: '🟢 QUICK ZEN (<3m)', wpm: 260 } : durationNum <= 10 ? { name: '🔵 SPIRITUAL MATRIC (3-10m)', wpm: 260 } : { name: '🟣 ETERNAL MINDFULNESS (>10m)', wpm: 260 };
   const modeColor = durationNum < 3 ? 'text-emerald-400 border-emerald-500/50 bg-emerald-950/10' : durationNum <= 10 ? 'text-teal-400 border-teal-500/50 bg-teal-950/10' : 'text-emerald-400 border-emerald-500/50 bg-emerald-950/10';
 
@@ -278,7 +279,7 @@ const ScriptModule: React.FC<Props> = ({
       styleContext += ` - SOLFEGGIO FREQUENCY: ${freqObj?.hz} (${freqObj?.label}). TARGET CULTURE: ${mk.culture}.`;
 
       // 1. Calculate the total requested scenes
-      const totalScenes = Math.ceil((Math.max(0.1, targetDuration) * 60) / SECONDS_PER_SCENE);
+      const totalScenes = Math.ceil((Math.max(0.1, targetDuration) * 60) / secondsPerScene);
 
       // 2. Define safe chunk size: 25 scenes per round
       const chunkSize = 25;
@@ -343,10 +344,10 @@ GENERATE JSON OBJECT.`;
         // Standardize output structure
         roundSegs = roundSegs.map((s: any, idx: number) => {
           const calculatedNum = startSceneNum + idx;
-          const min = Math.floor(((calculatedNum - 1) * SECONDS_PER_SCENE) / 60);
-          const secStart = ((calculatedNum - 1) * SECONDS_PER_SCENE) % 60;
-          const secEnd = (calculatedNum * SECONDS_PER_SCENE) % 60;
-          const minEnd = Math.floor((calculatedNum * SECONDS_PER_SCENE) / 60);
+          const min = Math.floor(((calculatedNum - 1) * secondsPerScene) / 60);
+          const secStart = ((calculatedNum - 1) * secondsPerScene) % 60;
+          const secEnd = (calculatedNum * secondsPerScene) % 60;
+          const minEnd = Math.floor((calculatedNum * secondsPerScene) / 60);
           
           const formatTime = (m: number, s: number) => `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
           

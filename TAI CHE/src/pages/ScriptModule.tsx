@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { callAI } from '../services/aiService';
 import { SYSTEM_PROMPT_SCRIPT_WRITER, SYSTEM_PROMPT_AUDIO_REENGINEERING } from '../data/prompts';
-import { TARGET_MARKETS, VISUAL_STYLES, SECONDS_PER_SCENE } from '../data/constants';
+import { TARGET_MARKETS, VISUAL_STYLES, } from '../data/constants';
 import { showToast } from '../components/Toast';
 
 // ==================================================================================
@@ -177,6 +177,7 @@ const ScriptModule: React.FC<Props> = ({
 }) => {
   const [topic, setTopic] = useState(initialTopic);
   const [duration, setDuration] = useState<number | string>(1);
+  const [secondsPerScene, setSecondsPerScene] = useState(8);
   const [market, setMarket] = useState('vn_recycle');
   const [style, setStyle] = useState('auto');
   const [loading, setLoading] = useState(false);
@@ -207,7 +208,7 @@ const ScriptModule: React.FC<Props> = ({
   }, [initialTopic]);
 
   const durationNum = parseFloat(duration as string) || 0;
-  const scenes = Math.ceil((Math.max(0.1, durationNum) * 60) / SECONDS_PER_SCENE);
+  const scenes = Math.ceil((Math.max(0.1, durationNum) * 60) / secondsPerScene);
   const mode = durationNum < 3 ? { name: '🟢 QUICK CRAFT (<3m)', wpm: 260 } : durationNum <= 10 ? { name: '🔵 STORY WEAVER (3-10m)', wpm: 260 } : { name: '🟣 EPIC FOLKLORE (>10m)', wpm: 260 };
   const words = scenes * 35; // Đúng nguyên tắc cốt lõi: 30-40 từ cho một cảnh 8 giây (Trung bình 35 từ)
   const modeColor = durationNum < 3 ? 'text-green-400 border-green-500/50 bg-green-900/10' : durationNum <= 10 ? 'text-teal-400 border-teal-500/50 bg-teal-900/10' : 'text-purple-400 border-purple-500/50 bg-purple-900/10';
@@ -641,6 +642,16 @@ const ScriptModule: React.FC<Props> = ({
                   }}
                   className="w-20 bg-[#0a0e14] border border-slate-700/50 rounded-lg p-3 text-2xl font-black text-white text-center outline-none" 
                 />
+                
+                <div className="flex flex-col gap-1 w-24">
+                  <label className="text-[10px] text-slate-400 font-bold">GIÂY/CẢNH:</label>
+                  <input 
+                    type="number" 
+                    value={secondsPerScene} 
+                    onChange={e => setSecondsPerScene(Math.max(1, parseInt(e.target.value) || 8))}
+                    className="w-full bg-[#0a0e14] border border-slate-700/50 rounded p-1.5 text-sm font-bold text-teal-300 text-center outline-none" 
+                  />
+                </div>
                 <div className="flex flex-col gap-1.5 text-xs">
                   <div><span className="text-slate-500">Số cảnh:</span> <span className="font-bold text-green-400 text-base">~{scenes} Cảnh</span></div>
                   <div><span className="text-slate-500">Voice:</span> <span className="font-bold text-teal-400 text-base">~{words} từ</span></div>

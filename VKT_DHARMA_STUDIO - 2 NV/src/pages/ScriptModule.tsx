@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { callAI } from '../services/aiService';
 import { 
-  SECONDS_PER_SCENE, 
+   
   TARGET_MARKETS, 
   VISUAL_STYLES 
 } from '../data/constants';
@@ -194,6 +194,7 @@ interface Props {
 const ScriptModule: React.FC<Props> = ({ segments, setSegments, scriptData, setScriptData, onScriptGenerated, onAudioRefined, initialTopic = '', uiLang, onNavigateToStudio }) => {
   const [topic, setTopic] = useState(initialTopic);
   const [duration, setDuration] = useState<number | string>(1);
+  const [secondsPerScene, setSecondsPerScene] = useState(8);
   const [market, setMarket] = useState('vn_dharma');
   const [style, setStyle] = useState('auto');
   const [dharmaTopic, setDharmaTopic] = useState('karma');
@@ -229,7 +230,7 @@ const ScriptModule: React.FC<Props> = ({ segments, setSegments, scriptData, setS
   }, [initialTopic]);
 
   const durationNum = parseFloat(duration as string) || 0;
-  const scenes = Math.ceil((Math.max(0.1, durationNum) * 60) / SECONDS_PER_SCENE);
+  const scenes = Math.ceil((Math.max(0.1, durationNum) * 60) / secondsPerScene);
   const mode = durationNum < 3 ? { name: '🟢 QUICK CRAFT (<3m)', wpm: 130 } : durationNum <= 10 ? { name: '🔵 STORY WEAVER (3-10m)', wpm: 140 } : { name: '🟣 EPIC FOLKLORE (>10m)', wpm: 120 };
   const words = Math.floor(durationNum * mode.wpm);
   const modeColor = durationNum < 3 ? 'text-green-400 border-green-500/50 bg-green-900/10' : durationNum <= 10 ? 'text-teal-400 border-teal-500/50 bg-teal-900/10' : 'text-purple-400 border-purple-500/50 bg-purple-900/10';
@@ -287,7 +288,7 @@ const ScriptModule: React.FC<Props> = ({ segments, setSegments, scriptData, setS
       styleContext += ` - DHARMA TOPIC: ${topicObj?.label}. MICRO-CONTEXT (CRITICAL): ${randomContext}.`;
 
       // 1. Calculate the total requested scenes
-      const totalScenes = Math.ceil((Math.max(0.1, targetDuration) * 60) / SECONDS_PER_SCENE);
+      const totalScenes = Math.ceil((Math.max(0.1, targetDuration) * 60) / secondsPerScene);
       
       // 2. Define safe chunk size: 25 scenes per API call
       const chunkSize = 25;
@@ -351,10 +352,10 @@ CRITICAL INSTRUCTION:
         // Standardize output structure
         roundSegs = roundSegs.map((s: any, idx: number) => {
           const calculatedNum = startSceneNum + idx;
-          const min = Math.floor(((calculatedNum - 1) * SECONDS_PER_SCENE) / 60);
-          const secStart = ((calculatedNum - 1) * SECONDS_PER_SCENE) % 60;
-          const secEnd = (calculatedNum * SECONDS_PER_SCENE) % 60;
-          const minEnd = Math.floor((calculatedNum * SECONDS_PER_SCENE) / 60);
+          const min = Math.floor(((calculatedNum - 1) * secondsPerScene) / 60);
+          const secStart = ((calculatedNum - 1) * secondsPerScene) % 60;
+          const secEnd = (calculatedNum * secondsPerScene) % 60;
+          const minEnd = Math.floor((calculatedNum * secondsPerScene) / 60);
           
           const formatTime = (m: number, s: number) => `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
           
@@ -555,6 +556,16 @@ CRITICAL INSTRUCTION:
                   }}
                   className="w-20 bg-[#0a0e14] border border-slate-700/50 rounded-lg p-3 text-2xl font-black text-white text-center outline-none" 
                 />
+                
+                <div className="flex flex-col gap-1 w-24">
+                  <label className="text-[10px] text-slate-400 font-bold">GIÂY/CẢNH:</label>
+                  <input 
+                    type="number" 
+                    value={secondsPerScene} 
+                    onChange={e => setSecondsPerScene(Math.max(1, parseInt(e.target.value) || 8))}
+                    className="w-full bg-[#0a0e14] border border-slate-700/50 rounded p-1.5 text-sm font-bold text-teal-300 text-center outline-none" 
+                  />
+                </div>
                 <div className="flex flex-col gap-1.5 text-xs">
                   <div><span className="text-slate-500">{uiLang === 'vi' ? 'Số cảnh' : 'Scenes'}:</span> <span className="font-bold text-green-400 text-base">~{scenes}</span></div>
                   <div><span className="text-slate-500">Voice:</span> <span className="font-bold text-teal-400 text-base">~{words} {uiLang === 'vi' ? 'từ' : 'words'}</span></div>
