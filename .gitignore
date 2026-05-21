@@ -1,0 +1,51 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Testing
+coverage/
+
+# Production
+dist/
+build/
+out/
+
+# Misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.vercel/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Large Media Files (DO NOT PUSH)
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.svg
+
+# IDEs and Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Specific temporary or backup folders
+temp_restore/
+xa xuat ban/
+VIDEO QUAY/
+STYTE/
+TAI CHE/
+PHAT PHAP LOGO BANER/
+VKT 055 979 3678 - Copy/

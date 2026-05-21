@@ -1,0 +1,615 @@
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { 
+  UploadCloud, 
+  Sparkles, 
+  RefreshCcw, 
+  X, 
+  Check, 
+  AlertTriangle, 
+  Download, 
+  Maximize2, 
+  Search,
+  Settings2,
+  Palette,
+  Eraser,
+  Save,
+  Zap,
+  ChevronRight,
+  Maximize,
+  LayoutGrid,
+  Info,
+  Layers,
+  Plus,
+  Image as ImageIcon,
+  Type,
+  MapPin,
+  Target,
+  Component,
+  RotateCcw,
+  PaletteIcon,
+  Tag,
+  Boxes,
+  CheckCircle2,
+  Eye
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+// --- [VKT ARCHITECT TYPES] ---
+enum AppState {
+    IDLE = 'IDLE',
+    SELECTING_CHARACTER = 'SELECTING_CHARACTER',
+    LOADING = 'LOADING',
+    RESULT = 'RESULT',
+    ERROR = 'ERROR',
+}
+
+interface Accessory {
+    id: string;
+    label: string;
+    currentDescription: string;
+    category: 'body' | 'accessory' | 'text' | 'pattern'; 
+}
+
+interface PendingMutation {
+    id: string;
+    label: string;
+    type: 'modify' | 'remove' | 'add' | 'branding';
+    instruction: string;
+    colors: string[]; 
+    refImage?: string; 
+}
+
+interface DetectedCharacter {
+    id: string;
+    image: string; 
+    label: string; 
+    box_2d: [number, number, number, number];
+    accessories: Accessory[];
+}
+
+// --- [LEGO PIECES: UTILITIES & HELPERS] ---
+
+const apiKey = ""; 
+
+const safeParseJSON = (text: string) => {
+    if (!text) return null;
+    try {
+        const firstBracket = text.indexOf('[');
+        const firstBrace = text.indexOf('{');
+        let start = -1;
+        if (firstBracket !== -1 && (firstBrace === -1 || (firstBracket < firstBrace && firstBracket !== -1))) start = firstBracket;
+        else start = firstBrace;
+        
+        const lastBracket = text.lastIndexOf(']');
+        const lastBrace = text.lastIndexOf('}');
+        let end = -1;
+        if (lastBracket !== -1 && (lastBrace === -1 || lastBracket > lastBrace)) end = lastBracket;
+        else end = lastBrace;
+        
+        if (start === -1 || end === -1 || end < start) return null;
+        const jsonStr = text.substring(start, end + 1);
+        return JSON.parse(jsonStr);
+    } catch (e) { 
+        return null; 
+    }
+};
+
+const cropImage = (base64: string, box: any): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        if (!box || !Array.isArray(box) || box.length < 4) return reject("Vùng cắt không hợp lệ");
+        const img = new Image();
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return reject("Lỗi Canvas");
+            const [ymin, xmin, ymax, xmax] = box;
+            const w = img.width, h = img.height;
+            const left = (xmin / 1000) * w;
+            const top = (ymin / 1000) * h;
+            const width = ((xmax - xmin) / 1000) * w;
+            const height = ((ymax - ymin) / 1000) * h;
+            const padX = width * 0.15;
+            const padY = height * 0.15;
+            const finalX = Math.max(0, left - padX);
+            const finalY = Math.max(0, top - padY);
+            const finalW = Math.min(w - finalX, width + padX * 2);
+            const finalH = Math.min(h - finalY, height + padY * 2);
+            canvas.width = finalW; canvas.height = finalH;
+            ctx.drawImage(img, finalX, finalY, finalW, finalH, 0, 0, finalW, finalH);
+            resolve(canvas.toDataURL('image/png'));
+        };
+        img.onerror = () => reject("Lỗi tải ảnh");
+        img.src = `data:image/png;base64,${base64}`;
+    });
+};
+
+const fetchWithRetry = async (url: string, options: any, retries = 5): Promise<any> => {
+    for (let i = 0; i < retries; i++) {
+        try {
+            const response = await fetch(url, options);
+            const data = await response.json();
+            if (response.ok) return data;
+            await new Promise(r => setTimeout(r, Math.pow(2, i) * 1000));
+        } catch (err) {
+            if (i === retries - 1) throw err;
+            await new Promise(r => setTimeout(r, Math.pow(2, i) * 1000));
+        }
+    }
+};
+
+// --- [LEGO PIECES: SUB-COMPONENTS] ---
+
+const Header: React.FC = () => (
+    <header className="relative text-center w-full max-w-4xl mx-auto pt-6 pb-2 z-10">
+        <div className="flex flex-col items-center gap-2">
+            <div className="relative flex items-center justify-center w-16 h-16 rounded-full bg-[#0f172a] border border-amber-500/20 shadow-2xl">
+                <span className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-br from-amber-200 via-amber-500 to-amber-200 uppercase">VKT</span>
+                <Sparkles className="w-3 h-3 text-amber-300 absolute -top-1 -right-1 animate-pulse" />
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-black tracking-tighter text-white uppercase">Sáng tạo <span className="text-amber-500">Thú Bông</span></h1>
+            <p className="text-amber-500/50 font-bold tracking-[0.2em] uppercase text-[8px]">Hệ điều hành V20.0 • Đối chiếu Gốc & Đa nhiệm</p>
+        </div>
+    </header>
+);
+
+const ImageModal: React.FC<{ imageUrl: string, onClose: () => void }> = ({ imageUrl, onClose }) => {
+    const [view, setView] = useState(0); 
+    const [zoom, setZoom] = useState(1);
+    const handleWheel = (e: React.WheelEvent) => setZoom(p => Math.min(Math.max(1, p + (e.deltaY > 0 ? -0.2 : 0.2)), 4));
+
+    return (
+        <div className="fixed inset-0 z-[110] bg-black/98 backdrop-blur-xl flex flex-col items-center justify-center p-4" onClick={onClose}>
+            <button onClick={onClose} className="absolute top-6 right-6 p-4 bg-white/10 rounded-full text-white hover:bg-white/20 transition-all z-20"><X /></button>
+            <div className="relative w-full h-full max-w-5xl overflow-hidden flex items-center justify-center" onWheel={handleWheel} onClick={e => e.stopPropagation()}>
+                <div style={{ transform: `scale(${zoom})`, transition: 'transform 0.2s' }}>
+                   <div className="w-[300%] flex" style={{ transform: `translateX(${-view * (100/3)}%)` }}>
+                        {[0, 1, 2].map(i => (
+                            <div key={i} className="w-1/3 flex items-center justify-center px-4">
+                                <img src={imageUrl} className="w-full h-auto max-h-[85vh] object-contain shadow-2xl" alt={`Mặt ${i+1}`} />
+                            </div>
+                        ))}
+                   </div>
+                </div>
+            </div>
+            <div className="absolute bottom-8 bg-slate-900/90 border border-slate-700 p-2 rounded-2xl flex gap-2 backdrop-blur-md shadow-2xl" onClick={e => e.stopPropagation()}>
+                {['Mặt trước', 'Mặt nghiêng', 'Mặt sau'].map((t, i) => (
+                    <button key={i} onClick={() => { setView(i); setZoom(1); }} className={`px-6 py-2 rounded-xl text-xs font-black transition-all ${view === i ? 'bg-amber-500 text-slate-950 shadow-lg' : 'text-white hover:bg-slate-800'}`}>{t}</button>
+                ))}
+                <div className="w-px bg-slate-800 mx-2" />
+                <button onClick={() => setZoom(1)} className="p-2 text-white hover:bg-slate-800 rounded-lg"><Maximize size={18}/></button>
+            </div>
+        </div>
+    );
+};
+
+// --- [LEGO PIECES: MAIN PROMPTS] ---
+
+const PROMPT_BASE = `**ROLE:** VKT PLUSH MASTER DESIGNER.
+**MISSION:** Tạo ra ảnh thiết kế trực quan của một con thú nhồi bông chất lượng cao.
+**CORE RULES:**
+1. KHÔNG HIỂN THỊ: Thước đo, mũi tên, thông số kỹ thuật, hay bất kỳ văn bản chú thích nào trên hình ảnh.
+2. HÌNH THÁI: Thú nhồi bông làm từ vải minky mịn, nhồi bông căng tròn, có đường may micro-seams chân thực.
+3. BỐ CỤC: Luôn trả về 3 góc nhìn (Chính diện, Mặt bên, Mặt sau) trong một hàng ngang tỷ lệ 16:9.
+4. NỀN: Nền trắng sạch hoặc xám kỹ thuật cực nhẹ.
+**STRICT LANGUAGE:** Sử dụng 100% TIẾNG VIỆT cho mọi chỉ dẫn.`;
+
+const generatePlushImage = async (characterBase64: string, batchInstructions: string, refImages: {label: string, data: string}[]) => {
+    const parts: any[] = [
+        { text: PROMPT_BASE + `\n**CHỈ THỊ BIẾN ĐỔI:**\n${batchInstructions}` },
+        { inlineData: { mimeType: "image/png", data: characterBase64 } }
+    ];
+    refImages.forEach(img => {
+        parts.push({ text: `Ảnh tham chiếu cho mảnh ghép "${img.label}":` });
+        parts.push({ inlineData: { mimeType: "image/png", data: img.data } });
+    });
+    const payload = { 
+        contents: [{ parts }], 
+        generationConfig: { responseModalities: ['TEXT', 'IMAGE'] } 
+    };
+    const result = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key=${apiKey}`, { method: 'POST', body: JSON.stringify(payload) });
+    const imagePart = result.candidates?.[0]?.content?.parts?.find((p: any) => p.inlineData);
+    if (!imagePart) throw new Error("AI không thể tạo ảnh thú bông. Vui lòng thử lại.");
+    return `data:image/png;base64,${imagePart.inlineData.data}`;
+};
+
+const analyzeCharacterAndAccessories = async (base64: string) => {
+    const prompt = `[IRON MOLECULAR AUDIT] Phân tích để bóc tách Lego.
+    YÊU CẦU ĐỊNH DANH: Đặt tên sáng tạo dựa trên hình ảnh (VD: Rái cá KFC, Bạch tuộc nơ hồng...).
+    THANH LỌC TUYỆT ĐỐI: 
+    1. CHỈ liệt kê: Vùng màu sắc chủ đạo, Phụ kiện rời, Họa tiết vải và Văn bản/Logo.
+    2. CẤM TIỆT: Không liệt kê mắt, mũi, miệng, đầu, tay, chân, tai, đuôi. Bỏ qua mọi chi tiết giải phẫu mặc định.
+    3. NGÔN NGỮ: 100% TIẾNG VIỆT.
+    JSON ONLY: {"label": "Tên Sáng Tạo", "accessories": [{"id": "u1", "label": "Vùng màu/Phụ kiện", "currentDescription": "mô tả", "category": "body"}]}`;
+    const payload = { contents: [{ parts: [{ text: prompt }, { inlineData: { mimeType: "image/png", data: base64 } }] }], generationConfig: { responseMimeType: "application/json" } };
+    const result = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, { method: 'POST', body: JSON.stringify(payload) });
+    const parsed = safeParseJSON(result.candidates?.[0]?.content?.parts?.[0]?.text);
+    return parsed || { label: "Nhân vật", accessories: [] };
+};
+
+// --- [MAIN APP SYSTEM] ---
+export default function App() {
+    const [state, setState] = useState(AppState.IDLE);
+    const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+    const [characters, setCharacters] = useState<DetectedCharacter[]>([]);
+    const [activeChar, setActiveChar] = useState<DetectedCharacter | null>(null);
+    const [design, setDesign] = useState<string | null>(null);
+    const [originalDesign, setOriginalDesign] = useState<string | null>(null); 
+    const [processedIds, setProcessedIds] = useState<string[]>([]); 
+    const [error, setError] = useState<any>(null);
+    const [showModal, setShowModal] = useState(false);
+    
+    const [selectedAcc, setSelectedAcc] = useState<Accessory | null>(null);
+    const [stagedMutations, setStagedMutations] = useState<Record<string, PendingMutation>>({});
+    
+    const [isAddingNew, setIsAddingNew] = useState(false);
+    const [newAccLabel, setNewAccLabel] = useState("");
+    const [newAccRefImage, setNewAccRefImage] = useState<string | null>(null);
+    const [newAccDesc, setNewAccDesc] = useState("");
+    const [newAccPos, setNewAccPos] = useState("");
+    
+    const [editPrompt, setEditPrompt] = useState("");
+    const [colors, setColors] = useState<string[]>(["#FF0000"]);
+    const [isApplying, setIsApplying] = useState(false);
+
+    const handleUpload = async (file: File) => {
+        setUploadedFile(file);
+        setState(AppState.LOADING);
+        setProcessedIds([]); 
+        setError(null);
+        try {
+            const base64 = await new Promise<string>((r) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => r((reader.result as string).split(',')[1]);
+            });
+
+            const detectPayload = { 
+                contents: [{ parts: [{ text: "NHẬN DIỆN TẤT CẢ NHÂN VẬT RIÊNG BIỆT TRONG ẢNH. JSON ONLY." }, { inlineData: { mimeType: "image/png", data: base64 } }] }], 
+                generationConfig: { responseMimeType: "application/json" } 
+            };
+            const detectRes = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, { 
+                method: 'POST', 
+                body: JSON.stringify(detectPayload) 
+            });
+            const parsedDetects = safeParseJSON(detectRes.candidates[0].content.parts[0].text);
+            const detects = Array.isArray(parsedDetects) ? parsedDetects : (parsedDetects?.box_2d ? [parsedDetects] : []);
+            
+            if (!detects || detects.length === 0) throw new Error("Không phát hiện được nhân vật.");
+
+            const processed = await Promise.all(detects.map(async (d: any, i: number) => {
+                if (!d.box_2d) return null;
+                try {
+                    const cropped = await cropImage(base64, d.box_2d);
+                    const analysis = await analyzeCharacterAndAccessories(cropped.split(',')[1]);
+                    return { 
+                        id: `char-${i}`, image: cropped, label: analysis.label || "Nhân vật", box_2d: d.box_2d, 
+                        accessories: Array.isArray(analysis.accessories) ? analysis.accessories : [] 
+                    };
+                } catch (e) { return null; }
+            }));
+
+            const validChars = processed.filter(c => c !== null) as DetectedCharacter[];
+            setCharacters(validChars);
+            setState(AppState.SELECTING_CHARACTER);
+        } catch (err: any) {
+            setError(err?.message || "Lỗi quét dữ liệu ảnh.");
+            setState(AppState.ERROR);
+        }
+    };
+
+    const handleInitialGenerate = async (char: DetectedCharacter) => {
+        setState(AppState.LOADING);
+        setActiveChar(char);
+        try {
+            const res = await generatePlushImage(char.image.split(',')[1], `Tạo hình ảnh thú nhồi bông nguyên bản cho nhân vật "${char.label}".`, []);
+            setDesign(res);
+            setOriginalDesign(res);
+            if (!processedIds.includes(char.id)) setProcessedIds([...processedIds, char.id]);
+            setState(AppState.RESULT);
+        } catch (err: any) {
+            setError(err?.message || "Lỗi tạo thú bông.");
+            setState(AppState.ERROR);
+        }
+    };
+
+    const handleBackToSelection = () => {
+        setActiveChar(null);
+        setDesign(null);
+        setOriginalDesign(null);
+        setStagedMutations({});
+        setState(AppState.SELECTING_CHARACTER);
+    };
+
+    const handleRestoreOriginal = () => {
+        if (originalDesign) {
+            setDesign(originalDesign);
+            setStagedMutations({});
+            setSelectedAcc(null);
+            setIsAddingNew(false);
+        }
+    };
+
+    const stageMutation = (type: 'modify' | 'remove') => {
+        if (!selectedAcc) return;
+        const colorList = colors.join(', ');
+        const instruction = type === 'remove' 
+            ? `Gỡ bỏ hoàn toàn ${selectedAcc.label}.` 
+            : `Đổi ${selectedAcc.label}: Dùng bộ màu (${colorList}). Chi tiết: ${editPrompt}`;
+            
+        setStagedMutations(prev => ({ 
+            ...prev, 
+            [selectedAcc.id]: { id: selectedAcc.id, label: selectedAcc.label, type, instruction, colors: [...colors] } 
+        }));
+        setSelectedAcc(null);
+        setEditPrompt("");
+        setColors(["#FF0000"]);
+    };
+
+    const stageBrandingAddition = () => {
+        const id = `branding-${Date.now()}`;
+        const instruction = newAccRefImage 
+            ? `Thêm "${newAccLabel}" tại vị trí [${newAccPos}]: Trích xuất hình thái từ ảnh tham chiếu. ${newAccDesc}`
+            : `Thêm "${newAccLabel}" tại vị trí [${newAccPos}]: ${newAccDesc}`;
+        setStagedMutations(prev => ({ ...prev, [id]: { id, label: newAccLabel || "Mảnh ghép mới", type: 'branding', instruction, colors: [], refImage: newAccRefImage || undefined } }));
+        setIsAddingNew(false); setNewAccLabel(""); setNewAccRefImage(null); setNewAccDesc(""); setNewAccPos("");
+    };
+
+    const applyBatchMutations = async () => {
+        if (!activeChar) return;
+        setIsApplying(true);
+        const combined = Object.values(stagedMutations).map((m, i) => `${i+1}. ${m.instruction}`).join('\n');
+        const refImages = Object.values(stagedMutations).filter(m => m.refImage).map(m => ({ label: m.label, data: m.refImage! }));
+        try {
+            const res = await generatePlushImage(activeChar.image.split(',')[1], combined, refImages);
+            setDesign(res);
+            setStagedMutations({});
+            setIsApplying(false);
+        } catch (err: any) {
+            setError(err?.message || "Lỗi cập nhật ảnh.");
+            setIsApplying(false);
+        }
+    };
+
+    return (
+        <div className="w-full min-h-screen bg-[#020617] text-slate-200 flex flex-col items-center p-4 relative overflow-y-auto">
+            <style>{`
+                .bg-grid { background-image: linear-gradient(to right, rgba(30, 41, 59, 0.2) 1px, transparent 1px), linear-gradient(to bottom, rgba(30, 41, 59, 0.2) 1px, transparent 1px); background-size: 40px 40px; }
+                .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: #f59e0b; border-radius: 10px; }
+            `}</style>
+            <div className="absolute inset-0 bg-grid opacity-10 pointer-events-none" />
+            <Header />
+            
+            <main className="w-full max-w-7xl mx-auto z-10 py-6">
+                {state === AppState.IDLE && (
+                    <div className="w-full max-w-3xl mx-auto bg-slate-900/40 backdrop-blur-2xl rounded-[3rem] p-8 border border-slate-800 shadow-2xl mt-8 text-center">
+                        <label className="cursor-pointer block group">
+                            <div className="p-12 border-2 border-dashed border-slate-800 rounded-[2.5rem] bg-slate-950/30 flex flex-col items-center gap-8 group-hover:border-amber-500/50 transition-all">
+                                <UploadCloud className="w-16 h-16 text-slate-500 group-hover:text-amber-500" />
+                                <div>
+                                    <p className="text-2xl font-black text-slate-200 uppercase tracking-widest">Bắt đầu thiết kế</p>
+                                    <p className="text-slate-500 mt-4 text-sm italic">Quét nhân vật & Đối chiếu nguyên bản (100% Tiếng Việt)</p>
+                                </div>
+                                <input type="file" className="hidden" accept="image/*" onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0])} />
+                            </div>
+                        </label>
+                    </div>
+                )}
+                
+                {state === AppState.LOADING && (
+                    <div className="text-center p-12 bg-slate-900/40 rounded-[3rem] border border-slate-800 w-full max-w-md mx-auto shadow-2xl backdrop-blur-3xl mt-20">
+                        <div className="w-14 h-14 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-8" />
+                        <h2 className="text-xl font-black text-white mb-2 uppercase">Kỹ sư VKT</h2>
+                        <p className="text-amber-500 font-bold uppercase tracking-widest text-[8px]">Đang bóc tách & Đối chiếu phân tử...</p>
+                    </div>
+                )}
+
+                {state === AppState.SELECTING_CHARACTER && (
+                    <div className="w-full max-w-6xl mx-auto bg-slate-900/40 rounded-[3rem] p-8 border border-slate-800 shadow-2xl backdrop-blur-3xl">
+                        <div className="flex justify-between items-center mb-10 border-b border-slate-800 pb-6">
+                            <h2 className="text-2xl font-black text-white uppercase tracking-tighter flex items-center gap-3">
+                                <Boxes className="text-amber-500" /> Danh sách ({processedIds.length}/{characters.length})
+                            </h2>
+                            <button onClick={() => setState(AppState.IDLE)} className="px-4 py-2 bg-slate-800 rounded-xl text-[10px] font-bold uppercase hover:bg-slate-700 transition-all flex items-center gap-2 text-slate-300"><RotateCcw size={12}/> Đổi nguồn</button>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {characters.map(c => {
+                                const isDone = processedIds.includes(c.id);
+                                return (
+                                    <div key={c.id} onClick={() => handleInitialGenerate(c)} className={`bg-slate-950 p-6 rounded-[2.5rem] border transition-all group text-center shadow-lg relative ${isDone ? 'border-emerald-500/40 grayscale-[0.3]' : 'border-slate-800 hover:border-amber-500 cursor-pointer'}`}>
+                                        {isDone && (
+                                            <div className="absolute top-4 right-4 z-20 flex items-center gap-2 bg-emerald-500 text-slate-950 px-3 py-1 rounded-full text-[10px] font-black uppercase">
+                                                <CheckCircle2 size={12}/> Đã xong
+                                            </div>
+                                        )}
+                                        <div className="aspect-square bg-slate-900 rounded-[2rem] overflow-hidden mb-6 border border-slate-800 shadow-inner relative">
+                                            <img src={c.image} className="w-full h-full object-contain p-4 group-hover:scale-110 transition-transform duration-700" alt="v" />
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                            <span className="font-black text-base text-slate-200 uppercase tracking-tight">{c.label}</span>
+                                            <div className="flex justify-center"><span className="px-2 py-0.5 bg-amber-500/10 text-amber-500 text-[8px] font-black rounded uppercase tracking-widest">Lego: {c.accessories.length}</span></div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+
+                {state === AppState.RESULT && activeChar && (
+                    <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                        <div className="lg:col-span-4 flex flex-col gap-6 lg:sticky lg:top-8">
+                            <div className="bg-slate-900/60 p-6 rounded-[2.5rem] border border-slate-800 shadow-xl backdrop-blur-xl flex flex-col">
+                                <div className="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
+                                    <h3 className="text-base font-black text-white flex items-center gap-3 uppercase tracking-tighter">
+                                        <Layers size={18} className="text-amber-500" /> 
+                                        <span>Tùy biến Lego ({activeChar.accessories.length})</span>
+                                    </h3>
+                                    <button onClick={() => setIsAddingNew(true)} className="p-2 bg-emerald-500 text-slate-950 rounded-lg hover:bg-emerald-400 transition-all shadow-lg" title="Thêm mới"><Plus size={16} strokeWidth={3} /></button>
+                                </div>
+                                
+                                <div className="space-y-2 max-h-[380px] overflow-y-auto pr-2 custom-scrollbar">
+                                    {activeChar.accessories.length === 0 ? (
+                                        <div className="text-center py-8 opacity-40 italic text-[10px] uppercase font-bold tracking-widest leading-relaxed">Đã lọc sạch chi tiết rác</div>
+                                    ) : (
+                                        activeChar.accessories.map(acc => {
+                                            const pending = stagedMutations[acc.id];
+                                            return (
+                                                <button key={acc.id} onClick={() => { setSelectedAcc(acc); setIsAddingNew(false); }} className={`w-full p-4 rounded-2xl border transition-all flex items-center justify-between group relative overflow-hidden ${selectedAcc?.id === acc.id ? 'bg-amber-500 border-amber-400 text-slate-950' : 'bg-slate-950/50 border-slate-800 text-slate-300 hover:border-amber-500/30'}`}>
+                                                    {pending && <div className="absolute top-0 right-0 p-1 bg-amber-500 text-slate-950 rounded-bl-lg shadow-lg"><Zap size={10} fill="currentColor" /></div>}
+                                                    <div className="text-left">
+                                                        <p className="font-black text-[10px] uppercase leading-tight">{acc.label}</p>
+                                                        <p className={`text-[9px] mt-1 ${selectedAcc?.id === acc.id ? 'text-slate-800 font-bold' : 'text-slate-500'}`}>{pending ? 'Đã lưu chỉ thị...' : 'Nhấn để chỉnh sửa'}</p>
+                                                    </div>
+                                                    <ChevronRight size={14} />
+                                                </button>
+                                            );
+                                        })
+                                    )}
+                                    {Object.values(stagedMutations).filter(m => m.type === 'branding').map(m => (
+                                        <div key={m.id} className="w-full p-4 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 text-emerald-400 flex items-center justify-between shadow-sm">
+                                            <p className="font-black text-[10px] uppercase">+{m.label}</p>
+                                            <button onClick={() => { const s = {...stagedMutations}; delete s[m.id]; setStagedMutations(s); }} className="text-red-400 p-1 hover:text-red-500"><X size={12}/></button>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <AnimatePresence mode="wait">
+                                    {isAddingNew && (
+                                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="mt-6 pt-6 border-t border-slate-800 space-y-4">
+                                            <div className="flex items-center justify-between"><h4 className="font-black text-[10px] text-amber-500 uppercase tracking-widest flex items-center gap-2"><Plus size={14}/> Thêm Mảnh Ghép</h4><button onClick={() => setIsAddingNew(false)} className="text-slate-500 hover:text-white transition-colors"><X size={14}/></button></div>
+                                            <div className="space-y-3">
+                                                <input value={newAccLabel} onChange={(e) => setNewAccLabel(e.target.value)} placeholder="Tên (VD: Nơ, Ba lô...)" className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white outline-none focus:border-amber-500" />
+                                                <input value={newAccPos} onChange={(e) => setNewAccPos(e.target.value)} placeholder="Vị trí gắn (VD: Ngực, Tay...)" className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white outline-none focus:border-amber-500" />
+                                                <textarea value={newAccDesc} onChange={(e) => setNewAccDesc(e.target.value)} placeholder="Mô tả chi tiết..." className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white outline-none h-16" />
+                                                <label className="cursor-pointer flex items-center justify-center gap-2 p-3 border-2 border-dashed border-slate-800 rounded-xl bg-slate-950 hover:border-amber-500/50 transition-all">
+                                                    <ImageIcon size={14} className="text-slate-500" />
+                                                    <span className="text-[9px] font-black uppercase text-slate-500">{newAccRefImage ? "Đã chọn mẫu" : "Tải tham chiếu"}</span>
+                                                    <input type="file" className="hidden" accept="image/*" onChange={async (e) => { const f = e.target.files?.[0]; if (f) { const reader = new FileReader(); reader.onload = () => setNewAccRefImage((reader.result as string).split(',')[1]); reader.readAsDataURL(f); } }} />
+                                                </label>
+                                                <button onClick={stageBrandingAddition} className="w-full py-3 bg-emerald-500 text-slate-950 rounded-xl font-black text-[9px] uppercase shadow-lg hover:bg-emerald-400">Lưu giỏ hàng</button>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                    {selectedAcc && (
+                                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="mt-6 pt-6 border-t border-slate-800 space-y-4">
+                                            <div className="flex items-center justify-between"><h4 className="font-black text-[10px] text-amber-500 uppercase tracking-widest flex items-center gap-2"><Settings2 size={12}/> {selectedAcc.label}</h4><button onClick={() => setSelectedAcc(null)} className="text-slate-500 p-1 hover:text-white transition-colors"><X size={14}/></button></div>
+                                            <div className="space-y-4">
+                                                <div className="bg-slate-950 p-3 rounded-xl border border-slate-800">
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <p className="text-[9px] font-black text-slate-600 uppercase">Bộ màu sắc</p>
+                                                        <button onClick={() => setColors([...colors, "#FFFFFF"])} className="p-1 bg-amber-500/10 text-amber-500 rounded hover:bg-amber-500/20"><Plus size={10}/></button>
+                                                    </div>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {colors.map((c, i) => (
+                                                            <div key={i} className="flex items-center gap-1 bg-slate-900 p-1 rounded-lg border border-slate-800 shadow-sm">
+                                                                <input type="color" value={c} onChange={(e) => { const nc = [...colors]; nc[i] = e.target.value; setColors(nc); }} className="w-6 h-6 rounded cursor-pointer bg-transparent border-none" />
+                                                                {colors.length > 1 && <button onClick={() => setColors(colors.filter((_, idx) => idx !== i))} className="text-red-500 p-0.5 hover:bg-red-500/10 rounded"><X size={10}/></button>}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                <textarea value={editPrompt} onChange={(e) => setEditPrompt(e.target.value)} placeholder="Nhập thay đổi (VD: Họa tiết sọc...)" className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs focus:border-amber-500 outline-none h-16 text-white" />
+                                                <div className="flex gap-2">
+                                                    <button onClick={() => stageMutation('remove')} className="flex-1 py-3 bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl font-black text-[9px] uppercase hover:bg-red-500/20 transition-all">Xóa bỏ</button>
+                                                    <button onClick={() => stageMutation('modify')} className="flex-1 py-3 bg-amber-500 text-slate-950 rounded-xl font-black text-[9px] uppercase hover:bg-amber-400 shadow-lg shadow-amber-500/20 transition-all">Lưu Lego</button>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+
+                                <div className="mt-8 space-y-3 border-t border-slate-800 pt-6">
+                                    {Object.keys(stagedMutations).length > 0 && (
+                                        <button onClick={applyBatchMutations} disabled={isApplying} className="w-full py-5 bg-gradient-to-r from-amber-600 to-amber-500 text-slate-950 rounded-2xl font-black text-sm uppercase flex items-center justify-center gap-3 shadow-2xl hover:brightness-110 disabled:opacity-50 transition-all">
+                                            {isApplying ? <RefreshCcw size={20} className="animate-spin" /> : <Zap size={20} fill="currentColor" />} Áp dụng {Object.keys(stagedMutations).length} Lego
+                                        </button>
+                                    )}
+                                    
+                                    <button onClick={handleBackToSelection} className="w-full py-4 bg-slate-800 text-white rounded-2xl font-black text-[10px] uppercase flex items-center justify-center gap-3 hover:bg-slate-700 transition-all shadow-lg border border-slate-700">
+                                        <Boxes size={14} /> Chế tác nhân vật khác ({processedIds.length}/{characters.length})
+                                    </button>
+
+                                    {originalDesign && design !== originalDesign && (
+                                        <button onClick={handleRestoreOriginal} className="w-full py-3 border border-amber-500/20 bg-amber-500/5 text-amber-500 rounded-2xl font-bold text-[10px] uppercase flex items-center justify-center gap-2 hover:bg-amber-500/10 transition-all shadow-lg">
+                                            <RotateCcw size={14} /> Khôi phục ban đầu
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* VIEWPORT: SIDE-BY-SIDE COMPARISON */}
+                        <div className="lg:col-span-8 flex flex-col gap-6">
+                            <div className="bg-slate-900/60 p-8 sm:p-12 rounded-[3.5rem] border border-slate-800 relative shadow-2xl backdrop-blur-3xl flex flex-col min-h-[650px]">
+                                {isApplying && (
+                                    <div className="absolute inset-0 z-50 bg-slate-950/80 backdrop-blur-xl flex flex-col items-center justify-center text-center">
+                                        <div className="w-14 h-14 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mb-6" />
+                                        <h3 className="text-amber-500 font-black text-lg tracking-widest uppercase animate-pulse">Đang chế tác...</h3>
+                                    </div>
+                                )}
+                                
+                                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-8 relative z-10">
+                                    <div>
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <Tag size={16} className="text-amber-500" />
+                                            <span className="text-amber-500 font-black uppercase text-[10px] tracking-widest leading-none">{activeChar.label}</span>
+                                        </div>
+                                        <h2 className="text-3xl font-black text-white tracking-tighter uppercase leading-none mt-1">Đối chiếu thiết kế</h2>
+                                        <p className="text-amber-500/80 font-bold text-[8px] uppercase tracking-[0.4em] mt-3 leading-none">Chất lượng cao • V20.0 Crystal Clear</p>
+                                    </div>
+                                    <button onClick={() => { const a = document.createElement('a'); a.href = design || ''; a.download = `vkt-${activeChar.label}.png`; a.click(); }} className="px-6 py-4 bg-amber-500 text-slate-950 rounded-2xl font-black text-[10px] uppercase shadow-xl hover:bg-amber-400 transition-all flex items-center gap-2 shadow-amber-500/10"><Download size={16} /> Tải hình ảnh</button>
+                                </div>
+
+                                <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 flex-grow">
+                                    <div className="xl:col-span-1 flex flex-col gap-4">
+                                        <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest text-center">Tham chiếu gốc</p>
+                                        <div className="bg-slate-950 rounded-[2rem] border border-slate-800 p-4 shadow-inner flex items-center justify-center overflow-hidden h-[300px]">
+                                            <img src={activeChar.image} className="w-full h-full object-contain" alt="Gốc" />
+                                        </div>
+                                    </div>
+
+                                    <div className="xl:col-span-3 flex flex-col gap-4">
+                                        <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest text-center">Thiết kế thú bông 3D</p>
+                                        {design ? (
+                                            <div className="bg-slate-950 rounded-[2rem] border border-slate-800 p-4 shadow-inner flex-grow flex items-center justify-center cursor-pointer transition-all group relative overflow-hidden min-h-[300px]" onClick={() => setShowModal(true)}>
+                                                <img src={design} className="w-full h-auto relative z-10 transition-transform duration-700 group-hover:scale-[1.02]" alt={activeChar.label} />
+                                                <div className="absolute inset-0 bg-transparent group-hover:bg-white/5 transition-all z-20 flex items-center justify-center opacity-0 group-hover:opacity-100">
+                                                    <div className="px-8 py-3 bg-white text-slate-950 font-black rounded-full text-[10px] uppercase tracking-widest shadow-2xl border border-slate-200">Phóng lớn ảnh</div>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="bg-slate-950 rounded-[2rem] border border-slate-800 flex-grow flex items-center justify-center">
+                                                <p className="text-slate-600 italic font-bold uppercase tracking-widest text-xs text-center animate-pulse">Đang nạp dữ liệu hình ảnh...</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                                
+                                <div className="mt-8 p-6 bg-slate-950/50 border border-slate-800 rounded-[2rem] flex items-start gap-4 shadow-inner">
+                                    <div className="p-3 bg-amber-500/10 rounded-full text-amber-500 shrink-0"><Eye size={18}/></div>
+                                    <div className="text-[10px] leading-relaxed font-medium">
+                                        <p className="text-slate-200 font-black uppercase tracking-widest mb-1 text-left">Chế độ Đối chiếu (Comparison Mode)</p>
+                                        <p className="text-slate-500 text-left text-[9px]">
+                                            Tôi đã trình bày ảnh gốc của nhân vật ngay bên trái để bạn dễ dàng đối soát. Toàn bộ các thông số kỹ thuật khô khan đã được ẩn đi, chỉ tập trung vào hình thái thực tế của thú bông. Bạn có thể nhấn vào bản thiết kế 3 chiều để phóng lớn.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {state === AppState.ERROR && error && (
+                    <div className="bg-slate-900/40 p-12 rounded-[4rem] border border-red-500/20 text-center max-w-lg mx-auto shadow-2xl backdrop-blur-3xl mt-20">
+                        <AlertTriangle className="w-14 h-14 text-red-500 mx-auto mb-6" />
+                        <h2 className="text-xl font-black text-white mb-4 uppercase">System Error</h2>
+                        <p className="text-slate-400 mb-8 text-xs italic">{typeof error === 'string' ? error : "Lỗi hệ thống"}</p>
+                        <button onClick={() => setState(AppState.IDLE)} className="w-full py-4 bg-slate-800 text-white rounded-2xl font-black uppercase text-[10px] transition-all hover:bg-slate-700">Quay lại trang chủ</button>
+                    </div>
+                )}
+            </main>
+            {showModal && design && <ImageModal imageUrl={design} onClose={() => setShowModal(false)} />}
+        </div>
+    );
+}
