@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VEO Automation - Auto VEO & Nano Banana on Google Flow</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 520px;
+      height: 600px;
+      min-width: 520px;
+      min-height: 600px;
+      overflow: hidden;
+      background: #0a0a0a;
+    }
+    #root {
+      width: 520px;
+      height: 600px;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+    #root::-webkit-scrollbar { width: 4px; }
+    #root::-webkit-scrollbar-track { background: #0a0a0a; }
+    #root::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 2px; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="./index.tsx"></script>
+</body>
+</html>
