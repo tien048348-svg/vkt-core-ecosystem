@@ -459,3 +459,11 @@ NGUYÊN TẮC TRẢ LỜI CỦA BẠN (TRONG KHUNG CHAT):
 5. Luôn kết thúc bằng một câu hỏi gợi mở để hỗ trợ đạo diễn sâu hơn.
 6. Trả lời bằng Tiếng Việt.`;
 };
+
+export const getScriptWriterPrompt = (characterMode: 'one' | 'two') => {
+  return SYSTEM_PROMPT_SCRIPT_WRITER + (characterMode === 'two' ? "\n[CHARACTER MODE: 2 CHARACTERS ALTERNATE]\n- You MUST write the script for EXACTLY 2 characters alternating lines." : "\n[CHARACTER MODE: 1 CHARACTER CONSTANT]\n- You MUST write the script for ONLY 1 character.");
+};
+
+export const getAudioReengineeringPrompt = (characterMode: 'one' | 'two') => {
+  return SYSTEM_PROMPT_AUDIO_REENGINEERING + (characterMode === 'two' ? "\n[CHARACTER MODE: 2 CHARACTERS ALTERNATE]\n- Keep the 2 character voices alternating." : "\n[CHARACTER MODE: 1 CHARACTER CONSTANT]\n- Keep the 1 character voice constant.");
+};
