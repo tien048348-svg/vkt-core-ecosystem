@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://kid.kiemtienvu.com/sitemap.xml

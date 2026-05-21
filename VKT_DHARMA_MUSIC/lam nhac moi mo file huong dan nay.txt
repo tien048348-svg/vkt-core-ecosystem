@@ -1,0 +1,5 @@
+1. xcopy "e:\HMKT\VKT_MASTER_TEMPLATE" "e:\HMKT\TEN_NGACH_MOI"
+2. Sửa constants.ts  ← nạp VISUAL_STYLES + TARGET_MARKETS của ngách
+3. Sửa prompts.ts   ← nạp 4 AI system prompts của ngách
+4. Đổi tên app + prefix storage key (4 chỗ nhỏ)
+5. npm run build → vercel --prod --yes

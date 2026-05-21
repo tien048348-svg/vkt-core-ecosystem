@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://[TEN_MIEN_CUA_BAN]/sitemap.xml
