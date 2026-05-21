@@ -1,0 +1,24 @@
+{
+  "redirects": [
+    {
+      "source": "/(.*)\\.php",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/ht/(.*)",
+      "destination": "/",
+      "permanent": true
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    },
+    {
+      "source": "/((?!api/).*)",
+      "destination": "/"
+    }
+  ]
+}
