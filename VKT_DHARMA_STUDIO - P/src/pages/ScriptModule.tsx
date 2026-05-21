@@ -651,7 +651,27 @@ CRITICAL INSTRUCTION:
             </select>
           </div>
 
-          
+          <div className="bg-[#10141c] border border-slate-700/30 rounded-xl p-4">
+            <label className="text-xs font-bold text-slate-400 uppercase mb-3 block flex items-center gap-2">
+              <i className="fa-solid fa-microphone text-purple-400" /> {t.script.speakerMode}
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div 
+                onClick={() => setSpeakerMode('multi')}
+                className={`cursor-pointer p-3 rounded-xl border flex items-start gap-3 transition-all ${
+                  speakerMode === 'multi' 
+                    ? 'bg-purple-900/20 border-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.2)] text-white' 
+                    : 'bg-[#0a0e14] border-slate-700/50 hover:border-slate-500 text-slate-400'
+                }`}
+              >
+                <div className={`p-2 rounded-lg shrink-0 ${speakerMode === 'multi' ? 'bg-purple-500 text-white' : 'bg-slate-800 text-slate-400'}`}>
+                  <i className="fa-solid fa-users text-sm"></i>
+                </div>
+                <div>
+                  <div className="text-xs font-bold">{t.script.multiSpeaker}</div>
+                  <div className="text-[10px] text-slate-500 mt-1 leading-tight">{t.script.multiSpeakerDesc}</div>
+                </div>
+              </div>
 
               <div 
                 onClick={() => setSpeakerMode('single')}
