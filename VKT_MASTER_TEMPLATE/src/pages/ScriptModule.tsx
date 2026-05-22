@@ -1,68 +1,13 @@
 import React, { useState } from 'react';
 import { callAI } from '../services/aiService';
-import { 
-  SECONDS_PER_SCENE, 
-  TARGET_MARKETS, 
-  VISUAL_STYLES 
-} from '../data/constants';
+import { TARGET_MARKETS, VISUAL_STYLES } from '../data/constants';
+import { CURRENT_NICHE } from '../data/nicheConfig';
 import { 
   SYSTEM_PROMPT_SCRIPT_WRITER,
   SYSTEM_PROMPT_AUDIO_REENGINEERING,
   getStyleRecPrompt
 } from '../data/prompts';
 import { showToast } from '../components/Toast';
-
-export const DHARMA_TOPICS = [
-  { id: 'karma', label: '⚖️ Luật Nhân Quả (Karma Law)' },
-  { id: 'mindfulness', label: '🧘 Thiền Định & Tĩnh Thức (Mindfulness)' },
-  { id: 'compassion', label: '🙏 Từ Bi Hỷ Xả (Compassion & Love)' },
-  { id: 'letting_go', label: '🍃 Buông Bỏ Phiền Não (Letting Go)' },
-  { id: 'impermanence', label: '🌊 Vô Thường & Duyên Sinh (Impermanence)' },
-  { id: 'gratitude', label: '🌸 Lòng Biết Ơn & Hiếu Đạo (Gratitude & Filial Piety)' },
-  { id: 'fortitude', label: '⛰️ Vượt Qua Nghịch Cảnh (Patience & Fortitude)' },
-  { id: 'wisdom_prajna', label: '💫 Trí Tuệ & Giác Ngộ (Wisdom & Enlightenment)' },
-  { id: 'inner_child', label: '🪴 Chữa Lành Đứa Trẻ Bên Trong (Spiritual Healing)' }
-];
-
-const MICRO_CONTEXTS: Record<string, string[]> = {
-  'karma': [
-    'Lời Phật dạy về gieo nhân gặt quả hiền lành', 'Câu chuyện quả báo nhãn tiền của sự hận thù',
-    'Cách chuyển hóa nghiệp xấu bằng tình yêu thương', 'Hạt giống lành sẽ nảy mầm thành quả ngọt ngào'
-  ],
-  'mindfulness': [
-    'An trú trong giây phút hiện tại tĩnh lặng', 'Quan sát hơi thở dịu êm xoa dịu lo âu',
-    'Thiền hành giữa rừng thông ban mai sương mờ', 'Lắng nghe tiếng chuông chùa vang vọng hư không'
-  ],
-  'compassion': [
-    'Bao dung cho lỗi lầm của người gieo cay đắng', 'Ánh mắt từ bi sưởi ấm tâm hồn lạnh giá',
-    'Nụ cười hòa ái xua tan bóng tối hận thù', 'Hành động nhỏ cứu giúp chúng sinh hoạn nạn'
-  ],
-  'letting_go': [
-    'Buông bỏ những muộn phiền quá khứ dĩ vãng', 'Tha thứ cho chính mình để sống đời an nhiên',
-    'Không dính mắc vào danh lợi hư ảo thế gian', 'Nhẹ nhàng trút bỏ gánh nặng ưu tư chất chồng'
-  ],
-  'impermanence': [
-    'Nhận diện hoa nở rồi tàn như quy luật tự nhiên', 'Duyên đến thì đón nhận duyên đi thì mỉm cười',
-    'Cuộc sống như dòng nước trôi không ngừng biến đổi', 'Chấp nhận vô thường để thấy lòng bình yên nhẹ nhõm'
-  ],
-  'gratitude': [
-    'Nhớ ơn sâu nặng của đấng sinh thành dưỡng dục', 'Trân quý những hạnh phúc giản đơn đang hiện hữu',
-    'Biết ơn từng chén trà, từng hơi thở nhẹ nhàng', 'Hạnh phúc đích thực nảy mầm từ lòng biết ơn'
-  ],
-  'fortitude': [
-    'Đối diện với giông bão cuộc đời bằng sự kiên nhẫn', 'Vững chãi trước những thị phi phiền não nhân gian',
-    'Tâm bất biến giữa dòng đời vạn biến xoay vần', 'Nhẫn nhục chuyển hóa oán hận thành hoa sen thơm ngát'
-  ],
-  'wisdom_prajna': [
-    'Lời Phật dạy về bản chất tánh Không diệu kỳ', 'Buông bỏ bám chấp vào thế giới hình tướng ảo ảnh',
-    'Trí tuệ Bát Nhã soi sáng con đường giải thoát', 'Nhìn cuộc đời như giấc mộng, tĩnh lặng quan sát'
-  ],
-  'inner_child': [
-    'Xoa dịu đứa trẻ tổn thương ẩn sâu trong tâm hồn', 'Tha thứ cho những sai lầm vụng dại của quá khứ',
-    'Ôm ấp lo âu bằng tình yêu thương vô lượng vô biên', 'Lắng nghe nhịp tim và cho phép bản thân được bình yên'
-  ]
-};
-
 
 const translations = {
   vi: {
@@ -216,9 +161,11 @@ interface Props { onScriptGenerated: (segments: any[], style: string, topic?: st
 const ScriptModule: React.FC<Props> = ({ onScriptGenerated, onAudioRefined, initialTopic = '', uiLang }) => {
   const [topic, setTopic] = useState(initialTopic);
   const [duration, setDuration] = useState<number | string>(1);
-  const [market, setMarket] = useState('vn_dharma');
+  const [isCustomDuration, setIsCustomDuration] = useState(false);
+  const [secondsPerScene, setSecondsPerScene] = useState(8);
+  const [market, setMarket] = useState(Object.keys(CURRENT_NICHE.targetMarkets)[0] || 'vn_kids');
   const [style, setStyle] = useState('auto');
-  const [dharmaTopic, setDharmaTopic] = useState('karma');
+  const [dharmaTopic, setDharmaTopic] = useState(CURRENT_NICHE.topics[0]?.id || '');
   const [loading, setLoading] = useState(false);
   const [segments, setSegments] = useState<any[]>([]);
   const [scriptData, setScriptData] = useState<any>(null);
@@ -253,7 +200,7 @@ const ScriptModule: React.FC<Props> = ({ onScriptGenerated, onAudioRefined, init
   }, [initialTopic]);
 
   const durationNum = parseFloat(duration as string) || 0;
-  const scenes = Math.ceil((Math.max(0.1, durationNum) * 60) / SECONDS_PER_SCENE);
+  const scenes = Math.ceil((Math.max(0.1, durationNum) * 60) / secondsPerScene);
   const mode = durationNum < 3 ? { name: '🟢 QUICK CRAFT (<3m)', wpm: 130 } : durationNum <= 10 ? { name: '🔵 STORY WEAVER (3-10m)', wpm: 140 } : { name: '🟣 EPIC FOLKLORE (>10m)', wpm: 120 };
   const words = Math.floor(durationNum * mode.wpm);
   const modeColor = durationNum < 3 ? 'text-green-400 border-green-500/50 bg-green-900/10' : durationNum <= 10 ? 'text-teal-400 border-teal-500/50 bg-teal-900/10' : 'text-purple-400 border-purple-500/50 bg-purple-900/10';
@@ -303,15 +250,13 @@ const ScriptModule: React.FC<Props> = ({ onScriptGenerated, onAudioRefined, init
 
     try {
       const styleObj = VISUAL_STYLES.find(s => s.id === style);
-      const mk = TARGET_MARKETS[market] || TARGET_MARKETS['vn_dharma'];
+      const mk = CURRENT_NICHE.targetMarkets[market] || Object.values(CURRENT_NICHE.targetMarkets)[0];
       let styleContext = styleObj?.name || 'Auto';
-      const topicObj = DHARMA_TOPICS.find(t => t.id === dharmaTopic);
-      const contexts = MICRO_CONTEXTS[dharmaTopic] || ['Trong chánh niệm'];
-      const randomContext = contexts[Math.floor(Math.random() * contexts.length)];
-      styleContext += ` - DHARMA TOPIC: ${topicObj?.label}. MICRO-CONTEXT (CRITICAL): ${randomContext}.`;
+      const topicObj = CURRENT_NICHE.topics.find(t => t.id === dharmaTopic);
+      styleContext += ` - NICHE: ${CURRENT_NICHE.nicheName}. TOPIC: ${topicObj?.label}.`;
 
       // 1. Calculate the total requested scenes
-      const totalScenes = Math.ceil((Math.max(0.1, targetDuration) * 60) / SECONDS_PER_SCENE);
+      const totalScenes = Math.ceil((Math.max(0.1, targetDuration) * 60) / secondsPerScene);
       
       // 2. Define safe chunk size: 25 scenes per API call
       const chunkSize = 25;
@@ -394,10 +339,10 @@ CRITICAL INSTRUCTION:
         // Standardize output structure
         roundSegs = roundSegs.map((s: any, idx: number) => {
           const calculatedNum = startSceneNum + idx;
-          const min = Math.floor(((calculatedNum - 1) * SECONDS_PER_SCENE) / 60);
-          const secStart = ((calculatedNum - 1) * SECONDS_PER_SCENE) % 60;
-          const secEnd = (calculatedNum * SECONDS_PER_SCENE) % 60;
-          const minEnd = Math.floor((calculatedNum * SECONDS_PER_SCENE) / 60);
+          const min = Math.floor(((calculatedNum - 1) * secondsPerScene) / 60);
+          const secStart = ((calculatedNum - 1) * secondsPerScene) % 60;
+          const secEnd = (calculatedNum * secondsPerScene) % 60;
+          const minEnd = Math.floor((calculatedNum * secondsPerScene) / 60);
           
           const formatTime = (m: number, s: number) => `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
           
@@ -562,7 +507,22 @@ CRITICAL INSTRUCTION:
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-[#10141c] border border-slate-700/30 rounded-xl p-4 relative overflow-hidden">
               <div className="absolute top-0 left-0 w-1 h-full bg-teal-500/50" />
-              <label className="text-xs font-bold text-slate-400 uppercase mb-3 block flex items-center gap-2"><i className="fa-solid fa-clock text-teal-400" /> {uiLang === 'vi' ? 'THỜI LƯỢNG (PHÚT)' : 'DURATION (MINS)'}</label>
+              <div className="flex items-center justify-between mb-3">
+                <label className="text-xs font-bold text-slate-400 uppercase flex items-center gap-2"><i className="fa-solid fa-clock text-teal-400" /> {uiLang === 'vi' ? 'THỜI LƯỢNG (PHÚT)' : 'DURATION (MINS)'}</label>
+                <div className="flex items-center gap-2">
+                  <span className={`text-[10px] font-bold ${!isCustomDuration ? 'text-slate-500' : 'text-teal-400'}`}>GIÂY/CẢNH</span>
+                  <div 
+                    className={`w-8 h-4 rounded-full flex items-center p-0.5 cursor-pointer transition-colors ${isCustomDuration ? 'bg-teal-500' : 'bg-slate-700'}`}
+                    onClick={() => {
+                      setIsCustomDuration(!isCustomDuration);
+                      if (isCustomDuration) setSecondsPerScene(8);
+                    }}
+                  >
+                    <div className={`w-3 h-3 rounded-full bg-white transition-transform ${isCustomDuration ? 'translate-x-4' : 'translate-x-0'}`} />
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-col gap-4">
               <div className="flex items-center gap-5">
                 <input 
                   type="number" 
@@ -598,19 +558,34 @@ CRITICAL INSTRUCTION:
                   <div><span className="text-slate-500">{uiLang === 'vi' ? 'Số cảnh' : 'Scenes'}:</span> <span className="font-bold text-green-400 text-base">~{scenes}</span></div>
                   <div><span className="text-slate-500">Voice:</span> <span className="font-bold text-teal-400 text-base">~{words} {uiLang === 'vi' ? 'từ' : 'words'}</span></div>
                 </div>
+                </div>
+                {isCustomDuration && (
+                  <div className="flex items-center gap-3 bg-[#0a0e14] p-2 rounded-lg border border-teal-500/30 animate-[fadeIn_0.2s_ease-out]">
+                    <label className="text-[10px] text-teal-400 font-bold uppercase w-16">Thời gian/cảnh</label>
+                    <input 
+                      type="number" 
+                      value={secondsPerScene} 
+                      min={3}
+                      max={30}
+                      onChange={e => setSecondsPerScene(parseInt(e.target.value) || 8)}
+                      className="w-16 bg-transparent border-b border-teal-500/50 text-white text-center outline-none font-mono font-bold"
+                    />
+                    <span className="text-xs text-slate-500">giây</span>
+                  </div>
+                )}
               </div>
             </div>
             <div className="bg-[#10141c] border border-slate-700/30 rounded-xl p-4 flex flex-col justify-center">
               <label className="text-xs font-bold text-slate-400 uppercase mb-2 block flex items-center gap-2"><i className="fa-solid fa-globe text-amber-400" /> {uiLang === 'vi' ? 'THỊ TRƯỜNG' : 'MARKET'}</label>
               <select value={market} onChange={e => setMarket(e.target.value)} className="w-full bg-[#0a0e14] border border-slate-700/50 rounded-lg p-3 text-sm text-white outline-none cursor-pointer">
-                {Object.values(TARGET_MARKETS).map(m => <option key={m.id} value={m.id}>{m.flag} {m.name}</option>)}
+                {Object.values(CURRENT_NICHE.targetMarkets).map(m => <option key={m.id} value={m.id}>{m.flag} {m.name}</option>)}
               </select>
             </div>
           </div>
           <div className="bg-[#10141c] border border-slate-700/30 rounded-xl p-4">
-            <label className="text-xs font-bold text-teal-400 uppercase mb-2 block flex items-center gap-2"><i className="fa-solid fa-leaf text-teal-400" /> {uiLang === 'vi' ? 'CHỌN PHÂN PHÂN NGÁCH PHẬT PHÁP' : 'DHARMA SUB-TOPIC'}</label>
+            <label className="text-xs font-bold text-teal-400 uppercase mb-2 block flex items-center gap-2"><i className="fa-solid fa-leaf text-teal-400" /> {CURRENT_NICHE.nicheName.toUpperCase()}</label>
             <select value={dharmaTopic} onChange={e => setDharmaTopic(e.target.value)} className="w-full bg-[#0a0e14] border border-teal-500/50 rounded-lg p-3 text-sm text-white outline-none cursor-pointer">
-              {DHARMA_TOPICS.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
+              {CURRENT_NICHE.topics.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
             </select>
           </div>
 

@@ -1,4 +1,7 @@
-import React, { useState } from 'react';
+const fs = require('fs');
+const path = 'e:/HMKT/VKT_ECOSYSTEM_CORE/VKT_MASTER_TEMPLATE/src/pages/SeoModule.tsx';
+
+const seoModuleContent = `import React, { useState } from 'react';
 import { callAI, generateImage } from '../services/aiService';
 import { SYSTEM_PROMPT_SEO_MASTER } from '../data/prompts';
 import { CURRENT_NICHE } from '../data/nicheConfig';
@@ -33,62 +36,62 @@ const SeoModule: React.FC<Props> = ({ market = Object.keys(CURRENT_NICHE.targetM
   const exportSEO = () => {
     if (!result) return;
     
-    let content = `=== BỘ TỪ KHÓA SEO ĐA NỀN TẢNG: ${topic.toUpperCase()} ===\n\n`;
+    let content = \`=== BỘ TỪ KHÓA SEO ĐA NỀN TẢNG: \${topic.toUpperCase()} ===\\n\\n\`;
     
     if (result.keywords) {
-      content += `--- 1. KEYWORDS CHUNG ---\n`;
-      if (result.keywords.primary) content += `- Chính: ${result.keywords.primary.join(', ')}\n`;
-      if (result.keywords.secondary) content += `- Phụ: ${result.keywords.secondary.join(', ')}\n`;
-      if (result.keywords.long_tail) content += `- Long-tail: ${result.keywords.long_tail.join(', ')}\n`;
-      content += `\n`;
+      content += \`--- 1. KEYWORDS CHUNG ---\\n\`;
+      if (result.keywords.primary) content += \`- Chính: \${result.keywords.primary.join(', ')}\\n\`;
+      if (result.keywords.secondary) content += \`- Phụ: \${result.keywords.secondary.join(', ')}\\n\`;
+      if (result.keywords.long_tail) content += \`- Long-tail: \${result.keywords.long_tail.join(', ')}\\n\`;
+      content += \`\\n\`;
     }
 
     if (result.hashtags) {
-      content += `--- 2. HASHTAGS CHUNG ---\n`;
-      content += `${result.hashtags.join(' ')}\n\n`;
+      content += \`--- 2. HASHTAGS CHUNG ---\\n\`;
+      content += \`\${result.hashtags.join(' ')}\\n\\n\`;
     }
 
     if (result.youtube) {
-      content += `=== YOUTUBE ===\n`;
+      content += \`=== YOUTUBE ===\\n\`;
       if (result.youtube.viral_titles) {
-         content += `- Tiêu đề: \n  + ${result.youtube.viral_titles.join('\n  + ')}\n`;
+         content += \`- Tiêu đề: \\n  + \${result.youtube.viral_titles.join('\\n  + ')}\\n\`;
       }
       if (result.youtube.video_description) {
-         content += `- Mô tả: \n${result.youtube.video_description.hook}\n${result.youtube.video_description.full_description}\n`;
+         content += \`- Mô tả: \\n\${result.youtube.video_description.hook}\\n\${result.youtube.video_description.full_description}\\n\`;
       }
-      content += `\n`;
+      content += \`\\n\`;
     }
 
     if (result.tiktok) {
-      content += `=== TIKTOK ===\n`;
-      if (result.tiktok.viral_titles) content += `- Tiêu đề: \n  + ${result.tiktok.viral_titles.join('\n  + ')}\n`;
-      if (result.tiktok.caption) content += `- Caption: \n${result.tiktok.caption}\n`;
-      content += `\n`;
+      content += \`=== TIKTOK ===\\n\`;
+      if (result.tiktok.viral_titles) content += \`- Tiêu đề: \\n  + \${result.tiktok.viral_titles.join('\\n  + ')}\\n\`;
+      if (result.tiktok.caption) content += \`- Caption: \\n\${result.tiktok.caption}\\n\`;
+      content += \`\\n\`;
     }
     
     if (result.facebook) {
-      content += `=== FACEBOOK ===\n`;
-      if (result.facebook.viral_titles) content += `- Tiêu đề: \n  + ${result.facebook.viral_titles.join('\n  + ')}\n`;
-      if (result.facebook.status_post) content += `- Status: \n${result.facebook.status_post}\n`;
-      content += `\n`;
+      content += \`=== FACEBOOK ===\\n\`;
+      if (result.facebook.viral_titles) content += \`- Tiêu đề: \\n  + \${result.facebook.viral_titles.join('\\n  + ')}\\n\`;
+      if (result.facebook.status_post) content += \`- Status: \\n\${result.facebook.status_post}\\n\`;
+      content += \`\\n\`;
     }
 
     if (Array.isArray(result.thumbnail_suggestions)) {
-      content += `=== Ý TƯỞNG THUMBNAIL ===\n`;
+      content += \`=== Ý TƯỞNG THUMBNAIL ===\\n\`;
       result.thumbnail_suggestions.forEach((thumb: any, i: number) => {
-        content += `--- Gợi ý ${i + 1}: ${thumb.concept_name} ---\n`;
-        content += `- Hình ảnh: ${thumb.visual_concept}\n`;
-        content += `- Text trên ảnh: ${thumb.text_on_image}\n`;
-        content += `- Tông màu: ${thumb.color_psychology}\n`;
-        content += `- Prompt AI: ${thumb.ai_image_prompt}\n\n`;
+        content += \`--- Gợi ý \${i + 1}: \${thumb.concept_name} ---\\n\`;
+        content += \`- Hình ảnh: \${thumb.visual_concept}\\n\`;
+        content += \`- Text trên ảnh: \${thumb.text_on_image}\\n\`;
+        content += \`- Tông màu: \${thumb.color_psychology}\\n\`;
+        content += \`- Prompt AI: \${thumb.ai_image_prompt}\\n\\n\`;
       });
     }
 
     const safeTopic = (topic || 'seo').toLowerCase().replace(/[^a-z0-9]+/g, '_');
     const date = new Date();
-    const ts = `${String(date.getDate()).padStart(2, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}-${date.getFullYear()}_${String(date.getHours()).padStart(2, '0')}${String(date.getMinutes()).padStart(2, '0')}`;
+    const ts = \`\${String(date.getDate()).padStart(2, '0')}-\${String(date.getMonth() + 1).padStart(2, '0')}-\${date.getFullYear()}_\${String(date.getHours()).padStart(2, '0')}\${String(date.getMinutes()).padStart(2, '0')}\`;
     
-    downloadFile(content, `${safeTopic}_multiplatform_seo_${ts}.txt`, 'text/plain;charset=utf-8');
+    downloadFile(content, \`\${safeTopic}_multiplatform_seo_\${ts}.txt\`, 'text/plain;charset=utf-8');
     showToast('Đã tải xuống bộ SEO!', 'success');
   };
 
@@ -98,13 +101,13 @@ const SeoModule: React.FC<Props> = ({ market = Object.keys(CURRENT_NICHE.targetM
     try {
       const mk = CURRENT_NICHE.targetMarkets[market] || Object.values(CURRENT_NICHE.targetMarkets)[0];
       
-      let contextData = `TOPIC: "${topic}"`;
+      let contextData = \`TOPIC: "\${topic}"\`;
       if (scriptSegments && scriptSegments.length > 0) {
         const fullScript = scriptSegments.map(s => s.dialogues?.map((d: any) => d.line).join(' ') || s.voice_text).join(' ');
-        contextData += `\n\nSCRIPT_CONTEXT: """\n${fullScript}\n"""`;
+        contextData += \`\\n\\nSCRIPT_CONTEXT: """\\n\${fullScript}\\n"""\`;
       }
 
-      const prompt = `${contextData}\n\nTARGET_LANGUAGE: ${mk.voice_lang}\nTARGET_MARKET: ${mk.name}\nRESPOND ALL TEXT FIELDS IN VIETNAMESE EXCEPT WHEN SPECIFIED OTHERWISE.\nGENERATE JSON.`;
+      const prompt = \`\${contextData}\\n\\nTARGET_LANGUAGE: \${mk.voice_lang}\\nTARGET_MARKET: \${mk.name}\\nRESPOND ALL TEXT FIELDS IN VIETNAMESE EXCEPT WHEN SPECIFIED OTHERWISE.\\nGENERATE JSON.\`;
       const json = await callAI(prompt, SYSTEM_PROMPT_SEO_MASTER);
       setResult(json);
     } catch (e: any) { showToast(e.message); }
@@ -161,10 +164,10 @@ const SeoModule: React.FC<Props> = ({ market = Object.keys(CURRENT_NICHE.targetM
                   <div className="space-y-2">
                     {items.map(item => (
                       <label key={item.id} className="flex items-start gap-2 cursor-pointer group" onClick={() => toggle(item.id)}>
-                        <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 mt-0.5 ${checks[item.id] ? 'bg-amber-500 border-amber-500' : 'border-slate-600 bg-[#0a0e14]'}`}>
+                        <div className={\`w-4 h-4 rounded border flex items-center justify-center shrink-0 mt-0.5 \${checks[item.id] ? 'bg-amber-500 border-amber-500' : 'border-slate-600 bg-[#0a0e14]'}\`}>
                           {checks[item.id] && <i className="fa-solid fa-check text-white text-[10px]" />}
                         </div>
-                        <span className={`text-xs ${checks[item.id] ? 'text-slate-500 line-through' : 'text-slate-400 group-hover:text-white'}`}>{item.label}</span>
+                        <span className={\`text-xs \${checks[item.id] ? 'text-slate-500 line-through' : 'text-slate-400 group-hover:text-white'}\`}>{item.label}</span>
                       </label>
                     ))}
                   </div>
@@ -200,13 +203,13 @@ const SeoModule: React.FC<Props> = ({ market = Object.keys(CURRENT_NICHE.targetM
                 {/* Platform Tabs */}
                 <div className="bg-[#10141c] rounded-xl border border-slate-700/30 overflow-hidden">
                   <div className="flex border-b border-slate-700/50">
-                    <button onClick={() => setActiveTab('youtube')} className={`flex-1 py-3 text-sm font-bold transition-colors flex items-center justify-center gap-2 ${activeTab === 'youtube' ? 'bg-red-900/20 text-red-400 border-b-2 border-red-500' : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'}`}>
+                    <button onClick={() => setActiveTab('youtube')} className={\`flex-1 py-3 text-sm font-bold transition-colors flex items-center justify-center gap-2 \${activeTab === 'youtube' ? 'bg-red-900/20 text-red-400 border-b-2 border-red-500' : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'}\`}>
                       <i className="fa-brands fa-youtube" /> YouTube
                     </button>
-                    <button onClick={() => setActiveTab('tiktok')} className={`flex-1 py-3 text-sm font-bold transition-colors flex items-center justify-center gap-2 ${activeTab === 'tiktok' ? 'bg-slate-800 text-white border-b-2 border-white' : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'}`}>
+                    <button onClick={() => setActiveTab('tiktok')} className={\`flex-1 py-3 text-sm font-bold transition-colors flex items-center justify-center gap-2 \${activeTab === 'tiktok' ? 'bg-slate-800 text-white border-b-2 border-white' : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'}\`}>
                       <i className="fa-brands fa-tiktok" /> TikTok
                     </button>
-                    <button onClick={() => setActiveTab('facebook')} className={`flex-1 py-3 text-sm font-bold transition-colors flex items-center justify-center gap-2 ${activeTab === 'facebook' ? 'bg-blue-900/20 text-blue-400 border-b-2 border-blue-500' : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'}`}>
+                    <button onClick={() => setActiveTab('facebook')} className={\`flex-1 py-3 text-sm font-bold transition-colors flex items-center justify-center gap-2 \${activeTab === 'facebook' ? 'bg-blue-900/20 text-blue-400 border-b-2 border-blue-500' : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'}\`}>
                       <i className="fa-brands fa-facebook" /> Facebook
                     </button>
                   </div>
@@ -224,8 +227,8 @@ const SeoModule: React.FC<Props> = ({ market = Object.keys(CURRENT_NICHE.targetM
                             <div>
                                <h4 className="text-xs font-bold text-red-400 mb-2">📝 MÔ TẢ YOUTUBE</h4>
                                <div className="bg-black/20 p-3 rounded border border-red-900/30 text-sm text-slate-300 whitespace-pre-wrap leading-relaxed relative">
-                                  <button onClick={() => copy(result.youtube.video_description.hook + '\n\n' + result.youtube.video_description.full_description)} className="absolute top-2 right-2 text-slate-500 hover:text-white"><i className="fa-solid fa-copy" /></button>
-                                  <strong>[HOOK]: </strong> {result.youtube.video_description.hook}\n\n
+                                  <button onClick={() => copy(result.youtube.video_description.hook + '\\n\\n' + result.youtube.video_description.full_description)} className="absolute top-2 right-2 text-slate-500 hover:text-white"><i className="fa-solid fa-copy" /></button>
+                                  <strong>[HOOK]: </strong> {result.youtube.video_description.hook}\\n\\n
                                   {result.youtube.video_description.full_description}
                                </div>
                             </div>
@@ -303,7 +306,7 @@ const SeoModule: React.FC<Props> = ({ market = Object.keys(CURRENT_NICHE.targetM
                               <div className="relative group">
                                 <img src={thumbnails[i].url} alt={thumb.concept_name} className="w-full h-auto rounded-lg border border-purple-500/30 object-cover aspect-video" />
                                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 rounded-lg">
-                                  <a href={thumbnails[i].url} download={`thumbnail_opt${i+1}.png`} className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-lg text-sm flex items-center gap-2">
+                                  <a href={thumbnails[i].url} download={\`thumbnail_opt\${i+1}.png\`} className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-lg text-sm flex items-center gap-2">
                                     <i className="fa-solid fa-download" /> Tải Xuống
                                   </a>
                                   <button onClick={() => handleGenerateImage(thumb.ai_image_prompt, i)} className="text-xs text-slate-300 hover:text-white underline">Tạo lại ảnh khác</button>
@@ -334,3 +337,7 @@ const SeoModule: React.FC<Props> = ({ market = Object.keys(CURRENT_NICHE.targetM
 };
 
 export default SeoModule;
+`;
+
+fs.writeFileSync(path, seoModuleContent, 'utf8');
+console.log('SeoModule rewritten.');

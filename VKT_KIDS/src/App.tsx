@@ -100,7 +100,7 @@ const App: React.FC = () => {
             <StudioModule segments={scriptSegments} topic={scriptTopic} />
           </div>
           <div style={{ display: activeTab === 'seo' ? 'block' : 'none' }}>
-            <SeoModule initialTopic={strategyTopic} />
+            <SeoModule initialTopic={strategyTopic} scriptSegments={scriptSegments} />
           </div>
         </div>
       </main>

@@ -4,14 +4,15 @@ import { SYSTEM_PROMPT_SEO_MASTER } from '../data/prompts';
 import { TARGET_MARKETS, SEO_CHECKLIST_DATA } from '../data/constants';
 import { showToast } from '../components/Toast';
 
-interface Props { market?: string; initialTopic?: string; }
+interface Props { market?: string; initialTopic?: string; scriptSegments?: any[]; }
 
-const SeoModule: React.FC<Props> = ({ market = 'vn_kids_young', initialTopic = '' }) => {
+const SeoModule: React.FC<Props> = ({ market = Object.keys(TARGET_MARKETS)[0], initialTopic = '', scriptSegments = [] }) => {
   const [topic, setTopic] = useState(initialTopic);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [checks, setChecks] = useState<Record<string, boolean>>({});
   const [thumbnails, setThumbnails] = useState<Record<number, { url?: string, loading?: boolean }>>({});
+  const [activeTab, setActiveTab] = useState<'youtube' | 'tiktok' | 'facebook'>('youtube');
 
   React.useEffect(() => { if (initialTopic) setTopic(initialTopic); }, [initialTopic]);
 
@@ -31,10 +32,10 @@ const SeoModule: React.FC<Props> = ({ market = 'vn_kids_young', initialTopic = '
   const exportSEO = () => {
     if (!result) return;
     
-    let content = `=== BỘ TỪ KHÓA SEO: ${topic.toUpperCase()} ===\n\n`;
+    let content = `=== BỘ TỪ KHÓA SEO ĐA NỀN TẢNG: ${topic.toUpperCase()} ===\n\n`;
     
     if (result.keywords) {
-      content += `1. KEYWORDS\n`;
+      content += `--- 1. KEYWORDS CHUNG ---\n`;
       if (result.keywords.primary) content += `- Chính: ${result.keywords.primary.join(', ')}\n`;
       if (result.keywords.secondary) content += `- Phụ: ${result.keywords.secondary.join(', ')}\n`;
       if (result.keywords.long_tail) content += `- Long-tail: ${result.keywords.long_tail.join(', ')}\n`;
@@ -42,26 +43,37 @@ const SeoModule: React.FC<Props> = ({ market = 'vn_kids_young', initialTopic = '
     }
 
     if (result.hashtags) {
-      content += `2. HASHTAGS\n`;
+      content += `--- 2. HASHTAGS CHUNG ---\n`;
       content += `${result.hashtags.join(' ')}\n\n`;
     }
 
-    if (result.viral_titles) {
-      content += `3. TIÊU ĐỀ ĐỀ XUẤT\n`;
-      result.viral_titles.forEach((t: string, i: number) => {
-        content += `${i + 1}. ${t}\n`;
-      });
+    if (result.youtube) {
+      content += `=== YOUTUBE ===\n`;
+      if (result.youtube.viral_titles) {
+         content += `- Tiêu đề: \n  + ${result.youtube.viral_titles.join('\n  + ')}\n`;
+      }
+      if (result.youtube.video_description) {
+         content += `- Mô tả: \n${result.youtube.video_description.hook}\n${result.youtube.video_description.full_description}\n`;
+      }
       content += `\n`;
     }
 
-    if (result.video_description) {
-      content += `4. MÔ TẢ VIDEO\n`;
-      if (result.video_description.hook) content += `[HOOK]: ${result.video_description.hook}\n\n`;
-      if (result.video_description.full_description) content += `${result.video_description.full_description}\n\n`;
+    if (result.tiktok) {
+      content += `=== TIKTOK ===\n`;
+      if (result.tiktok.viral_titles) content += `- Tiêu đề: \n  + ${result.tiktok.viral_titles.join('\n  + ')}\n`;
+      if (result.tiktok.caption) content += `- Caption: \n${result.tiktok.caption}\n`;
+      content += `\n`;
+    }
+    
+    if (result.facebook) {
+      content += `=== FACEBOOK ===\n`;
+      if (result.facebook.viral_titles) content += `- Tiêu đề: \n  + ${result.facebook.viral_titles.join('\n  + ')}\n`;
+      if (result.facebook.status_post) content += `- Status: \n${result.facebook.status_post}\n`;
+      content += `\n`;
     }
 
     if (Array.isArray(result.thumbnail_suggestions)) {
-      content += `5. Ý TƯỞNG THUMBNAIL (3 GỢI Ý)\n`;
+      content += `=== Ý TƯỞNG THUMBNAIL ===\n`;
       result.thumbnail_suggestions.forEach((thumb: any, i: number) => {
         content += `--- Gợi ý ${i + 1}: ${thumb.concept_name} ---\n`;
         content += `- Hình ảnh: ${thumb.visual_concept}\n`;
@@ -75,16 +87,23 @@ const SeoModule: React.FC<Props> = ({ market = 'vn_kids_young', initialTopic = '
     const date = new Date();
     const ts = `${String(date.getDate()).padStart(2, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}-${date.getFullYear()}_${String(date.getHours()).padStart(2, '0')}${String(date.getMinutes()).padStart(2, '0')}`;
     
-    downloadFile(content, `${safeTopic}_seo_pack_${ts}.txt`, 'text/plain;charset=utf-8');
+    downloadFile(content, `${safeTopic}_multiplatform_seo_${ts}.txt`, 'text/plain;charset=utf-8');
     showToast('Đã tải xuống bộ SEO!', 'success');
   };
 
   const handleGenerate = async () => {
-    if (!topic) return showToast('Nhập chủ đề SEO!');
+    if (!topic && scriptSegments.length === 0) return showToast('Nhập chủ đề SEO hoặc tạo kịch bản trước!');
     setLoading(true);
     try {
-      const mk = TARGET_MARKETS[market] || TARGET_MARKETS['vn_kids_young'];
-      const prompt = `TOPIC: "${topic}"\nTARGET_LANGUAGE: ${mk.voice_lang}\nTARGET_MARKET: ${mk.name}\nRESPOND ALL TEXT FIELDS IN VIETNAMESE.\nGENERATE JSON.`;
+      const mk = TARGET_MARKETS[market] || Object.values(TARGET_MARKETS)[0];
+      
+      let contextData = `TOPIC: "${topic}"`;
+      if (scriptSegments && scriptSegments.length > 0) {
+        const fullScript = scriptSegments.map(s => s.dialogues?.map((d: any) => d.line).join(' ') || s.voice_text).join(' ');
+        contextData += `\n\nSCRIPT_CONTEXT: """\n${fullScript}\n"""`;
+      }
+
+      const prompt = `${contextData}\n\nTARGET_LANGUAGE: ${mk.voice_lang}\nTARGET_MARKET: ${mk.name}\nRESPOND ALL TEXT FIELDS IN VIETNAMESE EXCEPT WHEN SPECIFIED OTHERWISE.\nGENERATE JSON.`;
       const json = await callAI(prompt, SYSTEM_PROMPT_SEO_MASTER);
       setResult(json);
     } catch (e: any) { showToast(e.message); }
@@ -110,11 +129,11 @@ const SeoModule: React.FC<Props> = ({ market = 'vn_kids_young', initialTopic = '
   return (
     <div className="max-w-5xl mx-auto space-y-6 animate-[slideIn_0.4s_ease-out]">
       <div className="bg-[#12161e] border border-slate-700/30 p-6 rounded-2xl shadow-lg">
-        <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2"><i className="fa-solid fa-seedling text-amber-500" /> SEO Eco-Art Chuyên Sâu</h2>
+        <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2"><i className="fa-solid fa-seedling text-amber-500" /> SEO Đa Nền Tảng Thông Minh</h2>
         <div className="flex gap-2 md:gap-4 mb-6 flex-col sm:flex-row">
-          <input value={topic} onChange={e => setTopic(e.target.value)} className="flex-1 bg-[#0a0e14] border border-slate-700/50 rounded-lg p-3 text-sm text-white outline-none focus:border-amber-500/50 placeholder-slate-600" placeholder="Nhập chủ đề video truyện cổ tích tái chế..." />
+          <input value={topic} onChange={e => setTopic(e.target.value)} className="flex-1 bg-[#0a0e14] border border-slate-700/50 rounded-lg p-3 text-sm text-white outline-none focus:border-amber-500/50 placeholder-slate-600" placeholder={scriptSegments.length > 0 ? "Tự động phân tích từ Kịch bản hiện tại..." : "Nhập chủ đề video..."} readOnly={scriptSegments.length > 0} />
           <button onClick={handleGenerate} disabled={loading} className="px-6 py-3 bg-amber-900/40 hover:bg-amber-800/40 border border-amber-500/30 text-amber-100 font-bold rounded-lg flex items-center gap-2 transition-all disabled:opacity-50 shrink-0">
-            {loading ? <><i className="fa-solid fa-sync animate-spin" /> ĐANG TỐI ƯU...</> : <><i className="fa-solid fa-magic" /> Tối Ưu SEO</>}
+            {loading ? <><i className="fa-solid fa-sync animate-spin" /> ĐANG TỐI ƯU...</> : <><i className="fa-solid fa-magic" /> Tối Ưu Đa Nền Tảng</>}
           </button>
           {result && (
             <button onClick={exportSEO} className="px-4 py-3 bg-teal-900/40 hover:bg-teal-800/40 border border-teal-500/30 text-teal-300 font-bold rounded-lg flex items-center gap-2 transition-all shrink-0">
@@ -122,11 +141,19 @@ const SeoModule: React.FC<Props> = ({ market = 'vn_kids_young', initialTopic = '
             </button>
           )}
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Checklist */}
-          <div className="bg-[#10141c] border border-slate-700/30 rounded-xl p-4">
+
+        {scriptSegments.length > 0 && !result && (
+           <div className="mb-6 p-4 bg-blue-900/20 border border-blue-500/30 rounded-xl text-blue-300 text-sm flex items-start gap-3">
+             <i className="fa-solid fa-circle-info mt-1" />
+             <p>Hệ thống đã nhận diện được <strong>{scriptSegments.length} cảnh</strong> kịch bản. Khi bấm "Tối Ưu", AI sẽ đọc trực tiếp nội dung kịch bản để tạo ra bộ SEO sát nhất cho YouTube, TikTok và Facebook.</p>
+           </div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Checklist Area (1 Col) */}
+          <div className="md:col-span-1 bg-[#10141c] border border-slate-700/30 rounded-xl p-4">
             <h3 className="text-sm font-bold text-slate-300 mb-3 flex items-center gap-2"><i className="fa-solid fa-check-square" /> CHECKLIST</h3>
-            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+            <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
               {Object.entries(SEO_CHECKLIST_DATA).map(([sec, items]) => (
                 <div key={sec} className="bg-[#12161e]/50 rounded-lg p-3 border border-slate-700/30">
                   <div className="text-[10px] font-bold text-slate-500 uppercase mb-2">{sec}</div>
@@ -144,55 +171,109 @@ const SeoModule: React.FC<Props> = ({ market = 'vn_kids_young', initialTopic = '
               ))}
             </div>
           </div>
-          {/* Results */}
-          <div className="space-y-4">
+
+          {/* Results Area (2 Cols) */}
+          <div className="md:col-span-2 space-y-4">
             {!result ? (
               <div className="h-full flex flex-col items-center justify-center text-slate-500 p-10 bg-slate-800/20 border border-slate-700/30 border-dashed rounded-xl">
-                <i className="fa-solid fa-seedling mb-2 opacity-50" /><p className="text-sm">Nhập chủ đề để phân tích</p>
+                <i className="fa-solid fa-chart-pie mb-2 opacity-50 text-2xl" /><p className="text-sm">Chưa có dữ liệu phân tích</p>
               </div>
             ) : (
               <>
-                {/* Keywords */}
-                {result.keywords && (
-                  <div className="bg-amber-900/10 border border-amber-500/20 rounded-xl p-4">
-                    <h4 className="text-xs font-bold text-amber-400 mb-3 uppercase">🔑 KEYWORDS</h4>
-                    {['primary', 'secondary', 'long_tail'].map(type => Array.isArray(result.keywords[type]) && (
-                      <div key={type} className="mb-2">
-                        <div className="text-[10px] text-slate-400 mb-1 font-bold">{type}</div>
-                        <div className="flex flex-wrap gap-1">{result.keywords[type].map((k: string, i: number) => <span key={i} className="bg-amber-900/20 text-amber-200 px-2 py-0.5 rounded-full text-[10px] border border-amber-500/20">{k}</span>)}</div>
-                      </div>
-                    ))}
+                {/* Keywords & Hashtags Global */}
+                <div className="flex gap-4">
+                  {result.keywords && (
+                    <div className="flex-1 bg-amber-900/10 border border-amber-500/20 rounded-xl p-4">
+                      <h4 className="text-xs font-bold text-amber-400 mb-2 uppercase">🔑 KEYWORDS</h4>
+                      <div className="flex flex-wrap gap-1">{result.keywords.primary?.map((k: string, i: number) => <span key={i} className="bg-amber-900/20 text-amber-200 px-2 py-0.5 rounded-full text-[10px] border border-amber-500/20">{k}</span>)}</div>
+                    </div>
+                  )}
+                  {result.hashtags && (
+                    <div className="flex-1 bg-teal-900/10 border border-teal-500/20 rounded-xl p-4">
+                      <h4 className="text-xs font-bold text-teal-400 mb-2 uppercase">#️⃣ HASHTAGS</h4>
+                      <div className="flex flex-wrap gap-1">{result.hashtags.map((h: string, i: number) => <span key={i} className="text-teal-300 text-[10px]">{h}</span>)}</div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Platform Tabs */}
+                <div className="bg-[#10141c] rounded-xl border border-slate-700/30 overflow-hidden">
+                  <div className="flex border-b border-slate-700/50">
+                    <button onClick={() => setActiveTab('youtube')} className={`flex-1 py-3 text-sm font-bold transition-colors flex items-center justify-center gap-2 ${activeTab === 'youtube' ? 'bg-red-900/20 text-red-400 border-b-2 border-red-500' : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'}`}>
+                      <i className="fa-brands fa-youtube" /> YouTube
+                    </button>
+                    <button onClick={() => setActiveTab('tiktok')} className={`flex-1 py-3 text-sm font-bold transition-colors flex items-center justify-center gap-2 ${activeTab === 'tiktok' ? 'bg-slate-800 text-white border-b-2 border-white' : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'}`}>
+                      <i className="fa-brands fa-tiktok" /> TikTok
+                    </button>
+                    <button onClick={() => setActiveTab('facebook')} className={`flex-1 py-3 text-sm font-bold transition-colors flex items-center justify-center gap-2 ${activeTab === 'facebook' ? 'bg-blue-900/20 text-blue-400 border-b-2 border-blue-500' : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'}`}>
+                      <i className="fa-brands fa-facebook" /> Facebook
+                    </button>
                   </div>
-                )}
-                {/* Hashtags */}
-                {Array.isArray(result.hashtags) && (
-                  <div className="bg-teal-900/10 border border-teal-500/20 rounded-xl p-4">
-                    <h4 className="text-xs font-bold text-teal-400 mb-3 uppercase">#️⃣ HASHTAGS</h4>
-                    <div className="flex flex-wrap gap-2">{result.hashtags.map((h: string, i: number) => <button key={i} onClick={() => copy(h)} className="bg-teal-900/20 text-teal-300 px-3 py-1 rounded-lg text-sm border border-teal-500/20 hover:bg-teal-900/30">{h}</button>)}</div>
-                    <button onClick={() => copy(result.hashtags.join(' '))} className="mt-2 text-xs text-teal-400 hover:underline flex items-center gap-1"><i className="fa-solid fa-copy" /> Copy All</button>
+                  
+                  <div className="p-4 min-h-[300px]">
+                    {activeTab === 'youtube' && result.youtube && (
+                       <div className="space-y-4 animate-[fadeIn_0.2s_ease-out]">
+                          <div>
+                            <h4 className="text-xs font-bold text-red-400 mb-2">🔥 TIÊU ĐỀ YOUTUBE</h4>
+                            {result.youtube.viral_titles?.map((t: string, i: number) => (
+                               <div key={i} className="bg-black/20 p-2 rounded border border-red-900/30 text-sm text-slate-200 mb-2 flex justify-between"><span className="flex-1">{t}</span><button onClick={() => copy(t)} className="text-slate-500 hover:text-white"><i className="fa-solid fa-copy" /></button></div>
+                            ))}
+                          </div>
+                          {result.youtube.video_description && (
+                            <div>
+                               <h4 className="text-xs font-bold text-red-400 mb-2">📝 MÔ TẢ YOUTUBE</h4>
+                               <div className="bg-black/20 p-3 rounded border border-red-900/30 text-sm text-slate-300 whitespace-pre-wrap leading-relaxed relative">
+                                  <button onClick={() => copy(result.youtube.video_description.hook + '\n\n' + result.youtube.video_description.full_description)} className="absolute top-2 right-2 text-slate-500 hover:text-white"><i className="fa-solid fa-copy" /></button>
+                                  <strong>[HOOK]: </strong> {result.youtube.video_description.hook}\n\n
+                                  {result.youtube.video_description.full_description}
+                               </div>
+                            </div>
+                          )}
+                       </div>
+                    )}
+
+                    {activeTab === 'tiktok' && result.tiktok && (
+                       <div className="space-y-4 animate-[fadeIn_0.2s_ease-out]">
+                          <div>
+                            <h4 className="text-xs font-bold text-white mb-2">🔥 TIÊU ĐỀ TIKTOK</h4>
+                            {result.tiktok.viral_titles?.map((t: string, i: number) => (
+                               <div key={i} className="bg-black/20 p-2 rounded border border-slate-700/50 text-sm text-slate-200 mb-2 flex justify-between"><span className="flex-1">{t}</span><button onClick={() => copy(t)} className="text-slate-500 hover:text-white"><i className="fa-solid fa-copy" /></button></div>
+                            ))}
+                          </div>
+                          {result.tiktok.caption && (
+                            <div>
+                               <h4 className="text-xs font-bold text-white mb-2">💬 CAPTION TIKTOK (NGẮN GỌN)</h4>
+                               <div className="bg-black/20 p-3 rounded border border-slate-700/50 text-sm text-slate-300 whitespace-pre-wrap leading-relaxed relative">
+                                  <button onClick={() => copy(result.tiktok.caption)} className="absolute top-2 right-2 text-slate-500 hover:text-white"><i className="fa-solid fa-copy" /></button>
+                                  {result.tiktok.caption}
+                               </div>
+                            </div>
+                          )}
+                       </div>
+                    )}
+
+                    {activeTab === 'facebook' && result.facebook && (
+                       <div className="space-y-4 animate-[fadeIn_0.2s_ease-out]">
+                          <div>
+                            <h4 className="text-xs font-bold text-blue-400 mb-2">🔥 TIÊU ĐỀ FACEBOOK</h4>
+                            {result.facebook.viral_titles?.map((t: string, i: number) => (
+                               <div key={i} className="bg-black/20 p-2 rounded border border-blue-900/30 text-sm text-slate-200 mb-2 flex justify-between"><span className="flex-1">{t}</span><button onClick={() => copy(t)} className="text-slate-500 hover:text-white"><i className="fa-solid fa-copy" /></button></div>
+                            ))}
+                          </div>
+                          {result.facebook.status_post && (
+                            <div>
+                               <h4 className="text-xs font-bold text-blue-400 mb-2">📝 BÀI ĐĂNG FACEBOOK (STATUS)</h4>
+                               <div className="bg-black/20 p-3 rounded border border-blue-900/30 text-sm text-slate-300 whitespace-pre-wrap leading-relaxed relative">
+                                  <button onClick={() => copy(result.facebook.status_post)} className="absolute top-2 right-2 text-slate-500 hover:text-white"><i className="fa-solid fa-copy" /></button>
+                                  {result.facebook.status_post}
+                               </div>
+                            </div>
+                          )}
+                       </div>
+                    )}
                   </div>
-                )}
-                {/* Viral Titles */}
-                {Array.isArray(result.viral_titles) && (
-                  <div className="bg-[#10141c] border border-slate-700/30 rounded-xl p-4">
-                    <h4 className="text-xs font-bold text-amber-400 mb-3 uppercase">⚡ VIRAL TITLES</h4>
-                    <div className="space-y-2">{result.viral_titles.map((t: string, i: number) => (
-                      <div key={i} className="flex justify-between items-center bg-[#0a0e14] p-2 rounded border border-slate-700/30">
-                        <span className="text-sm text-white font-medium flex-1">{i + 1}. {t}</span>
-                        <button onClick={() => copy(t)} className="text-slate-500 hover:text-white ml-2"><i className="fa-solid fa-copy" /></button>
-                      </div>
-                    ))}</div>
-                  </div>
-                )}
-                {/* Description */}
-                {result.video_description?.full_description && (
-                  <div className="bg-green-900/10 border border-green-500/20 rounded-xl p-4">
-                    <h4 className="text-xs font-bold text-green-400 mb-3 uppercase">📝 DESCRIPTION</h4>
-                    {result.video_description.hook && <p className="text-sm text-white font-medium bg-green-900/20 p-3 rounded border border-green-500/20 mb-3">{result.video_description.hook}</p>}
-                    <p className="text-xs text-slate-300 leading-relaxed whitespace-pre-line">{result.video_description.full_description}</p>
-                    <button onClick={() => copy(result.video_description.full_description)} className="mt-2 text-xs text-green-400 hover:underline flex items-center gap-1"><i className="fa-solid fa-copy" /> Copy</button>
-                  </div>
-                )}
+                </div>
+
                 {/* Thumbnails */}
                 {Array.isArray(result.thumbnail_suggestions) && (
                   <div className="bg-purple-900/10 border border-purple-500/20 rounded-xl p-4">

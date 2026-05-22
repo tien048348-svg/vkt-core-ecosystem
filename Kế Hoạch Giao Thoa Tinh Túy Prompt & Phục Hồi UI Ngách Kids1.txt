@@ -1,0 +1,97 @@
+Kế Hoạch Giao Thoa Tinh Túy Prompt & Phục Hồi UI Ngách Kids
+Triết lý xuyên suốt: GIAO THOA – GIỮ NGUYÊN CÁI TỐT – CHỈ ĐÍNH THÊM CÁI THIẾU.
+Tuyệt đối không viết đè, không làm rác code. Từng mảnh Lego phải khớp hoàn hảo.
+
+TRẠNG THÁI TỔNG QUAN
+#	Hạng mục	File thực thi	Trạng thái
+1	Phục hồi label UI "Kids Cartoon & Education"	ScriptModule.tsx	⬜ Chưa làm
+2	Phục hồi nút Style "Học Tiếng Anh"	constants.ts	✅ Đã có english_learning_duo
+3	Tích hợp Safe Medical Protocol	prompts.ts (Kids)	✅ Đã có
+4	Tích hợp VEO3 AUTO-SHIELD Protocol	prompts.ts (Kids)	✅ Đã có
+5	Tích hợp Universal Audio Protocol	prompts.ts (Kids)	✅ Đã có
+6	Bổ sung Bộ Luật Ngách Mãi Xanh (Evergreen)	prompts.ts (Kids)	⬜ Chưa làm
+7	Nút Toggle Thời Lượng Cảnh (8s mặc định)	ScriptModule.tsx	⬜ Chưa làm
+8	VEO3 Safe Prompt Generator (câu lệnh không vi phạm)	prompts.ts (Kids)	⬜ Chưa làm
+CHI TIẾT TỪNG HẠNG MỤC
+✅ Mục 2 — Nút Style "Học Tiếng Anh" (ĐÃ CÓ)
+constants.ts đã có english_learning_duo trong VISUAL_STYLES.
+SECONDS_PER_SCENE = 8 đã được khai báo.
+Không cần động vào.
+✅ Mục 3, 4, 5 — Safe Medical + VEO3 AUTO-SHIELD + Universal Audio (ĐÃ CÓ)
+Cả 3 protocol đã được cấy vào prompts.ts của Kids từ buổi trước.
+Không cần động vào.
+⬜ Mục 1 — Phục hồi label UI
+File: VKT_KIDS/src/pages/ScriptModule.tsx
+
+Vấn đề: Nhãn chữ trên UI đang hiện sai (chữ "Tái Chế" thay vì "Kids Cartoon & Education").
+
+Giải pháp: Đổi text hiển thị, không đụng vào logic.
+
+⬜ Mục 6 — Bộ Luật Ngách Mãi Xanh (Evergreen & Viral Lifespan)
+File: VKT_KIDS/src/data/prompts.ts
+
+Vị trí cấy: Bên trong SYSTEM_PROMPT_CORE_DIRECTOR, sau phần "MA TRẬN VIRAL TOÀN DIỆN".
+
+3 luật cần thêm:
+
+
+🌿 [TIMELESS LANGUAGE LOCK - KHÓA TỪ VỰNG VƯỢT THỜI GIAN]:
+TUYỆT ĐỐI KHÔNG dùng mốc thời gian cụ thể ("Năm 2026", "Gần đây", "Hôm nay",
+"Mới nhất"). Nội dung phải đúng đắn kể cả khi khán giả xem lại 10 năm sau.
+♾️ [REPLAY VALUE INJECTION - TIÊM GIÁ TRỊ XEM LẠI]:
+Kịch bản phải chứa "Vòng lặp mở" (Open Loops) và "Thông điệp đa tầng":
+xem lần 1 → giải trí, xem lần 2 → chữa lành/học tập, xem lần 3 → ngộ ra triết lý.
+🎯 [VIRAL EMOTIONAL HOOK - LƯỠI CÂU CẢM XÚC ĐỘC LẬP]:
+Cảnh đầu PHẢI đánh trúng một nỗi đau căn bản của con người
+(Sức khỏe / Gia đình / Tiền bạc / Bình an tâm trí) — những nỗi đau
+thời đại nào cũng có → video luôn có Search Intent mãi mãi.
+⬜ Mục 7 — Nút Toggle Thời Lượng Cảnh (8s mặc định)
+File: VKT_KIDS/src/pages/ScriptModule.tsx
+
+Tình trạng hiện tại: Đang là ô input số nhỏ "GIÂY/CẢNH" — đúng về logic nhưng trải nghiệm kém, người dùng dễ nhập sai.
+
+Giải pháp: Thay bằng 3 nút Toggle Preset đẹp, nhanh, trực quan:
+
+Nút	Giá trị	Ghi chú
+🟢 8s	secondsPerScene = 8	Mặc định — Chuẩn Veo 3
+🔵 12s	secondsPerScene = 12	Cảnh dài hơn
+🟣 16s	secondsPerScene = 16	Cảnh điện ảnh
+Logic useState(8) và toàn bộ tính toán số cảnh GIỮ NGUYÊN, chỉ thay đổi cách hiển thị nút bấm.
+
+⬜ Mục 8 — VEO3 Safe Prompt Generator (câu lệnh không vi phạm)
+File: VKT_KIDS/src/data/prompts.ts
+
+Bối cảnh: Khi tạo video_prompt gửi lên Veo 3, nếu không cẩn thận sẽ bị từ chối do vi phạm chính sách (nhân vật thật, bạo lực, nội dung nhạy cảm...).
+
+Giải pháp: Thêm một bộ luật VEO3_SAFE_COMMAND_PROTOCOL vào prompts.ts — đây là tập hợp các quy tắc bắt buộc phải nhúng vào video_prompt để câu lệnh không bị Veo 3 từ chối:
+
+
+🔒 [VEO3 SAFE COMMAND PROTOCOL - BỘ LUẬT CHỐNG VI PHẠM VEO3]:
+BẮT BUỘC kết thúc mỗi video_prompt bằng cụm khóa an toàn:
+"[STYLE: animated/illustrated, NO real humans, NO violence, NO text overlay,
+family-safe, child-appropriate, bright colors, clean composition]"
+CẤM TUYỆT ĐỐI trong video_prompt:
+- Tên người thật / nhân vật nổi tiếng có bản quyền
+- Từ ngữ bạo lực: blood, kill, hurt, fight, weapon
+- Nội dung nhạy cảm: medical procedures, real injuries
+- Logo thương hiệu / watermark
+THAY THẾ AN TOÀN:
+- "người" → "animated character", "illustrated figure"
+- "đánh nhau" → "play energetically", "move dramatically"
+- "chữa bệnh" → "feel better", "glow with health"
+THỨ TỰ THỰC THI (TỪNG BƯỚC - KHÔNG LÀM LOẠT)
+
+Bước 1 → Mục 6: Thêm Luật Evergreen vào prompts.ts (Kids)
+Bước 2 → Mục 8: Thêm VEO3 Safe Command Protocol vào prompts.ts (Kids)
+Bước 3 → Mục 7: Nâng cấp nút Toggle Thời Lượng trong ScriptModule.tsx
+Bước 4 → Mục 1: Sửa label UI (nếu chưa sửa)
+Bước 5 → Build & Verify VKT_KIDS
+Bước 6 → Deploy VKT_KIDS lên Vercel
+IMPORTANT
+
+Thực thi từng bước một, xong bước nào báo cáo bước đó.
+Không làm loạt, không viết đè toàn bộ file.
+
+XIN XÁC NHẬN
+Kế hoạch đã được cập nhật đầy đủ với 3 mục còn thiếu (6, 7, 8) và trạng thái rõ ràng của từng mục.
+Anh/chị xem và xác nhận để em bắt đầu thực thi từng bước ạ!
