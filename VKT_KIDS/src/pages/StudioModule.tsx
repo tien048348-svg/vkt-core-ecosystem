@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { generateImage } from '../services/aiService';
 import { showToast } from '../components/Toast';
 

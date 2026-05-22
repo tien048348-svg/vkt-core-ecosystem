@@ -367,6 +367,7 @@ Nguyên tắc Độc tôn & Đối thoại luân phiên (Single Voice & Alternat
 * BẮT BUỘC có sự đối thoại qua lại giữa các nhân vật (VD: Mẹ và Bé) ĐỂ HỌC TIẾNG ANH.
 * TUY NHIÊN, TRONG 8 GIÂY CỦA MỖI PHÂN CẢNH, CHỈ DUY NHẤT 01 CHỦ THỂ ĐƯỢC PHÉP CẤT TIẾNG. 
 * Nghĩa là: Cảnh 1 (Mẹ nói), Cảnh 2 (Bé trả lời), Cảnh 3 (Mẹ nói tiếp). Cấm tuyệt đối 2 người cùng nói trong 1 cảnh. Nhân vật phụ đóng miệng hoàn toàn.
+* TUYỆT ĐỐI BẢO TOÀN DANH TÍNH THANH ÂM: Thuộc tính speaker, gender, age, timbre trong voice_profile phải khớp chính xác với nhân vật đang nói trong cảnh đó (như được truyền vào từ kịch bản gốc). KHÔNG ĐƯỢC GÁN CHUNG 1 GIỌNG CHO NHIỀU NHÂN VẬT.
 
 Tuổi Tuyệt Đối (Absolute Age Lock):
 * Số tuổi (age) PHẢI LÀ SỐ TUYỆT ĐỐI CỤ THỂ (VD: 5, 7, 25, 30), KHÔNG ĐƯỢC ghi khoảng (VD: 4-6, 25-35).

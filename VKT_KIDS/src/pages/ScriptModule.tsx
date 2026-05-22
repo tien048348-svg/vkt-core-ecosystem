@@ -242,7 +242,7 @@ const SceneCard = React.memo(({ seg, idx }: { seg: any, idx: number }) => {
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5">
                 <div className="bg-[#0a0e14]/30 rounded p-1.5 border border-purple-900/20">
                   <div className="text-[8px] text-purple-500 font-bold">AGE & DETAILS</div>
-                  <div className="text-[9px] text-slate-300 font-medium">{seg.voice_profile.age || (seg.voice_profile.gender ? `${seg.voice_profile.gender}` : 'Chưa rõ đ�?tuổi')}</div>
+                  <div className="text-[9px] text-slate-300 font-medium">{seg.voice_profile.age || (seg.voice_profile.gender ? `${seg.voice_profile.gender}` : 'Chưa rõ độ tuổi')}</div>
                 </div>
                 <div className="bg-[#0a0e14]/30 rounded p-1.5 border border-purple-900/20">
                   <div className="text-[8px] text-purple-500 font-bold">ACCENT</div>
@@ -346,7 +346,7 @@ const ScriptModule: React.FC<Props> = ({
       const selected = ENGLISH_TOPICS.find(t => t.id === englishTopic);
       if (selected) {
         // Strip out any emojis or English/Vietnamese tags to feed a clean theme keyword to the generator
-        const cleanName = selected.label.replace(/[^\w\sÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚÝàáâãèéêìíòóôõùúýĂăĐđĨĩŨũƠơƯư�?�?)-]/g, '').trim();
+        const cleanName = selected.label.replace(/[^\w\sÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚÝàáâãèéêìíòóôõùúýĂăĐđĨĩŨũƠơƯưẮẰẲẴẶẶ)-]/g, '').trim();
         setTopic(`Học Tiếng Anh: ${cleanName}`);
       }
     }
@@ -355,32 +355,32 @@ const ScriptModule: React.FC<Props> = ({
   const durationNum = parseFloat(duration as string) || 0;
   const scenes = Math.ceil((Math.max(0.1, durationNum) * 60) / secondsPerScene);
   const mode = durationNum < 3 ? { name: '🟢 QUICK CRAFT (<3m)', wpm: 260 } : durationNum <= 10 ? { name: '🔵 STORY WEAVER (3-10m)', wpm: 260 } : { name: '🟣 EPIC FOLKLORE (>10m)', wpm: 260 };
-  const words = scenes * 35; // Đúng nguyên tắc cốt lõi: 30-40 t�?cho một cảnh 8 giây (Trung bình 35 t�?
+  const words = scenes * 35; // Đúng nguyên tắc cốt lõi: 30-40 từ cho một cảnh 8 giây (Trung bình 35 từ)
   const modeColor = durationNum < 3 ? 'text-green-400 border-green-500/50 bg-green-900/10' : durationNum <= 10 ? 'text-teal-400 border-teal-500/50 bg-teal-900/10' : 'text-purple-400 border-purple-500/50 bg-purple-900/10';
 
-  // === AI STYLE SUGGESTION �?Brain Core ===
+  // === AI STYLE SUGGESTION - Brain Core ===
   const handleSuggestStyle = async () => {
-    if (!topic) return showToast('Nhập ch�?đ�?trước!');
+    if (!topic) return showToast('Nhập chủ đề trước!');
     setLoadingSuggestion(true);
     try {
-      const prompt = `CH�?ĐỀ: "${topic}"\n\nHãy đ�?xuất phong cách visual phù hợp nhất.`;
+      const prompt = `CHỦ ĐỀ: "${topic}"\n\nHãy đề xuất phong cách visual phù hợp nhất.`;
       const result = await callAI(prompt, STYLE_RECOMMENDATION_PROMPT);
       setSuggestedStyle(result);
       if (result.recommended_style) {
         setStyle(result.recommended_style);
-        showToast(`�?AI đ�?xuất: ${VISUAL_STYLES.find(s => s.id === result.recommended_style)?.name || result.recommended_style}`, 'success');
+        showToast(`✅ AI đề xuất: ${VISUAL_STYLES.find(s => s.id === result.recommended_style)?.name || result.recommended_style}`, 'success');
       }
     } catch (e: any) { showToast(e.message); }
     finally { setLoadingSuggestion(false); }
   };
 
   const handleGenerate = async () => {
-    if (!topic) return showToast('Vui lòng nhập ch�?đ�?');
+    if (!topic) return showToast('Vui lòng nhập chủ đề');
     
     // Pre-flight check: ensure we have at least 1 valid API key in storage
     const { hasAnyApiKey } = await import('../services/aiService');
     if (!hasAnyApiKey()) {
-      showToast('�?Cảnh báo: Chưa cấu hình API Key! Vui lòng m�?biểu tượng Config (chìa khóa) �?góc trên bên phải đ�?nhập API Key hoạt động.', 'error');
+      showToast('⚠️ Cảnh báo: Chưa cấu hình API Key! Vui lòng mở biểu tượng Config (chìa khóa) ở góc trên bên phải để nhập API Key hoạt động.', 'error');
       return;
     }
 
@@ -389,7 +389,7 @@ const ScriptModule: React.FC<Props> = ({
     if (targetDuration > 10) {
       targetDuration = 10;
       setDuration(10);
-      showToast('⚠️ H�?thống giới hạn tối đa 10 phút (~75 cảnh) đ�?bảo toàn chất lượng kịch bản cao nhất!', 'warning');
+      showToast('⚠️ Hệ thống giới hạn tối đa 10 phút (~75 cảnh) để bảo toàn chất lượng kịch bản cao nhất!', 'warning');
     }
 
     // Auto-clear old data when starting a new generation
@@ -411,7 +411,7 @@ const ScriptModule: React.FC<Props> = ({
       setLoadingLogs([...logsList]);
     };
 
-    addLog('🔥 Khởi tạo động cơ Gi�?Kim Thuật Trí tu�?Nhân tạo V16.5...');
+    addLog('🔥 Khởi tạo động cơ Giả Kim Thuật Trí tuệ Nhân tạo V16.5...');
 
     const interval = setInterval(() => {
       percent += Math.floor(Math.random() * 3) + 2; // Tăng mượt 2-4% mỗi lần
@@ -431,39 +431,39 @@ const ScriptModule: React.FC<Props> = ({
         setLoadingStep(5);
       }
 
-      // Đẩy log k�?thuật ngẫu nhiên theo tiến đ�?đ�?gây ấn tượng mạnh với người dùng
+      // Đẩy log kỹ thuật ngẫu nhiên theo tiến độ để gây ấn tượng mạnh với người dùng
       if (percent >= 10 && logsList.length === 1) {
-        addLog(`📝 Đã nhận dạng ch�?đ�?kịch bản: "${topic}"`);
+        addLog(`📝 Đã nhận dạng chủ đề kịch bản: "${topic}"`);
       }
       if (percent >= 20 && logsList.length === 2) {
         addLog(`Lua chon vat lieu: ${VISUAL_STYLES.find(s => s.id === style)?.name || 'Auto de xuat style'}`);
       }
       if (percent >= 30 && logsList.length === 3) {
-        addLog(`🔄 Phân tích mâu thuẫn Drama đ�?"b�?lái" cốt truyện sang ngách Hoạt Hình...`);
+        addLog(`🔄 Phân tích mâu thuẫn Drama để "bẻ lái" cốt truyện sang ngách Hoạt Hình...`);
       }
       if (percent >= 40 && logsList.length === 4) {
-        addLog(`🎙�?THIẾT QUÂN LUẬT: Giới hạn tối đa 01 người nói (Single Speaker) trong mỗi phân cảnh.`);
+        addLog(`🎙️ THIẾT QUÂN LUẬT: Giới hạn tối đa 01 người nói (Single Speaker) trong mỗi phân cảnh.`);
       }
       if (percent >= 50 && logsList.length === 5) {
-        addLog(`🎭 Phân vai đa nhân vật thay phiên cất tiếng qua các cảnh đ�?đảm bảo sinh động...`);
+        addLog(`🎭 Phân vai đa nhân vật thay phiên cất tiếng qua các cảnh để đảm bảo sinh động...`);
       }
       if (percent >= 60 && logsList.length === 6) {
-        addLog(`📸 Đang biên soạn câu lệnh v�?ảnh (image_prompt) 8K siêu thực...`);
+        addLog(`📸 Đang biên soạn câu lệnh về ảnh (image_prompt) 8K siêu thực...`);
       }
       if (percent >= 70 && logsList.length === 7) {
-        addLog(`🎬 Đang thiết k�?chuyển động video Stop-Motion mượt mà và vật lý chân thực...`);
+        addLog(`🎬 Đang thiết kế chuyển động video Stop-Motion mượt mà và vật lý chân thực...`);
       }
       if (percent >= 78 && logsList.length === 8) {
-        addLog(`🔊 Tổng hợp bản đ�?âm thanh tương tác vật lý & tiếng động cơ học ASMR...`);
+        addLog(`🔊 Tổng hợp bản đồ âm thanh tương tác vật lý & tiếng động cơ học ASMR...`);
       }
       if (percent >= 84 && logsList.length === 9) {
-        addLog(`🛡�?Phân tích vật liệu đ�?t�?động kích hoạt b�?lọc Silent COPPA (Cảnh báo an toàn câm)...`);
+        addLog(`🛡️ Phân tích vật liệu để tự động kích hoạt bộ lọc Silent COPPA (Cảnh báo an toàn câm)...`);
       }
       if (percent >= 90 && logsList.length === 10) {
         addLog(`📦 Đang đóng gói cấu trúc JSON phân cảnh đạt chuẩn V16.5 Failsafe...`);
       }
       if (percent >= 95 && logsList.length === 11) {
-        addLog(`📡 Đang ch�?kết qu�?phản hồi gói tin kịch bản t�?Máy ch�?AI...`);
+        addLog(`📡 Đang chờ kết quả phản hồi gói tin kịch bản từ Máy chủ AI...`);
       }
     }, 350);
 
@@ -483,18 +483,18 @@ const ScriptModule: React.FC<Props> = ({
         styleContext += `
 - FOCUSED ENGLISH TOPIC: ${topicObj?.label}.
 - MICRO-CONTEXT (CRITICAL): ${randomContext}.
-- UNIQUE PROP (CỐT YẾU Đ�?KHÁC BIỆT): S�?dụng đ�?vật "${randomProp}" đ�?tương tác.
+- UNIQUE PROP (CỐT YẾU ĐỂ KHÁC BIỆT): Sử dụng đồ vật "${randomProp}" để tương tác.
 - TONE & MOOD: ${randomMood}.
-- ĐIỂM NHẤN TƯƠNG TÁC (CUỐI VIDEO): Hai m�?con thực hiện hành động "${randomAction}".
+- ĐIỂM NHẤN TƯƠNG TÁC (CUỐI VIDEO): Hai mẹ con thực hiện hành động "${randomAction}".
 
-[NARRATIVE & DIALOGUE ENFORCEMENT - LỆNH THÉP CHO HỘI THOẠI M�?& CON]:
-1. LUÂN PHIÊN NHÂN VẬT: M�?nói �?Cảnh l�?(1, 3, 5...), Con nói �?Cảnh chẵn (2, 4, 6...). Tuyệt đối không cho 2 người cùng nói trong 1 cảnh.
-2. TÍNH CÁCH CON (BIN/BO/BÉ...): Phải lém lỉnh, biểu cảm sống động, thích hành động và có tư duy liên h�?thực t�? không phải robot nhại lại.
-3. NGÔN NG�? M�?s�?dụng Song Ng�?(tiếng Việt đ�?gợi ý, pha một chút tiếng Anh t�?nhiên). Con phát âm tiếng Anh, thỉnh thoảng có phản x�?sai đáng yêu rồi t�?sửa.
+[NARRATIVE & DIALOGUE ENFORCEMENT - LỆNH THÉP CHO HỘI THOẠI MẸ & CON]:
+1. LUÂN PHIÊN NHÂN VẬT: Mẹ nói ở Cảnh lẻ (1, 3, 5...), Con nói ở Cảnh chẵn (2, 4, 6...). Tuyệt đối không cho 2 người cùng nói trong 1 cảnh.
+2. TÍNH CÁCH CON (BIN/BO/BÉ...): Phải lém lỉnh, biểu cảm sống động, thích hành động và có tư duy liên hệ thực tế không phải robot nhại lại.
+3. NGÔN NGỮ: Mẹ sử dụng Song Ngữ (tiếng Việt để gợi ý, pha một chút tiếng Anh tự nhiên). Con phát âm tiếng Anh, thỉnh thoảng có phản xạ sai đáng yêu rồi tự sửa.
 4. CỐT TRUYỆN 3 HỒI:
-   - M�?đầu (The Hook): M�?đưa ra đạo c�?hoặc tình huống gây tò mò.
-   - Phát triển: M�?dạy t�?vựng, con tương tác và lặp lại kết hợp hành động cơ th�?
-   - Kết thúc: M�?và con thực hiện hành động tương tác (High-five/High-ten...) và M�?có 1 câu CTA tương tác nh�?nhàng tới khán gi�?(ví d�? "Các bạn thấy [Tên con] có giỏi không?").`;
+   - Mở đầu (The Hook): Mẹ đưa ra đạo cụ hoặc tình huống gây tò mò.
+   - Phát triển: Mẹ dạy từ vựng, con tương tác và lặp lại kết hợp hành động cơ thể.
+   - Kết thúc: Mẹ và con thực hiện hành động tương tác (High-five/High-ten...) và Mẹ có 1 câu CTA tương tác nhẹ nhàng tới khán giả (ví dụ "Các bạn thấy [Tên con] có giỏi không?").`;
       }
 
       // 1. Calculate the total requested scenes
@@ -515,7 +515,7 @@ const ScriptModule: React.FC<Props> = ({
         const endSceneNum = Math.min(round * chunkSize, totalScenes);
         const roundSceneCount = endSceneNum - startSceneNum + 1;
 
-        addLog(`�?[Đợt ${round}/${totalRounds}] Đang tiến hành kết tạo phân cảnh ${startSceneNum} đến ${endSceneNum}...`);
+        addLog(`🚀 [Đợt ${round}/${totalRounds}] Đang tiến hành kết tạo phân cảnh ${startSceneNum} đến ${endSceneNum}...`);
 
         // Establish previous scenes context to guarantee narrative continuity
         let continuityContext = '';
@@ -598,7 +598,7 @@ GENERATE JSON OBJECT.`;
 
         // === REALITY ANCHOR FAILSAFE (ANTI-TEXT, ANTI-GHOSTING & PERFECT CRAFT) ===
         const imageAnatomyFailsafe = "8k resolution, highly detailed, sharp focus, masterpiece, raw photo of physical miniature model, clean textless image, blank background, pure craft showcase, (perfect human anatomy:1.2), exactly two arms, exactly two legs, perfect hands, --no text, words, letters, watermark, font, writing, typography, subtitles, burned-in text, captions, lyrics, lower thirds, signature, logo, banner, signs, labels, floating head, creepy face in background, double exposure, phantom face, blurry person, extra faces, mutated limbs, bad anatomy, poster, book cover, movie poster";
-        // VEO3 AUTO-SHIELD PROTOCOL �?Comprehensive video render failsafe
+        // VEO3 AUTO-SHIELD PROTOCOL - Comprehensive video render failsafe
         const videoAnatomyFailsafe = "8k resolution, highly detailed, sharp focus, masterpiece, raw physical stop-motion miniature craft, clean textless footage, blank background, pure craft showcase, perfect human anatomy, exactly two arms, exactly two legs, perfect hands, smooth physical movement, cinematic studio lighting, ABSOLUTE TEMPORAL COHERENCE, slow and deliberate movements, sharp object borders, clear anatomical structure, anti-ghosting, high-fidelity motion vector, no motion blur, static directional lighting, shadow coordinates locked, no ambient flickering, permanently static background props, locked arrangement of objects, realistic ground friction, solid footing, zero sliding, no moonwalking, perfect limb separation, no clipping or hand fusion, no cinematic vignettes, uncropped full-frame lens, strict frame-to-frame clothing consistency, wardrobe locked across all scenes, perfect facial symmetry, identical symmetric circular pupils, unified wind vector physics, strict character count persistence, no ghost characters generated, ABSOLUTELY ZERO TEXT letters watermarks graphic overlays, strictly FULL FRAME no black bars";
         
         roundSegs = roundSegs.map((s: any) => ({
@@ -616,14 +616,14 @@ GENERATE JSON OBJECT.`;
         suggested_style: finalSuggestedStyle,
         character_lock_prompt: finalCharacterLock,
         script: allSegments,
-        coppa_disclaimer: coppaText || "Video này chứa tính chất sáng tạo DIY ngh�?thuật cao."
+        coppa_disclaimer: coppaText || "Video này chứa tính chất sáng tạo DIY nghệ thuật cao."
       };
 
       // Hoàn tất thành công
       clearInterval(interval);
       setLoadingPercent(100);
       setLoadingStep(5);
-      addLog(`�?Gi�?Kim Thuật hoàn tất! Kịch bản đã được dệt thành công với tổng s�?${allSegments.length} phân cảnh.`);
+      addLog(`✨ Giả Kim Thuật hoàn tất! Kịch bản đã được dệt thành công với tổng số ${allSegments.length} phân cảnh.`);
       await new Promise(r => setTimeout(r, 600));
 
       setScriptData(finalJson);
@@ -643,12 +643,12 @@ GENERATE JSON OBJECT.`;
   const copyAll = () => {
     const text = segments.map(s => s.chapter_voice_block || s.voice_text).join('\n\n');
     navigator.clipboard.writeText(text);
-    showToast('�?Đã copy voice toàn b�?', 'success');
+    showToast('✅ Đã copy voice toàn bộ', 'success');
   };
 
   // === MASTER COMMAND V16.0: AUDIO RE-ENGINEERING ===
   const handleAudioReengineering = async () => {
-    if (segments.length === 0) return showToast('Chưa có kịch bản đ�?tinh chỉnh!');
+    if (segments.length === 0) return showToast('Chưa có kịch bản để tinh chỉnh!');
     
     setRefiningAudio(true);
     setLoading(true); // Kích hoạt overlay console tiến trình
@@ -665,7 +665,7 @@ GENERATE JSON OBJECT.`;
       setLoadingLogs([...logsList]);
     };
 
-    addLog('🎙�?Khởi động h�?thống Tái Cấu Trúc Thanh Âm V16.0...');
+    addLog('🎙️ Khởi động hệ thống Tái Cấu Trúc Thanh Âm V16.0...');
 
     const interval = setInterval(() => {
       percent += Math.floor(Math.random() * 4) + 3; // Tăng mượt 3-6% mỗi lần
@@ -720,6 +720,7 @@ GENERATE JSON OBJECT.`;
         scene_number: s.scene_number,
         dialogues: s.dialogues || [],
         voice_text: s.voice_text || s.chapter_voice_block || '',
+        voice_profile: s.voice_profile || null,
         visual_context: s.visual_desc_vi || s.visual_desc || '',
         section: s.section || '',
         character: s.character || '',
