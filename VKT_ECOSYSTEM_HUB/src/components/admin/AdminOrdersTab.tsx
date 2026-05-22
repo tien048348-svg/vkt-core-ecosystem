@@ -174,10 +174,10 @@ export const AdminOrdersTab: React.FC = () => {
       
       // Lọc từ khóa tìm kiếm
       const matchesSearch = !queryStr || 
-        o.orderCode.toString().includes(queryStr) ||
-        o.userEmail.toLowerCase().includes(queryStr) ||
+        (o.orderCode?.toString() || '').includes(queryStr) ||
+        (o.userEmail || '').toLowerCase().includes(queryStr) ||
         (o.userDisplayName && o.userDisplayName.toLowerCase().includes(queryStr)) ||
-        o.planName.toLowerCase().includes(queryStr);
+        (o.planName || '').toLowerCase().includes(queryStr);
         
       return matchesSearch;
     });
@@ -235,7 +235,7 @@ export const AdminOrdersTab: React.FC = () => {
     const bankName = siteConfig?.bankName || 'VU KHAC TIEN';
     
     // Tên gói không dấu
-    const cleanPlanName = order.planName
+    const cleanPlanName = (order.planName || '')
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-zA-Z0-9 ]/g, '')
@@ -248,7 +248,7 @@ export const AdminOrdersTab: React.FC = () => {
   };
 
   const getCleanPlanDescription = (planName: string, orderCode: number) => {
-    const cleanPlanName = planName
+    const cleanPlanName = (planName || '')
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-zA-Z0-9 ]/g, '')

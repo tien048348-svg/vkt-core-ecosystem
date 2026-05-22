@@ -449,7 +449,7 @@ export const AdminUsersTab = () => {
     return enrichedUsers
       .filter(u => {
         const searchMatch = !queryStr || 
-          u.email.toLowerCase().includes(queryStr) || 
+          (u.email || '').toLowerCase().includes(queryStr) || 
           (u.displayName && u.displayName.toLowerCase().includes(queryStr));
         if (!searchMatch) return false;
         if (activeTab === 'all') return true;
