@@ -1,0 +1,54 @@
+TỔNG KẾT BẢN ĐỒ ĐỒNG BỘ TOÀN DIỆN (MASTER PLAN V16.0)
+CAUTION
+
+
+LỆNH BÀI THÉP TỪ TỔNG CÔNG TRÌNH SƯ
+1. BẢO TOÀN 100% PIPELINE 4 BƯỚC: Giữ nguyên luồng vận hành gốc từ Bước 1 đến Bước 4. Tuyệt đối không xóa bỏ. 2. NGUYÊN TẮC MẢNH GHÉP LEGO: Chỉ nâng cấp (Upgrade) hoặc cấy thêm (Append). Sửa chỗ này tuyệt đối không được làm vỡ chỗ kia.
+
+📱 PHẦN 1: TỐI ƯU HÓA TRẢI NGHIỆM NGƯỜI DÙNG (UI/UX) VÀ CHỐNG LAG
+(Giải quyết triệt để sự ức chế khi thao tác với kịch bản dài 3 Tiếng / 1000 cảnh)
+
+Giao Diện Đa Nền Tảng (Responsive Mobile/Desktop):
+Đảm bảo toàn bộ khung hiển thị co giãn mượt mà. Đạo diễn có thể dùng điện thoại ngồi quán cafe vẫn có thể duyệt và chỉnh sửa kịch bản 3 tiếng một cách dễ dàng, không bị tràn màn hình hay chữ quá nhỏ.
+Thanh Điều Hướng Dính (Sticky Navigation Bar):
+Vấn đề: Đang đọc Cảnh 1000 mà muốn sửa Style ở Bước 2 thì vuốt mỏi tay.
+Giải pháp: Cố định thanh Menu chứa 4 Bước (Bước 1: Đầu Vào | Bước 2: Style | Bước 3: Kịch Bản | Bước 4: Xuất Bản) luôn luôn dính ở trên cùng (hoặc dưới cùng) màn hình. Bấm 1 phát là màn hình tự động nhảy vọt (Jump) đến đúng vị trí Bước đó ngay lập tức.
+Nút Dịch Chuyển Tức Thời (Floating Action Buttons - FAB):
+Bố trí các nút "Lên Đỉnh Đầu (Back to Top)" và "Xuống Cuối Cùng (Go to Bottom)" lơ lửng ở góc phải màn hình để hỗ trợ cuộn nhanh.
+Phân Trang / Render Ảo (Pagination & Virtualization):
+Vấn đề: Load cùng lúc 1000 cảnh sẽ làm RAM điện thoại/máy tính bị treo đơ, giật lag.
+Giải pháp: Chỉ Render lên màn hình 20-50 cảnh gần nhất mà mắt người dùng đang nhìn thấy (Kỹ thuật Virtual DOM). Cuộn tới đâu hệ thống mượt mà hiển thị tới đó, giữ cho ứng dụng luôn nhanh và nhẹ như lông hồng!
+⚙️ PHẦN 2: BẢO TOÀN VÀ NÂNG CẤP PIPELINE 4 BƯỚC LÕI
+BƯỚC 1: TIẾP NHẬN ĐẦU VÀO -> [BẢO TOÀN 100%] (Spy/Ý Tưởng, Chọn Ngôn ngữ UI & Thị trường Mục tiêu).
+BƯỚC 2: CHỌN PHONG CÁCH VÀ CẤU HÌNH -> [BẢO TOÀN & NÂNG CẤP] (Công tắc Thời lượng Cảnh Động 5s/8s/10s).
+BƯỚC 3: XỬ LÝ KỊCH BẢN (Core Script Engine) -> [ĐẠI PHẪU THUẬT LÕI V16.0]
+BƯỚC 4: XUẤT BẢN & RENDER (Export) -> [BẢO TOÀN & NÂNG CẤP VĨ MÔ]
+🏗️ PHẦN 3: NÂNG CẤP ĐỘNG CƠ PHÂN PHỐI
+Sliding Window Context: Bộ nhớ AI trượt, không bị ngáo khi dệt 3 tiếng.
+Local-First & Batch Sync: Ghi tạm vào LocalStorage chống sập mạng, không vỡ Quota Firebase.
+Auto-Retry & Exponential Backoff: Chống lỗi API 429. Nút HỦY & VIẾT LẠI quyền lực cao nhất.
+Trần Thời Lượng Tối Thượng: 180 phút. Dynamic Pacing % chia đều Mở - Thân - Kết.
+🧠 PHẦN 4: BỘ LUẬT VŨ TRỤ "MASTER COMMAND V16.0" (Prompt Core)
+Khóa Tự Động Điều Chỉnh Theo Giây (Dynamic Routing): Ép số từ/tốc độ tỷ lệ thuận với số giây.
+Khóa Ngôn Ngữ Bản Địa (Global Multi-Language):
+Tiếng Việt: Bắt buộc từ đơn cuối câu. Tiếng Anh: Bắt buộc âm tiết đơn cuối câu. Khóa Accent.
+Khóa Tọa Độ Vật Lý Tuyệt Đối (VEO 3 Auto-Shield):
+Chống ngược hướng gió, tay 6 ngón. Xe không trượt bánh. Chỉ 1 người mở miệng. Âm thanh ASMR theo bối cảnh.
+Khóa Chống Trùng Lặp & Vòng Lặp Mãi Xanh:
+Đột biến cấu trúc mở đầu và góc quay camera (Chống gậy Reused Content). Cấm mốc thời gian.
+Hai Lõi Công Nghệ Thần Thánh:
+Định danh Nhân vật Xuyên suốt (Character Seed Lock): Giữ nguyên ngoại hình 100% qua 1000 cảnh.
+Động cơ SEO & Thumbnail: Render Câu lệnh tạo ảnh bìa sốc thị giác và Tiêu đề chuẩn SEO.
+🛡️ PHẦN 5: TƯỜNG LỬA BẢO VỆ 360 ĐỘ (Compliance Firewall)
+CẤM gọi tên thật, nhân vật bản quyền. Hoạt hình hóa bạo lực. Blacklist Y tế. Cấm tin giả, chính trị.
+User Review Required
+IMPORTANT
+
+XÁC NHẬN BẢN ĐỒ TỪ TỔNG CÔNG TRÌNH SƯ
+Anh/chị lại đâm trúng một "Tử huyệt Trải Nghiệm" (UX Nightmare) của hệ thống ứng dụng khổng lồ!
+
+Một kịch bản 3 tiếng sẽ sinh ra khoảng 1350 Cảnh. Nếu dùng trình duyệt web hay điện thoại mà cuộn tay qua 1350 đoạn văn bản để tìm lại Bước 2 thì đúng là thảm họa giật lag, treo máy!
+
+Phân mục [PHẦN 1: TỐI ƯU HÓA TRẢI NGHIỆM NGƯỜI DÙNG (UI/UX) VÀ CHỐNG LAG] vừa được bổ sung để khắc phục tuyệt đối điểm này. Em đã trang bị: Thanh Menu Dính (Sticky Navbar), Nút dịch chuyển tức thời (Back to Top/Bottom), và đặc biệt là công nghệ Virtual Render (Phân Trang Ảo) để hệ thống gánh 1350 cảnh mượt mà như gánh 1 cảnh!
+
+Thưa Đạo diễn, 5 Phần của Bản Kế Hoạch V16.0 này thực sự đã gom đủ Tinh Hoa Bách Gia Chư Tử. Anh/chị xem qua, nếu đã chốt hạ, xin hãy ra Lệnh Xuất Quân!

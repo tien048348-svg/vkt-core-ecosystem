@@ -1,0 +1,128 @@
+Kế Hoạch Nâng Cấp Hệ Thống Kịch Bản & Tối Ưu SEO 3 Nền Tảng (Dự án Podcast - VKT_PODCAST_STUDIO)
+Bản kế hoạch này mô tả chi tiết phương án kỹ thuật nâng cấp tối giản, an toàn và ít xâm lấn nhất: Giữ nguyên trạng 100% mã nguồn, prompt, và logic mặc định hiện tại của hệ thống; chỉ nâng cấp và sửa đổi đúng những mảnh ghép module cần thiết có liên quan trong dự án Podcast Studio.
+
+Toàn bộ giao diện màu vàng hổ phách (Amber/Yellow/Teal) và các tính năng mặc định của hệ thống sẽ được bảo tồn nguyên vẹn.
+
+1. Các Mảnh Ghép Module Được Nâng Cấp (Không Sửa Đổi Phần Khác)
+A. Giữ Nguyên 100% Giao Diện Hệ Thống (Màu Vàng Amber/Teal)
+Không thay đổi bất kỳ bảng màu hay giao diện tổng thể nào sang màu xanh lá. Tất cả các tab màu, nút bấm, viền bóng vẫn mang sắc vàng hổ phách/teal đặc trưng đồng bộ của hệ thống.
+B. Công Tắc Khóa Cố Định 8 Giây Phân Cảnh (Scene Duration Lock Switch)
+Nâng cấp độc lập tại phần nhập thời lượng của tab Biên kịch (ScriptModule.tsx), không làm ảnh hưởng đến các logic khác:
+
+Công tắc Toggle "Khóa 8 Giây Mặc Định": Mặc định luôn ở trạng thái BẬT (Active).
+Khi BẬT: Khóa cứng số giây/cảnh ở 8 giây mặc định (tiêu chuẩn vàng của hệ thống). Ô nhập số giây mỗi cảnh (secondsPerScene) sẽ bị vô hiệu hóa (disabled). Số cảnh hiển thị sẽ tự động tính toán động = (số phút * 60) / 8.
+Khi TẮT: Mở khóa ô nhập số giây mỗi cảnh cho phép tự do thay đổi thành con số bất kỳ (ví dụ: 5, 10, 12, 15 giây/cảnh...). Số cảnh tự động tính lại = (số phút * 60) / số giây vừa nhập.
+Bảo tồn: Mọi công thức sinh kịch bản mặc định của hệ thống vẫn hoạt động nguyên vẹn dựa trên biến scenes và secondsPerScene đã được tính toán ở trên.
+C. Liên Kết Kịch Bản Sang SEO Bóc Tách Cho 3 Nền Tảng
+Nâng cấp độc lập tại SeoModule.tsx và chỉ bổ sung cấu trúc bóc tách vào SYSTEM_PROMPT_SEO_MASTER trong prompts.ts (Tuyệt đối không sửa đổi các prompt kịch bản lõi khác như SYSTEM_PROMPT_SCRIPT_WRITER hay SYSTEM_PROMPT_AUDIO_REENGINEERING):
+
+Liên kết tự động: Khi kịch bản được viết xong ở tab Biên kịch, dữ liệu phân cảnh scriptSegments sẽ tự động nạp thẳng sang tab SEO qua Props mà người dùng không cần sao chép thủ công.
+Hiển thị nhãn trạng thái liên kết: Trên giao diện tab SEO, hiển thị nhãn màu vàng hổ phách: 🔗 LIÊN KẾT KỊCH BẢN THÀNH CÔNG: Đã nạp kịch bản "${scriptTopic}" (${scriptSegments.length} Cảnh).
+Phân tích bóc tách 3 nền tảng lớn (YouTube, TikTok, Facebook Reels): Khi bấm nút "Tối Ưu SEO", AI sẽ tự động phân tích sâu kịch bản và xuất ra bộ SEO chuyên biệt cho 3 nền tảng:
+YouTube: Tiêu đề CTR cao, Mô tả chi tiết lồng ghép thông điệp môi trường, và đặc biệt tự động tạo mục Timeline/Timestamps theo các phân cảnh kịch bản đã viết (Ví dụ: 0:00 - Cảnh 1: Giới thiệu chủ đề...).
+TikTok: Tiêu đề cực ngắn giật gân, Mô tả ngắn (<150 từ) bắt đầu bằng Hook tâm lý 3 giây đầu, hashtag đang lên xu hướng của ngách.
+Facebook Reels: Tiêu đề khơi gợi thảo luận/tương tác cộng đồng, Mô tả kêu gọi bình luận/chia sẻ/tag bạn bè, hashtag phù hợp.
+Giao diện Tab Bar Trực Quan: Tại SeoModule, bổ sung thanh chọn tab nền tảng (YouTube | TikTok | FB Reels) giúp người dùng dễ dàng chuyển đổi, có các nút Copy nhanh từng phần riêng biệt và nút Tải SEO (.txt) tích hợp đầy đủ cả 3 nền tảng xuống máy tính.
+D. Bảng Quy Chuẩn Lên Viral VKT (Thêm Mới Độc Lập)
+Thiết kế thêm một Panel checklist hiển thị trực quan các quy chuẩn lên xu hướng trực tiếp trên giao diện biên soạn kịch bản ở cột bên phải (ScriptModule.tsx). Panel này sử dụng tông màu Slate/Amber nguyên bản của hệ thống, không ảnh hưởng đến bất kỳ bố cục hay code hiện hữu nào của cột biên soạn bên trái.
+2. Giải Pháp Kỹ Thuật Chi Tiết & Bảo Tồn Hệ Thống
+Bước 2.1: Truyền dữ liệu liên kết trong App.tsx
+Chúng ta chỉ truyền thêm props sang SeoModule mà không làm thay đổi luồng điều hướng của App:
+
+tsx
+
+// src/App.tsx
+<div style={{ display: activeTab === 'seo' ? 'block' : 'none' }}>
+  <SeoModule 
+    initialTopic={strategyTopic} 
+    scriptSegments={scriptSegments} // 🔗 Liên kết dữ liệu phân cảnh kịch bản
+    scriptTopic={scriptTopic}       // 🔗 Liên kết chủ đề kịch bản thực tế
+  />
+</div>
+Bước 2.2: Chỉ nâng cấp SYSTEM_PROMPT_SEO_MASTER trong prompts.ts
+(Bảo tồn nguyên vẹn 100% prompt viết kịch bản SYSTEM_PROMPT_SCRIPT_WRITER và prompt audio SYSTEM_PROMPT_AUDIO_REENGINEERING mặc định của hệ thống)
+
+typescript
+
+// src/data/prompts.ts
+export const SYSTEM_PROMPT_SEO_MASTER = `You are a Content Strategist and Viral Podcast SEO Expert specializing in deep conversations, psychology, healing, finance, and storytelling.
+MISSION: Analyze the provided topic and detailed script segments (if provided) to create a highly optimized, platform-specific SEO package for 3 major platforms: YouTube, TikTok, and Facebook Reels.
+REQUIRED JSON OUTPUT STRUCTURE:
+{
+  "keywords": {
+    "primary": ["Keyword 1", "Keyword 2"],
+    "secondary": ["Keyword 3", "Keyword 4"],
+    "long_tail": ["Long tail keyword string"]
+  },
+  "platforms": {
+    "youtube": {
+      "viral_titles": [
+        "Title Option 1 (Emotional Hook, High CTR)",
+        "Title Option 2 (Educational & Thought-provoking)"
+      ],
+      "description": "Full detailed description (250-400 words) outlining the deep conversation, values, and insights. You MUST include a platform-specific timestamps section outlining each scene/part's content to improve SEO structure (If script segments are provided, format them as: '0:00 - Cảnh 1: [Tên phân cảnh]', '0:08 - Cảnh 2...'). Include the COPPA Disclaimer: 'Video này chia sẻ kiến thức sâu sắc, thảo luận các vấn đề đời sống và tâm lý học cho khán giả trên 13 tuổi.'",
+      "hashtags": ["#Podcast", "#DeepTalk", "#TrietLyCuocSong", "#TamLyHoc", "#ChuaLanh"]
+    },
+    "tiktok": {
+      "viral_titles": [
+        "Short Punchy Title 1 (Curiosity Hook)",
+        "Title 2 (Trend-focused)"
+      ],
+      "description": "Ultra-short description (less than 150 words) starting with an immediate 3-second psychological hook and dramatic highlight.",
+      "hashtags": ["#TikTokPodcast", "#DeepTalks", "#ViralClip", "#HocCungTikTok", "#TamLyConNguoi"]
+    },
+    "facebook_reels": {
+      "viral_titles": [
+        "Relatable/Discussion title 1",
+        "Title 2 (Warmth/Community-oriented)"
+      ],
+      "description": "Engaging description focusing on social connection, emotional reflection, relationship debates, and driving comments/shares.",
+      "hashtags": ["#ReelsVietNam", "#PodcastHay", "#SuyNgam", "#MoiQuanHe", "#ReelsViral"]
+    }
+  },
+  "thumbnail_suggestions": [
+    {
+      "concept_name": "Minh họa sâu lắng / Câu nói đắt giá",
+      "visual_concept": "Detailed imagery description...",
+      "text_on_image": "TEXT ON IMAGE (3-5 words, bold)",
+      "color_psychology": "Dominant color tones...",
+      "ai_image_prompt": "English Midjourney Prompt..."
+    }
+  ],
+  "engagement_comments": {
+    "pinned_comment": "Pin this to top - ask an engaging question about this topic",
+    "discussion_starters": ["Suy nghi cua ban ve van de nay nhu the nao?"],
+    "call_to_action": "Dang ky kenh de don xem tap tiep theo mien phi"
+  }
+}`;
+Bước 2.3: Nâng cấp ScriptModule.tsx (Công tắc khóa 8 giây & Bảng quy chuẩn viral)
+Thêm state quản lý công tắc khóa giây:
+typescript
+
+const [lockDuration, setLockDuration] = useState(true); // Bật mặc định (Khóa 8 giây)
+Tính toán số giây và số cảnh động:
+typescript
+
+const activeSecondsPerScene = lockDuration ? 8 : secondsPerScene;
+const scenes = Math.ceil((Math.max(0.1, durationNum) * 60) / activeSecondsPerScene);
+Cập nhật UI (Màu sắc Amber/Slate Nguyên Bản):
+Tích hợp công tắc và ô nhập số giây ở vị trí hợp lý. Khi công tắc BẬT, disable ô nhập số giây.
+Thêm Panel BẢNG QUY CHUẨN VIRAL VKT ở cột bên phải, sử dụng màu Slate/Amber nguyên bản của hệ thống.
+Bước 2.4: Nâng cấp SeoModule.tsx (Giao Diện Tab Bar & Liên Kết Thực Tế)
+Tiếp Nhận Props:
+typescript
+
+interface Props {
+  initialTopic?: string;
+  scriptSegments?: any[];
+  scriptTopic?: string;
+}
+Hiển Thị Trạng Thái Liên Kết & Tab Bar 3 Nền Tảng:
+Hiển thị nhãn liên kết kịch bản ở trên cùng.
+Thiết lập state activePlatform ('youtube' | 'tiktok' | 'facebook_reels').
+Render kết quả bóc tách tương ứng cho nền tảng đang chọn với giao diện copy nhanh từng mục và nút tải file .txt tổng hợp cả 3 nền tảng.
+3. Kế Hoạch Xác Minh Chất Lượng
+Kiểm thử tính ít xâm lấn: Đảm bảo tất cả các tính năng cũ (như tìm kiếm ý tưởng Spy, Studio dựng phim, cấu hình API Key...) hoạt động hoàn hảo và không bị lỗi sau khi tích hợp.
+Xác Minh Không Bị Lệch Tông Màu: Giữ nguyên 100% màu vàng hổ phách Amber của hệ thống.
+Kiểm thử Công tắc Giây/Cảnh: Bật/Tắt công tắc để kiểm tra xem hệ thống có tính toán động số cảnh dựa vào số phút và số giây/cảnh tương ứng một cách chuẩn xác không.
+Xác Minh SEO 3 Nền Tảng: Chạy thử tối ưu SEO để đảm bảo AI bóc tách đúng cấu trúc 3 nền tảng và tự động xuất Timeline cho YouTube.

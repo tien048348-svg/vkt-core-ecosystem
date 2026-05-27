@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { generateImage } from '../services/aiService';
 import { showToast } from '../components/Toast';
 
-interface Props { segments: any[]; topic?: string; }
+interface Props { segments: any[]; topic?: string; uiLang?: 'vi' | 'en'; }
 
 function downloadFile(content: string, fileName: string, mimeType: string) {
   try {
@@ -38,7 +38,7 @@ function makeFileName(topic: string, suffix: string, ext: string): string {
   return `${slug}_${suffix}_${d}-${m}-${y}_${h}${min}.${ext}`;
 }
 
-const StudioModule: React.FC<Props> = ({ segments, topic = '' }) => {
+const StudioModule: React.FC<Props> = ({ segments, topic = '', uiLang = 'vi' }) => {
   const [mode, setMode] = useState<'video' | 'image'>('video');
   const [media, setMedia] = useState<Record<string, string>>({});
   const [loadingIdx, setLoadingIdx] = useState<number | null>(null);
@@ -140,6 +140,35 @@ const StudioModule: React.FC<Props> = ({ segments, topic = '' }) => {
     }
   };
 
+  const ENABLE_PRO_EXPORT = localStorage.getItem('dharma_enable_pro_export') === 'true';
+
+  const exportJSON_PRO = () => {
+    if (!segments || !segments.length) return;
+    
+    // Bản sửa đổi chuẩn V20.0 - CHỈ LẤY PROMPT ĐỂ GEN VIDEO/ẢNH TRÁNH RÁC DỮ LIỆU
+    const proSegments = segments.map((s, i) => ({
+      scene_number: s.scene_number || (i + 1),
+      video_prompt: s.video_prompt || '',
+      image_prompt: s.image_prompt || ''
+    }));
+
+    const content = JSON.stringify(proSegments, null, 2);
+    downloadFile(content, makeFileName(topic || '', 'project_PRO_ChiPrompt', 'json'), 'application/json;charset=utf-8');
+    setShowExport(false);
+    showToast('🚀 Tải Dự Án PRO (Chỉ Prompt) thành công!', 'success');
+  };
+
+  const exportCSV_PRO = () => {
+    if (!segments.length) return;
+    let csv = '\uFEFFScene,Video Prompt,Image Prompt\n';
+    segments.forEach((s, i) => {
+      csv += `${s.scene_number || (i + 1)},"${(s.video_prompt || '').replace(/"/g, '""')}","${(s.image_prompt || '').replace(/"/g, '""')}"\n`;
+    });
+    downloadFile(csv, makeFileName(topic || '', 'kich_ban_PRO_ChiPrompt', 'csv'), 'text/csv;charset=utf-8;');
+    setShowExport(false);
+    showToast('🚀 Tải CSV PRO (Chỉ Prompt) thành công!', 'success');
+  };
+
   if (!segments.length) return (
     <div className="h-full flex flex-col items-center justify-center animate-[slideIn_0.4s_ease-out]">
       <div className="text-center text-slate-500 py-10 italic">Chưa có dữ liệu kịch bản. Hãy tạo kịch bản trước.</div>
@@ -159,6 +188,12 @@ const StudioModule: React.FC<Props> = ({ segments, topic = '' }) => {
             <button onClick={() => setShowExport(!showExport)} className="px-4 py-1.5 rounded text-xs font-bold flex items-center gap-2 bg-green-900/40 text-green-300 hover:bg-green-800/50 border border-green-500/20"><i className="fa-solid fa-download" /> Tải <i className="fa-solid fa-chevron-down text-[10px]" /></button>
             {showExport && (
               <div className="absolute right-0 top-full mt-2 w-48 bg-[#12161e] border border-slate-700/30 rounded-xl shadow-xl z-50 overflow-hidden">
+                {ENABLE_PRO_EXPORT && (
+                  <>
+                    <button onClick={exportJSON_PRO} className="w-full text-left px-4 py-2 text-xs text-amber-300 hover:bg-slate-800/20 border-b border-slate-700/30 flex items-center gap-2 font-black bg-amber-900/20"><i className="fa-solid fa-crown text-amber-400 animate-pulse" /> TẢI JSON PRO</button>
+                    <button onClick={exportCSV_PRO} className="w-full text-left px-4 py-2 text-xs text-emerald-300 hover:bg-slate-800/20 border-b border-slate-700/30 flex items-center gap-2 font-black bg-emerald-900/20"><i className="fa-solid fa-crown text-emerald-400 animate-pulse" /> TẢI CSV PRO</button>
+                  </>
+                )}
                 <button onClick={exportProjectJSON} className="w-full text-left px-4 py-2 text-xs text-amber-300 hover:bg-slate-800/20 border-b border-slate-700/30 flex items-center gap-2 font-bold bg-amber-900/10"><i className="fa-solid fa-file-code text-amber-500" /> Tải Dự Án (.json)</button>
                 <button onClick={exportCSV} className="w-full text-left px-4 py-2 text-xs text-slate-300 hover:bg-slate-800/20 border-b border-slate-700/30 flex items-center gap-2"><i className="fa-solid fa-file-excel text-green-500" /> Excel Kịch Bản</button>
                 <button onClick={exportCSV2} className="w-full text-left px-4 py-2 text-xs text-emerald-300 hover:bg-slate-800/20 border-b border-slate-700/30 flex items-center gap-2 font-bold"><i className="fa-solid fa-file-excel text-emerald-400" /> Excel Kịch Bản V2</button>
@@ -173,94 +208,106 @@ const StudioModule: React.FC<Props> = ({ segments, topic = '' }) => {
       </div>
 
       <div className="flex-1 overflow-y-auto space-y-4 pb-10">
-        {segments.map((seg, idx) => {
-          const prompt = mode === 'video' ? seg.video_prompt : seg.image_prompt;
-          const result = media[`${idx}_${mode}`];
-          return (
-            <div key={idx} className="bg-[#12161e] border border-slate-700/30 p-4 rounded-xl flex flex-col sm:flex-row gap-4 items-start hover:border-slate-600 transition-colors">
-              <div className={`px-3 py-1.5 rounded text-xs font-bold text-white h-fit shadow-lg ${mode === 'video' ? 'bg-cyan-900/50' : 'bg-purple-900/50'}`}>SCENE {idx + 1}</div>
-              <div className="flex-1 w-full">
-                <div className="text-[10px] text-slate-500 font-bold uppercase mb-1">{mode === 'video' ? '🎬 VIDEO PROMPT' : '🖼️ IMAGE PROMPT'}</div>
-                <div className="relative group">
-                  <p className="text-xs text-slate-300 font-mono mb-3 bg-[#0a0e14]/50 p-3 rounded border border-slate-700/30 leading-relaxed pr-10">{prompt || 'No prompt'}</p>
-                  <button onClick={() => copy(prompt || '')} className="absolute top-2 right-2 p-1.5 bg-[#12161e] text-slate-300 rounded hover:bg-blue-900/50 hover:text-white border border-slate-700/30"><i className="fa-solid fa-copy" /></button>
-                </div>
-                <button onClick={() => genMedia(idx)} disabled={loadingIdx !== null}
-                  className={`px-3 py-1.5 rounded border text-xs font-bold flex items-center gap-1 transition-colors disabled:opacity-50 ${mode === 'video' ? 'bg-cyan-900/20 text-cyan-400 border-cyan-500/20' : 'bg-purple-900/20 text-purple-400 border-purple-500/20'}`}>
-                  {loadingIdx === idx ? <><i className="fa-solid fa-sync animate-spin" /> Đang tạo...</> : <><i className="fa-solid fa-magic" /> Tạo {mode === 'video' ? 'Video' : 'Ảnh'}</>}
-                </button>
-                {seg.voice_profile && (
-                  <div className="mt-3 p-2.5 bg-purple-950/20 rounded-lg border border-purple-500/20 space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <div className="text-[10px] font-bold text-purple-400 flex items-center gap-1"><i className="fa-solid fa-user-tie" /> {seg.voice_profile.speaker}</div>
-                      <div className={`px-1.5 py-0.5 rounded text-[8px] font-bold ${seg.voice_profile.state === 'ON-SCREEN' ? 'bg-amber-900/40 text-amber-400' : 'bg-slate-800 text-slate-400'}`}>{seg.voice_profile.state}</div>
-                    </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5">
-                      <div className="bg-[#0a0e14]/30 rounded p-1.5 border border-purple-900/20">
-                        <div className="text-[8px] text-purple-500 font-bold">AGE & DETAILS</div>
-                        <div className="text-[9px] text-slate-300 font-medium">{seg.voice_profile.age || (seg.voice_profile.gender ? `${seg.voice_profile.gender}` : 'Chưa rõ độ tuổi')}</div>
-                      </div>
-                      <div className="bg-[#0a0e14]/30 rounded p-1.5 border border-purple-900/20">
-                        <div className="text-[8px] text-purple-500 font-bold">ACCENT</div>
-                        <div className="text-[9px] text-slate-300 font-medium">{seg.voice_profile.accent || 'Giọng Bắc chuẩn'}</div>
-                      </div>
-                      <div className="bg-[#0a0e14]/30 rounded p-1.5 border border-purple-900/20">
-                        <div className="text-[8px] text-purple-500 font-bold">TIMBRE</div>
-                        <div className="text-[9px] text-slate-300">{seg.voice_profile.timbre}</div>
-                      </div>
-                      <div className="bg-[#0a0e14]/30 rounded p-1.5 border border-purple-900/20">
-                        <div className="text-[8px] text-purple-500 font-bold">TONE</div>
-                        <div className="text-[9px] text-slate-300">{seg.voice_profile.tone}</div>
-                      </div>
-                      <div className="bg-[#0a0e14]/30 rounded p-1.5 border border-purple-900/20">
-                        <div className="text-[8px] text-purple-500 font-bold">SPEED</div>
-                        <div className="text-[9px] text-slate-300">{seg.voice_profile.pacing_speed || seg.voice_profile.pacing}</div>
-                      </div>
-                    </div>
-                    {(seg.word_count || seg.audio_end_time) && (
-                      <div className="flex items-center gap-3 mt-1.5 pt-1.5 border-t border-purple-900/30">
-                        {seg.word_count && (
-                          <div className="flex items-center gap-1.5 text-[9px]">
-                            <span className="text-purple-400/70 font-bold">WORDS:</span>
-                            <span className="text-purple-200 font-mono">{seg.word_count}</span>
-                          </div>
-                        )}
-                        {seg.audio_end_time && (
-                          <div className="flex items-center gap-1.5 text-[9px]">
-                            <span className="text-purple-400/70 font-bold">END TIME:</span>
-                            <span className="text-purple-200 font-mono">{seg.audio_end_time}</span>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                    <p className="text-xs text-amber-100 italic mt-1">"{seg.voice_text}"</p>
-                  </div>
-                )}
-              </div>
-              <div className={`w-full sm:w-64 bg-[#0a0e14] rounded border border-slate-700/30 overflow-hidden shrink-0 flex items-center justify-center ${mode === 'video' ? 'aspect-video' : 'aspect-square'}`}>
-                {result ? (
-                  <div className="relative group w-full h-full">
-                    <img src={result} className="w-full h-full object-cover" />
-                    
-                    {/* VKT Premium Watermark Mask (Che đè logo Veo ở góc phải dưới) */}
-                    <div className="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-black/60 backdrop-blur-sm border border-amber-500/30 text-[8px] font-black text-amber-400 tracking-wider pointer-events-none select-none z-10 flex items-center gap-1 shadow-md">
-                      <i className="fa-solid fa-rocket animate-pulse text-[7px]" /> VKT STUDIO
-                    </div>
-
-                    <div className="absolute inset-0 bg-[#0a0e14]/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <a href={result} download={`scene_${idx}.png`} className="px-3 py-1.5 bg-white text-black rounded text-xs font-bold flex items-center gap-1"><i className="fa-solid fa-cloud-download-alt" /> Tải</a>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center p-4"><i className={`fa-solid ${mode === 'video' ? 'fa-film' : 'fa-image'} text-2xl mb-2 opacity-50`} /><div className="text-[10px] text-slate-500">Chưa có dữ liệu</div></div>
-                )}
-              </div>
-            </div>
-          );
-        })}
+        {segments.map((seg, idx) => (
+          <StudioSceneCard 
+            key={idx} 
+            idx={idx} 
+            seg={seg} 
+            mode={mode} 
+            mediaUrl={media[`${idx}_${mode}`]} 
+            loading={loadingIdx === idx} 
+            onGenerate={() => genMedia(idx)} 
+            onCopy={copy} 
+          />
+        ))}
       </div>
     </div>
   );
 };
+
+const StudioSceneCard = React.memo(({ idx, seg, mode, mediaUrl, loading, onGenerate, onCopy }: any) => {
+  const prompt = mode === 'video' ? seg.video_prompt : seg.image_prompt;
+  
+  return (
+    <div className="bg-[#12161e] border border-slate-700/30 p-4 rounded-xl flex flex-col sm:flex-row gap-4 items-start hover:border-slate-600 transition-colors">
+      <div className={`px-3 py-1.5 rounded text-xs font-bold text-white h-fit shadow-lg ${mode === 'video' ? 'bg-cyan-900/50' : 'bg-purple-900/50'}`}>SCENE {idx + 1}</div>
+      <div className="flex-1 w-full">
+        <div className="text-[10px] text-slate-500 font-bold uppercase mb-1">{mode === 'video' ? '🎬 VIDEO PROMPT' : '🖼️ IMAGE PROMPT'}</div>
+        <div className="relative group">
+          <p className="text-xs text-slate-300 font-mono mb-3 bg-[#0a0e14]/50 p-3 rounded border border-slate-700/30 leading-relaxed pr-10">{prompt || 'No prompt'}</p>
+          <button onClick={() => onCopy(prompt || '')} className="absolute top-2 right-2 p-1.5 bg-[#12161e] text-slate-300 rounded hover:bg-blue-900/50 hover:text-white border border-slate-700/30"><i className="fa-solid fa-copy" /></button>
+        </div>
+        <button onClick={onGenerate} disabled={loading}
+          className={`px-3 py-1.5 rounded border text-xs font-bold flex items-center gap-1 transition-colors disabled:opacity-50 ${mode === 'video' ? 'bg-cyan-900/20 text-cyan-400 border-cyan-500/20' : 'bg-purple-900/20 text-purple-400 border-purple-500/20'}`}>
+          {loading ? <><i className="fa-solid fa-sync animate-spin" /> Đang tạo...</> : <><i className="fa-solid fa-magic" /> Tạo {mode === 'video' ? 'Video' : 'Ảnh'}</>}
+        </button>
+        {seg.voice_profile && (
+          <div className="mt-3 p-2.5 bg-purple-950/20 rounded-lg border border-purple-500/20 space-y-1.5">
+            <div className="flex items-center justify-between">
+              <div className="text-[10px] font-bold text-purple-400 flex items-center gap-1"><i className="fa-solid fa-user-tie" /> {seg.voice_profile.speaker}</div>
+              <div className={`px-1.5 py-0.5 rounded text-[8px] font-bold ${seg.voice_profile.state === 'ON-SCREEN' ? 'bg-amber-900/40 text-amber-400' : 'bg-slate-800 text-slate-400'}`}>{seg.voice_profile.state}</div>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5">
+              <div className="bg-[#0a0e14]/30 rounded p-1.5 border border-purple-900/20">
+                <div className="text-[8px] text-purple-500 font-bold">AGE & DETAILS</div>
+                <div className="text-[9px] text-slate-300 font-medium">{seg.voice_profile.age || (seg.voice_profile.gender ? `${seg.voice_profile.gender}` : 'Chưa rõ độ tuổi')}</div>
+              </div>
+              <div className="bg-[#0a0e14]/30 rounded p-1.5 border border-purple-900/20">
+                <div className="text-[8px] text-purple-500 font-bold">ACCENT</div>
+                <div className="text-[9px] text-slate-300 font-medium">{seg.voice_profile.accent || 'Giọng Bắc chuẩn'}</div>
+              </div>
+              <div className="bg-[#0a0e14]/30 rounded p-1.5 border border-purple-900/20">
+                <div className="text-[8px] text-purple-500 font-bold">TIMBRE</div>
+                <div className="text-[9px] text-slate-300">{seg.voice_profile.timbre}</div>
+              </div>
+              <div className="bg-[#0a0e14]/30 rounded p-1.5 border border-purple-900/20">
+                <div className="text-[8px] text-purple-500 font-bold">TONE</div>
+                <div className="text-[9px] text-slate-300">{seg.voice_profile.tone}</div>
+              </div>
+              <div className="bg-[#0a0e14]/30 rounded p-1.5 border border-purple-900/20">
+                <div className="text-[8px] text-purple-500 font-bold">SPEED</div>
+                <div className="text-[9px] text-slate-300">{seg.voice_profile.pacing_speed || seg.voice_profile.pacing}</div>
+              </div>
+            </div>
+            {(seg.word_count || seg.audio_end_time) && (
+              <div className="flex items-center gap-3 mt-1.5 pt-1.5 border-t border-purple-900/30">
+                {seg.word_count && (
+                  <div className="flex items-center gap-1.5 text-[9px]">
+                    <span className="text-purple-400/70 font-bold">WORDS:</span>
+                    <span className="text-purple-200 font-mono">{seg.word_count}</span>
+                  </div>
+                )}
+                {seg.audio_end_time && (
+                  <div className="flex items-center gap-1.5 text-[9px]">
+                    <span className="text-purple-400/70 font-bold">END TIME:</span>
+                    <span className="text-purple-200 font-mono">{seg.audio_end_time}</span>
+                  </div>
+                )}
+              </div>
+            )}
+            <p className="text-xs text-amber-100 italic mt-1">"{seg.voice_text}"</p>
+          </div>
+        )}
+      </div>
+      <div className={`w-full sm:w-64 bg-[#0a0e14] rounded border border-slate-700/30 overflow-hidden shrink-0 flex items-center justify-center ${mode === 'video' ? 'aspect-video' : 'aspect-square'}`}>
+        {mediaUrl ? (
+          <div className="relative group w-full h-full">
+            <img src={mediaUrl} className="w-full h-full object-cover" />
+            
+            <div className="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-black/60 backdrop-blur-sm border border-amber-500/30 text-[8px] font-black text-amber-400 tracking-wider pointer-events-none select-none z-10 flex items-center gap-1 shadow-md">
+              <i className="fa-solid fa-rocket animate-pulse text-[7px]" /> VKT STUDIO
+            </div>
+
+            <div className="absolute inset-0 bg-[#0a0e14]/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <a href={mediaUrl} download={`scene_${idx}.png`} className="px-3 py-1.5 bg-white text-black rounded text-xs font-bold flex items-center gap-1"><i className="fa-solid fa-cloud-download-alt" /> Tải</a>
+            </div>
+          </div>
+        ) : (
+          <div className="text-center p-4"><i className={`fa-solid ${mode === 'video' ? 'fa-film' : 'fa-image'} text-2xl mb-2 opacity-50`} /><div className="text-[10px] text-slate-500">Chưa có dữ liệu</div></div>
+        )}
+      </div>
+    </div>
+  );
+});
 
 export default StudioModule;

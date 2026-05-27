@@ -1,0 +1,41 @@
+🌐 Kế Hoạch Đồng Bộ Toàn Cầu (Global Rollout Plan)
+CAUTION
+
+LỆNH BÀI THÉP (KHẮC CỐT GHI TÂM KHI THI CÔNG)
+1. CAM KẾT GIỮ NGUYÊN 100% HỆ THỐNG CŨ: KHÔNG ĐỤNG CHẠM hay thay đổi bất kỳ code nào khác trong hệ thống. Mã nguồn gốc phải được an toàn tuyệt đối 100%. 2. NGUYÊN TẮC MẢNH GHÉP LEGO: Chỉ chèn/cấy đúng những tính năng mới đã được phê duyệt vào đúng vị trí. Tuyệt đối không xóa bỏ, không viết đè, không làm hỏng cấu trúc hoạt động hiện tại.
+
+Sau khi anh/chị test bản THU NGHIEM thành công mỹ mãn, em sẽ bám sát 100% "Lệnh Bài Thép" trên để đồng bộ hệ thống.
+
+Dưới đây là Bản Đồ Đồng Bộ (Global Sync Map):
+
+📂 Các Dự Án Mục Tiêu Sẽ Được Nâng Cấp:
+VKT_MASTER_TEMPLATE (Bản gốc cốt lõi)
+VKT_PODCAST_STUDIO (Ngách Podcast)
+VKT_DHARMA_STUDIO - P (Ngách Phật Pháp Chính)
+VKT_DHARMA_STUDIO - 2 NV (Ngách Phật Pháp Đa Nhân Vật)
+VKT_KIDS (Ngách Trẻ Em)
+🛠️ 3 Mũi Nhọn Nâng Cấp Sẽ Được Clone Sang:
+1. Phẫu Thuật "Động Cơ Phân Phối" (Chỉ chèn vào ScriptModule.tsx)
+Copy toàn bộ cơ chế Progressive Rendering (Hiển thị cuốn chiếu).
+Gắn Auto-Retry & Backoff 10s (Chống nghẽn API).
+Kích hoạt Autosave chống rớt mạng.
+Bổ sung nút 🛑 HỦY & VIẾT LẠI.
+Nâng trần thời gian từ 10 phút lên 180 phút.
+Tiêm Giải thuật Nhịp Độ Động (Dynamic Pacing %) để phân bổ cấu trúc Mở - Thân - Kết tùy theo độ dài video (từ 5 phút đến 3 tiếng).
+2. Tiêm "Bộ Luật Vũ Trụ" & "Cố Định Tuổi" (Chỉ chèn vào prompts.ts)
+Cố định Tuổi Nhân Vật: Gắn chết lệnh thép "age": "MỘT CON SỐ TUỔI CHÍNH XÁC DUY NHẤT (VD: 65..." để đảm bảo khuôn mặt AI tạo ra giống nhau 100% xuyên suốt video.
+Tiêm 4 Bộ Luật Vàng:
+Safe Platform (An toàn Youtube/Tiktok).
+Pattern Interrupt (Chống nhàm chán).
+Multi-Sensory (Kích thích đa giác quan).
+Evergreen & Open Loops (Mãi xanh & Vòng lặp).
+3. Sửa Lỗi Ngoại Khoa Cho Riêng VKT_KIDS
+Khôi phục hiển thị danh sách 13 chủ đề "Học Tiếng Anh".
+Đổi chữ "Tái Chế" thành "Kids Cartoon & Education".
+Verification Plan (Kế Hoạch Nghiệm Thu)
+Tuân thủ tuyệt đối LỆNH BÀI THÉP: Chạy Build (npm run build) liên tục từng bước trên mỗi project để chắc chắn không gãy code.
+Mọi thứ đều phải giữ nguyên form dáng và sự ổn định 100% như lúc đầu.
+User Review Required
+IMPORTANT
+
+Đây là bản Master Plan sẽ dùng để thi công Đồng Bộ Toàn Cầu. Mọi điều khoản bảo vệ hệ thống đã được in đậm ở đầu trang. Khi anh/chị test xong bản THỬ NGHIỆM trên Vercel và ra lệnh "Đồng bộ đi", em sẽ mở đúng bản Kế hoạch có "Lệnh Bài Thép" này ra để làm việc!

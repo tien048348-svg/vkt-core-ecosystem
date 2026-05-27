@@ -1,0 +1,23 @@
+Kế Hoạch Nâng Cấp Hệ Thống Hub VKT (Hoàn Chỉnh & Dứt Điểm)
+Dạ, em đã tổng hợp lại toàn bộ các mắt xích mà anh/chị vừa rà soát. Dưới đây là bản kế hoạch HOÀN CHỈNH NHẤT, dựa hoàn toàn vào việc kết nối các tính năng có sẵn và đảm bảo chạy mượt mà, miễn phí 100% không tắc nghẽn.
+
+1. Cơ Chế Khóa Link (Hết Hạn Dùng Thử 3 Ngày)
+Vấn đề: Khách hàng được dùng thử (VD: 3 ngày). Hết hạn thì vẫn dùng được web, vẫn chat được với Trợ lý, nhưng click vào link Ứng dụng thì bị khóa.
+Giải pháp triển khai:
+Em sẽ cấu hình chức năng "Đánh chặn Link" (Link Interceptor) trên toàn bộ hệ thống (kể cả nút bấm trên Trang chủ lẫn các Link do Trợ lý AI trả ra trong khung chat).
+Khi khách click vào link, hệ thống kiểm tra số ngày dùng thử (daysRemaining trong AuthContext).
+Nếu hết hạn (hoặc chưa thanh toán), link sẽ bị khóa ngay lập tức và hiện lên thông báo: "Dạ, ứng dụng này đã hết hạn dùng thử / chưa được mở khóa. Anh/Chị vui lòng nâng cấp gói cước để tiếp tục sử dụng nhé!".
+2. Trợ Lý AI Tự Động "Mò" Dữ Liệu Từ Admin
+Vấn đề: AI phải biết lấy thông tin chính xác từ những gì Admin đã nhập vào (tên, mô tả, website, link video tham khảo...).
+Giải pháp triển khai:
+Em sẽ nâng cấp API chat.ts: Tự động gom toàn bộ các trường name, description, url, videoUrl, extraLinks (các link YouTube, Facebook tham khảo) và aiKnowledge từ bảng apps đưa vào não của AI.
+Trợ lý AI sẽ chỉ được phép đọc và lấy đúng những "từ khóa" trong kho dữ liệu này để tư vấn cho khách, tuyệt đối chính xác 100%.
+3. Thái Độ Lễ Phép Của Trợ Lý (Đã Có Sẵn)
+Em sẽ rà soát lại và gia cố chặt chẽ "Quy tắc xưng hô" trong Lõi Prompt. Đảm bảo 10.000 câu trả lời đều nhất quán: Xưng "Em" (hoặc Trợ lý VKT), gọi "Anh/Chị", luôn có chữ "ạ", "dạ", lịch thiệp, khiêm tốn và chuyên nghiệp đúng chuẩn mực chúng ta đã đề ra.
+4. Dứt Điểm Lỗi Admin F5 Mất Dữ Liệu & Giải Phóng Quota
+(Như đã thống nhất ở trên): Tắt bộ đệm ảo (Offline Cache) để bắt lỗi ghi Firebase.
+Áp dụng Bộ Nhớ Đệm Cục Bộ (Local Storage) cho khách truy cập. Dữ liệu chỉ tải 1 lần/ngày. Giúp hệ thống không bao giờ bị vượt hạn ngạch 50.000 lượt đọc của Firebase.
+Theo dõi "Ai Đã Vào": Kích hoạt lưu lịch sử truy cập của tài khoản Gmail vào bảng users để hiển thị ở tab "Người Dùng".
+IMPORTANT
+
+User Review Required Dạ, đây là bản kế hoạch tổng thể cuối cùng. Đã đầy đủ tất cả các ý: Khóa Link, AI đọc data động, Thái độ AI, và Sửa lỗi Quota/Admin. Anh/chị xem lại lần cuối, nếu "OK" một tiếng, em sẽ tiến hành viết Code nâng cấp một lần duy nhất cho toàn bộ hệ thống luôn ạ!

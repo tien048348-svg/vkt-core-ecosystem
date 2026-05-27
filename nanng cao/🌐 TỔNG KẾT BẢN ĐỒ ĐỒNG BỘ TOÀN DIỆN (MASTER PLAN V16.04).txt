@@ -1,0 +1,39 @@
+🌐 TỔNG KẾT BẢN ĐỒ ĐỒNG BỘ TOÀN DIỆN (MASTER PLAN V16.0)
+CAUTION
+
+LỆNH BÀI THÉP TỪ TỔNG CÔNG TRÌNH SƯ
+1. BẢO TOÀN 100% PIPELINE 4 BƯỚC: Giữ nguyên luồng vận hành gốc. Tuyệt đối không xóa bỏ. 2. NGUYÊN TẮC MẢNH GHÉP LEGO: Chỉ nâng cấp (Upgrade) hoặc cấy thêm (Append).
+
+📱 PHẦN 1: TỐI ƯU HÓA TRẢI NGHIỆM NGƯỜI DÙNG (UI/UX)
+Giao Diện Mobile/Desktop. Menu Cố định (Sticky). Nút Trượt nhanh. Render Ảo chống lag.
+⚙️ PHẦN 2: BẢO TOÀN VÀ NÂNG CẤP PIPELINE 4 BƯỚC LÕI
+B1: Tiếp nhận Đầu vào.
+B2: Chọn Style & Thời lượng Tùy Biến (Cho phép nhập một con số BẤT KỲ tùy theo nền tảng, không đóng chết cứng ở bất kỳ số nào).
+B3: Xử lý Kịch Bản.
+B4: Xuất bản.
+🏗️ PHẦN 3: NÂNG CẤP ĐỘNG CƠ PHÂN PHỐI (Chống Sập)
+Bộ nhớ Trượt. Ghi tạm LocalStorage. Auto-Retry API. Nút Hủy & Viết Lại. Kịch bản 3 Tiếng.
+🧠 PHẦN 4: BỘ LUẬT VŨ TRỤ "MASTER COMMAND V16.0" (Prompt Core)
+4.1 Khóa Tỷ lệ Động: Dù Đạo diễn nhập số giây là bao nhiêu (3s, 4.5s, 12s...), hệ thống sẽ lấy con số đó làm mốc để tự động nội suy ép số từ và tốc độ tương ứng.
+4.2 Global Language: Khóa từ đơn (Việt), Âm tiết đơn (Anh).
+4.3 VEO 3 Auto-Shield: Khóa vật lý (hướng gió, 6 ngón tay). Âm thanh động.
+4.4 Chống Trùng Lặp: Đột biến góc máy, phá vỡ văn mẫu.
+4.5 Tính nhất quán: Khóa Định Danh Nhân Vật Xuyên Suốt. Tối ưu SEO Thumbnail.
+🛡️ PHẦN 5: TƯỜNG LỬA BẢO VỆ 360 ĐỘ (Universal Compliance)
+Cấm tên thật, bản quyền. An toàn trẻ em. Chống bạo lực máu me. Lọc Y tế.
+🚀 PHẦN 6: KIẾN TRÚC "CẬP NHẬT LÕI TỪ XA" (OTA FIREBASE CORE UPDATE)
+(Tầm nhìn Vĩ Mô được nâng cấp theo chỉ đạo trực tiếp của Kiến Trúc Sư Trưởng)
+
+Lưu Trữ Đám Mây (Cloud Core): Toàn bộ "Bộ Luật V16.0" sẽ được đóng gói thành 1 file JSON và đẩy lên Đám mây (Firebase Firestore).
+Trạm Nâng Cấp (Admin Control Panel): Trong các ứng dụng sẽ có một tab ẩn dành riêng cho Đạo Diễn tên là "Nâng Cấp Lõi".
+Cập Nhật 1 Chạm (One-Click Sync): Anh/chị chỉ cần tải file V17.0 lên và bấm "Update". Lập tức, file V17.0 sẽ đè lên file cũ trên đám mây.
+Đồng Bộ Toàn Hệ Sinh Thái: TẤT CẢ các ứng dụng đang chạy (Phật Pháp, Kids, Podcast...) sẽ tự động lấy cái Lõi V17.0 mới nhất về để chạy. 1 nút bấm Update, 100 dự án được nâng cấp tức thì!
+User Review Required
+IMPORTANT
+
+XÁC NHẬN BẢN ĐỒ TỪ TỔNG CÔNG TRÌNH SƯ
+Dạ, em xin nhận lỗi vì cách viết tắt (5s/8s/10s) trong bản nháp cũ gây hiểu nhầm là hệ thống bị đóng chết (Hardcoded dropdown)!
+
+Chỗ này bắt buộc phải là một Ô Nhập Liệu Tự Do (Free-text Input Number). Nếu tương lai ra mắt một AI tạo video siêu dài 15 giây, Đạo diễn chỉ việc gõ số "15" vào ô đó. Lập tức phần lõi AI (Mục 4.1) sẽ tự động lấy số 15 này làm chuẩn để tính toán lại toàn bộ giới hạn số từ và tốc độ ma trận.
+
+Em đã sửa lại đúng ý đồ Tùy Biến Vô Hạn ở Mục B2 (Phần 2) và Mục 4.1 (Phần 4). Bức tranh đã thực sự là Một Mô Hình Mở (Open Architecture). Đạo diễn vui lòng rà soát lại lần cuối, nếu 100% ưng ý thì mình triển khai nha!

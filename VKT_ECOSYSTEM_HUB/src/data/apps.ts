@@ -162,7 +162,7 @@ export const defaultApps: AppConfig[] = [
   {
     id: "kids-cartoon",
     name: "VKT Kids Cartoon Studio",
-    description: "Cỗ máy sản xuất video hoạt hình 3D cho trẻ em. Tự động sinh kịch bản, nhân bản giọng nói (Voice Clone) và xuất bản video chất lượng 4K chỉ trong tích tắc.",
+    description: "Ứng dụng sản xuất video hoạt hình 3D và giáo dục trực quan sinh động dành cho thiếu nhi. Hỗ trợ tự động biên soạn kịch bản song ngữ Anh-Việt theo 13 chủ đề học tập mẫu và tích hợp công nghệ đề xuất phong cách visual đặc thù (như 3D Pixar, Tranh màu nước, Đất nặn Claymation, Đồ chơi vải nỉ, Học tiếng Anh Mẹ & Bé...).",
     iconName: "Play",
     color: "from-pink-500 to-rose-500",
     url: "https://vkt-kids.com",

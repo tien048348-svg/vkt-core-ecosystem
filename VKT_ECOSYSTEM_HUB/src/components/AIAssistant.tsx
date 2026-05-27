@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { MessageSquare, Send, X, Bot, User, Loader2, Sparkles, HelpCircle } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
+import { useAuth } from '../context/AuthContext';
 import { formatDriveImage } from '../lib/utils';
 
 interface Message {
@@ -12,6 +13,7 @@ interface Message {
 
 export const AIAssistant = () => {
   const { apps, plans, siteConfig } = useAppContext();
+  const { hasAccess } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
@@ -63,79 +65,118 @@ Bạn muốn tôi tư vấn hoặc giải đáp thông tin nào dưới đây?`,
   const getSmartLocalResponse = (query: string): string => {
     const q = query.toLowerCase();
     
-    // 1. Kids Cartoon
-    if (q.includes('cartoon') || q.includes('kids') || q.includes('hoạt hình') || q.includes('trẻ em')) {
-      const kidsApp = apps.find(a => a.id === 'kids-cartoon') || apps[0];
-      return `🧸 **VKT Kids Cartoon Studio** là cỗ máy sản xuất video hoạt hình 3D cho trẻ em vô cùng mạnh mẽ trong hệ sinh thái VKT:
-- **Tính năng nổi bật**: Tự động sinh kịch bản hoạt hình hay, nhân bản giọng nói AI truyền cảm (Voice Clone) và render xuất bản video chất lượng 4K siêu tốc.
-- **Trạng thái**: Hoạt động ổn định.
-- **Link trải nghiệm**: [Kids Cartoon Studio](${kidsApp?.url || 'https://vkt-kids.com'})
+    // 1. Phân tích tìm kiếm các ứng dụng động từ database
+    const matchedApp = apps.find(app => {
+      const nameLower = app.name.toLowerCase();
+      const idLower = app.id.toLowerCase();
+      const descLower = app.description ? app.description.toLowerCase() : '';
+      const knowledgeLower = app.aiKnowledge ? app.aiKnowledge.toLowerCase() : '';
+      
+      // Tạo danh sách từ khóa phụ đặc trưng cho các app tiêu chuẩn để fallback thông minh
+      const keywords: string[] = [];
+      if (idLower.includes('kids') || idLower.includes('cartoon') || nameLower.includes('cartoon') || nameLower.includes('hoạt hình')) {
+        keywords.push('kids', 'cartoon', 'hoạt hình', 'trẻ em', 'thiếu nhi', '3d pixar', 'đất nặn', 'song ngữ');
+      }
+      if (idLower.includes('dharma') || nameLower.includes('dharma') || nameLower.includes('phật') || nameLower.includes('tâm linh')) {
+        keywords.push('dharma', 'phật', 'đạo lý', 'thiền', 'tâm linh', 'pháp thoại', 'tĩnh tâm', 'nhạc thiền');
+      }
+      if (idLower.includes('recycle') || nameLower.includes('recycle') || nameLower.includes('tái chế') || nameLower.includes('handmade')) {
+        keywords.push('recycle', 'tái chế', 'handmade', 'xanh', 'eco', 'môi trường', 'vật liệu');
+      }
 
-Bạn có thể đăng ký gói dịch vụ để mở khóa trọn vẹn phần mềm này!`;
+      // Kiểm tra khớp từ khóa
+      return (
+        q.includes(idLower) ||
+        q.includes(nameLower) ||
+        nameLower.includes(q) ||
+        descLower.includes(q) ||
+        knowledgeLower.includes(q) ||
+        keywords.some(kw => q.includes(kw))
+      );
+    });
+
+    if (matchedApp) {
+      let response = `Dạ, em xin phép giới thiệu đến Anh/Chị thông tin chính thức của ứng dụng **${matchedApp.name}** thuộc hệ sinh thái VKT bên em ạ:
+
+✨ **Mô tả ứng dụng:** ${matchedApp.description || 'Ứng dụng thông minh hỗ trợ sản xuất nội dung tự động đỉnh cao.'}
+`;
+
+      // Tích hợp dữ liệu tri thức huấn luyện chuyên sâu (aiKnowledge) nếu có
+      if (matchedApp.aiKnowledge && matchedApp.aiKnowledge.trim() !== '') {
+        response += `\n📖 **Tri thức huấn luyện chuyên sâu:**\n${matchedApp.aiKnowledge}\n`;
+      }
+
+      response += `
+🚀 **Trạng thái:** Đang hoạt động cực kỳ ổn định.
+🔗 **Đường dẫn trải nghiệm:** [Click vào đây để trải nghiệm ngay](${matchedApp.url || '#'}) ạ!
+
+`;
+
+      // Tùy biến phản hồi theo cờ siteConfig.paymentEnabled
+      if (siteConfig?.paymentEnabled) {
+        response += `Dạ, hiện tại ứng dụng đang có các gói VIP hỗ trợ nhiều tính năng đặc biệt hơn. Anh/Chị có thể tham khảo bảng giá phía dưới hoặc nhấp nút "Đăng ký ngay" ở phần "Bảng Giá Dịch Vụ" trên trang chủ để tự động nâng cấp nhé ạ!`;
+      } else {
+        response += `🎁 **Món quà đặc biệt dành cho Anh/Chị:** Hiện tại, ứng dụng **${matchedApp.name}** đang nằm trong chương trình **MIỄN PHÍ TRẢI NGHIỆM 100%** tất cả tính năng VIP của bên em ạ! Anh/Chị hãy thoải mái trải nghiệm mọi công nghệ tối tân nhất mà không cần lo lắng về chi phí nhé ạ!`;
+      }
+
+      return response;
     }
 
-    // 2. Dharma Studio
-    if (q.includes('dharma') || q.includes('phật') || q.includes('đạo lý') || q.includes('thiền')) {
-      const dharmaApp = apps.find(a => a.id === 'dharma-studio') || apps[1];
-      return `🙏 **VKT Dharma Studio** là trạm phát sóng tinh thần đỉnh cao dành riêng cho việc làm nội dung tâm linh và đạo lý cuộc sống:
-- **Tính năng nổi bật**: Tạo video Pháp thoại, Đạo lý với giọng đọc AI truyền cảm, tích hợp sẵn kho hình ảnh thiền định 3D chất lượng cao và nhạc nền tĩnh tâm sâu sắc.
-- **Trạng thái**: Hoạt động ổn định.
-- **Link trải nghiệm**: [Dharma Studio](${dharmaApp?.url || 'https://vkt-dharma.com'})
+    // 2. Giá cả, gói cước, mua, thanh toán, nâng cấp, gia hạn
+    if (q.includes('giá') || q.includes('gói') || q.includes('vip') || q.includes('combo') || q.includes('thanh toán') || q.includes('nâng cấp') || q.includes('mua') || q.includes('gia hạn') || q.includes('đơn giá') || q.includes('phí')) {
+      
+      // Xử lý logic cờ paymentEnabled
+      if (!siteConfig?.paymentEnabled) {
+        return `Dạ, em xin phép được chia sẻ một thông tin vô cùng tự hào và hiếu khách gửi tới Anh/Chị ạ! 😍
 
-Nếu cần làm nội dung Phật giáo/Tĩnh tâm, đây chắc chắn là công cụ số 1 dành cho bạn!`;
-    }
+Hiện tại, hệ thống thanh toán tự động đang được đóng lại vì **toàn bộ hệ sinh thái ứng dụng của VKT Studio đang được mở MIỄN PHÍ TRẢI NGHIỆM 100%** toàn bộ các tính năng cao cấp (VIP) dành cho tất cả thành viên ạ!
 
-    // 3. Recyclestyles
-    if (q.includes('recycle') || q.includes('tái chế') || q.includes('handmade') || q.includes('xanh') || q.includes('eco')) {
-      const ecoApp = apps.find(a => a.id === 'recyclestyles') || apps[2];
-      return `🌱 **VKT Recyclestyles** là nền tảng sáng tạo lan tỏa lối sống xanh và bảo vệ môi trường:
-- **Tính năng nổi bật**: Tự động biên dịch đa ngôn ngữ, ghép âm thanh lồng tiếng AI chất lượng cao và tự động sản xuất video hướng dẫn làm đồ handmade từ vật liệu tái chế độc đáo.
-- **Trạng thái**: Hoạt động ổn định.
-- **Link trải nghiệm**: [Recyclestyles](${ecoApp?.url || 'https://vkt-eco.com'})`;
-    }
+Anh/Chị không cần trả bất kỳ khoản phí nào, cũng không cần nâng cấp hay đăng ký gói cước nào đâu ạ. Hãy thoải mái đăng nhập và sử dụng toàn bộ sức mạnh công nghệ AI tuyệt vời của bên em nhé ạ! 
 
-    // 4. Giá cả, gói cước, mua, thanh toán, nâng cấp
-    if (q.includes('giá') || q.includes('gói') || q.includes('vip') || q.includes('combo') || q.includes('thanh toán') || q.includes('nâng cấp') || q.includes('mua') || q.includes('gia hạn')) {
+Dạ, nếu sau này có bất kỳ chương trình thay đổi hoặc nâng cấp tính năng mới nào khác, bên em sẽ gửi thông tin chính thức đến Anh/Chị sau ạ. Em chúc Anh/Chị có những trải nghiệm thật thú vị và tuyệt vời cùng VKT nhé ạ!`;
+      }
+
+      // Trường hợp bật cổng thanh toán
       const activePlans = plans ? plans.filter(p => p.isActive) : [];
       if (activePlans.length === 0) {
-        return `💎 Hiện tại các gói dịch vụ tự động đang được bảo trì. Bạn vui lòng liên hệ trực tiếp Admin qua số Hotline/Zalo: **${siteConfig?.hotline || '055 979 3678'}** để nhận báo giá ưu đãi và kích hoạt tài khoản thủ công chỉ trong 30 giây!`;
+        return `Dạ, hiện tại cổng thanh toán tự động và các gói cước VIP đang được bộ phận kỹ thuật bảo trì và tối ưu hóa hệ thống để mang lại trải nghiệm mượt mà nhất cho Anh/Chị ạ.
+        
+Để nhận báo giá ưu đãi cực kỳ đặc biệt và kích hoạt tài khoản thủ công siêu tốc chỉ trong 30 giây, Anh/Chị vui lòng liên hệ trực tiếp với Admin qua Zalo/Hotline: **${siteConfig?.hotline || '055 979 3678'}** để được hỗ trợ chu đáo nhất nhé ạ! Em xin chân thành cảm ơn Anh/Chị ạ!`;
       }
       
       const plansList = activePlans.map(p => {
-        const appsCovered = (!p.appIds || p.appIds.length === 0) ? "Tất cả ứng dụng hệ sinh thái" : p.appIds.map(id => apps.find(a => a.id === id)?.name || id).join(', ');
+        const appsCovered = (!p.appIds || p.appIds.length === 0) 
+          ? "Tất cả ứng dụng hệ sinh thái VKT" 
+          : p.appIds.map(id => apps.find(a => a.id === id)?.name || id).join(', ');
         return `- **${p.name}** (${p.durationDays} ngày): **${(p.price || 0).toLocaleString('vi-VN')} VND**\n  *Ứng dụng mở khóa: ${appsCovered}*`;
       }).join('\n\n');
 
-      return `💎 **Bảng Giá Gói Cước Hệ Sinh Thái VKT** đang áp dụng:
+      return `Dạ, em xin phép gửi đến Anh/Chị bảng giá các gói cước dịch vụ VIP của hệ sinh thái **VKT Studio** đang áp dụng chính thức ạ:
 
 ${plansList}
 
 ---
-💡 **Cách thức đăng ký / Gia hạn**:
-1. Nhấp chọn nút **"Đăng ký ngay"** tại gói cước bạn mong muốn ở phần **Bảng Giá Dịch Vụ** trên trang chủ.
-2. Quét mã QR VietQR hiển thị trong modal hoặc chuyển khoản đúng số tiền + nội dung chuyển khoản tự động được cung cấp. Hệ thống sẽ tự động kích hoạt gói cước cho bạn ngay lập tức!
-3. Hoặc liên hệ Hotline/Zalo: **${siteConfig?.hotline || '055 979 3678'}** để Admin kích hoạt trực tiếp.`;
+💡 **Cách thức đăng ký / Gia hạn cực kỳ nhanh chóng ạ:**
+1. Anh/Chị vui lòng nhấp chọn nút **"Đăng ký ngay"** tại gói cước mong muốn ở phần **Bảng Giá Dịch Vụ** trên giao diện chính của trang chủ ạ.
+2. Quét mã QR VietQR hiển thị trên màn hình hoặc chuyển khoản đúng số tiền kèm nội dung chuyển khoản tự động được cung cấp. Hệ thống bên em sẽ tự động kích hoạt tài khoản VIP cho Anh/Chị ngay lập tức sau vài giây ạ!
+3. Ngoài ra, Anh/Chị cũng có thể liên hệ trực tiếp qua Zalo/Hotline: **${siteConfig?.hotline || '055 979 3678'}** để được Admin hỗ trợ kích hoạt trực tiếp chu đáo nhất nhé ạ!`;
     }
 
-    // 5. Liên hệ, hotline, sđt, hỗ trợ, zalo, địa chỉ, email
+    // 3. Liên hệ, hotline, sđt, hỗ trợ, zalo, địa chỉ, email, admin
     if (q.includes('hotline') || q.includes('zalo') || q.includes('liên hệ') || q.includes('sđt') || q.includes('điện thoại') || q.includes('hỗ trợ') || q.includes('địa chỉ') || q.includes('email') || q.includes('admin')) {
-      return `📞 **Thông tin hỗ trợ & Kích hoạt dịch vụ 24/7 của VKT Studio**:
+      return `Dạ, em xin phép gửi đến Anh/Chị thông tin liên hệ hỗ trợ kỹ thuật và chăm sóc khách hàng 24/7 chính thức của **VKT Studio** bên em ạ:
 
-- **Số Hotline / Zalo**: **${siteConfig?.hotline || '055 979 3678'}**
-- **Email Hỗ Trợ**: **${siteConfig?.email || 'support@kiemtienvu.com'}**
-- **Địa Chỉ Văn Phòng**: **${siteConfig?.address || 'Hà Nội, Vietnam'}**
+- **Số Hotline / Zalo hỗ trợ:** **${siteConfig?.hotline || '055 979 3678'}**
+- **Email Hỗ Trợ:** **${siteConfig?.email || 'support@kiemtienvu.com'}**
+- **Địa Chỉ Văn Phòng:** **${siteConfig?.address || 'Hà Nội, Vietnam'}**
 
-*💡 Mẹo nhỏ:* Nếu đơn hàng chuyển khoản của bạn chưa được kích hoạt tự động, hãy gửi ảnh biên lai thanh toán vào Zalo Hotline ở trên. Đội ngũ kỹ thuật viên VKT sẽ duyệt kích hoạt lập tức cho bạn!`;
+*💡 Mẹo nhỏ dành cho Anh/Chị:* Nếu đơn hàng chuyển khoản của Anh/Chị chưa được kích hoạt tự động sau 1 phút, Anh/Chị chỉ cần chụp ảnh biên lai giao dịch gửi vào Zalo Hotline ở trên. Đội ngũ kỹ thuật viên của bên em sẽ kiểm tra và duyệt kích hoạt thủ công siêu tốc lập tức cho Anh/Chị nhé ạ!`;
     }
 
-    // Mặc định chào mừng
-    return `Chào bạn! Tôi là trợ lý ảo thông minh VKT Studio. Tôi có thể tư vấn chuyên sâu cho bạn về các chủ đề:
-
-1. ⚙️ **Thông tin 3 phần mềm AI** nổi bật: Kids Cartoon Studio, Dharma Studio, và Recyclestyles.
-2. 💰 **Giá các gói cước VIP** (Gói Combo 3 tháng, Gói Cơ Bản 1 tháng...) và hướng dẫn thanh toán tự động.
-3. 📞 **Hotline Zalo** của Admin để kích hoạt/gia hạn/khiếu nại đơn hàng.
-
-Bạn hãy chọn một nút gợi ý nhanh ở phía trên hoặc hỏi cụ thể để tôi hỗ trợ nhé!`;
+    // Mặc định chào mừng / Không tìm thấy thông tin cụ thể
+    return `Dạ, hiện tại thông tin chi tiết về câu hỏi này chưa có sẵn trên hệ thống dữ liệu offline của em ạ. 
+    
+Để được hỗ trợ chính xác, nhanh chóng và chu đáo nhất, Anh/Chị vui lòng liên hệ trực tiếp với Admin qua Zalo/Hotline: **${siteConfig?.hotline || '055 979 3678'}** hoặc gửi thư tới Email: **${siteConfig?.email || 'support@kiemtienvu.com'}** để được em và đội ngũ admin hỗ trợ tận tình nhất cho Anh/Chị nhé ạ! Em xin chân thành cảm ơn Anh/Chị ạ!`;
   };
 
   const handleSendMessage = async (textToSend: string) => {
@@ -212,26 +253,43 @@ Bạn hãy chọn một nút gợi ý nhanh ở phía trên hoặc hỏi cụ th
     }
   };
 
+  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    // Tìm app tương ứng với link
+    const targetApp = apps.find(app => href.includes(app.url) && app.url.length > 5);
+    if (targetApp) {
+      if (!hasAccess(targetApp.id)) {
+        e.preventDefault();
+        alert(`Dạ, ứng dụng "${targetApp.name}" đã hết hạn dùng thử hoặc chưa được mở khóa.\nAnh/Chị vui lòng nâng cấp gói cước để tiếp tục sử dụng nhé ạ!`);
+      }
+    }
+  };
+
   // Hàm chuyển đổi liên kết Markdown thành thẻ HTML an toàn đơn giản
   const renderMessageText = (text: string) => {
     const mdLinkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
     const parts = [];
     let lastIndex = 0;
-    let match;
+    let match: RegExpExecArray | null;
 
     while ((match = mdLinkRegex.exec(text)) !== null) {
       if (match.index > lastIndex) {
         parts.push(text.substring(lastIndex, match.index));
       }
+      
+      const linkText = match[1];
+      const linkUrl = match[2];
+      const matchIndex = match.index;
+
       parts.push(
         <a 
-          key={match.index} 
-          href={match[2]} 
+          key={matchIndex} 
+          href={linkUrl} 
           target="_blank" 
           rel="noopener noreferrer" 
+          onClick={(e) => handleLinkClick(e, linkUrl)}
           className="text-indigo-400 hover:text-indigo-300 underline font-semibold transition-colors"
         >
-          {match[1]}
+          {linkText}
         </a>
       );
       lastIndex = mdLinkRegex.lastIndex;

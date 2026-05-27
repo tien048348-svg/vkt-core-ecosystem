@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://phatphap.kiemtienvu.com/sitemap.xml

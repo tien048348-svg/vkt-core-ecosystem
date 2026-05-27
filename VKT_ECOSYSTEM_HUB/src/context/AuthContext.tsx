@@ -137,22 +137,64 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     lastLogin: serverTimestamp(),
                     appAccess: {},
                   };
+
                   await setDoc(userRef, newProfile);
+                  console.log(`[AuthContext] Đã ghi nhận thành công user mới: ${firebaseUser.uid} (${firebaseUser.email})`);
                 } catch (e) {
-                  console.error("Async user creation error:", e);
+                  console.error("Async user creation or merge error:", e);
                 }
               })();
             } else {
+              // --- CHỐT CHẶN VÒNG LẶP VÔ HẠN QUAN TRỌNG NHẤT ---
+              // Lệnh này loại bỏ 100% tình trạng "Ghi rác" làm ngốn 20.000 Quota của Firebase.
+              // Nếu snapshot này được tạo ra từ Cache của trình duyệt (chưa lên Server), bỏ qua nó!
+              if (profileSnap.metadata.hasPendingWrites) {
+                return;
+              }
+
               const data = profileSnap.data() as UserProfile;
-              
               // Set dữ liệu profile và tắt trạng thái loading ngay lập tức để giao diện hiển thị tức thì (<10ms)
               setUserProfile(data);
               setAuthLoading(false);
 
-              // Cập nhật lastLogin bất đồng bộ một lần duy nhất, tránh ghi đè liên tục
-              const lastLoginTime = data.lastLogin?.toDate?.()?.getTime() || 0;
+              // ─── CƠ CHẾ TỰ VÁ LỖI (SELF-HEALING MECHANISM) ───
+              // Tự động kiểm tra và ghi bổ sung nếu tài khoản bị thiếu các trường quan trọng do lỗi trước đây
+              const missingFields: Partial<UserProfile> = {};
+              if (!data.createdAt) {
+                missingFields.createdAt = serverTimestamp() as any;
+              }
+              if (!data.email && firebaseUser.email) {
+                missingFields.email = firebaseUser.email;
+              }
+              if (!data.displayName && firebaseUser.displayName) {
+                missingFields.displayName = firebaseUser.displayName;
+              }
+              if (!data.photoURL && firebaseUser.photoURL) {
+                missingFields.photoURL = firebaseUser.photoURL;
+              }
+
+              if (Object.keys(missingFields).length > 0) {
+                console.log(`[Self-Healing] Vá dữ liệu cho user ${firebaseUser.uid}:`, Object.keys(missingFields));
+                setDoc(userRef, missingFields, { merge: true }).catch(console.error);
+              }
+
+              // Cập nhật lastLogin bất đồng bộ một lần duy nhất, tránh ghi đè liên tục.
+              // Tăng thời gian giãn cách lên 1 GIỜ (thay vì 5 phút) để tối đa hóa tiết kiệm dung lượng Firestore.
+              let lastLoginTime = 0;
+              if (data.lastLogin) {
+                if (typeof data.lastLogin.toDate === 'function') {
+                  lastLoginTime = data.lastLogin.toDate().getTime();
+                } else if (data.lastLogin.seconds) {
+                  lastLoginTime = data.lastLogin.seconds * 1000;
+                } else if (typeof data.lastLogin === 'number') {
+                  lastLoginTime = data.lastLogin;
+                } else {
+                  lastLoginTime = new Date(data.lastLogin).getTime();
+                }
+              }
+
               const now = Date.now();
-              if (now - lastLoginTime > 5 * 60 * 1000) {
+              if (now - lastLoginTime > 60 * 60 * 1000) {
                 setDoc(userRef, { lastLogin: serverTimestamp() }, { merge: true }).catch(console.error);
               }
             }
@@ -179,9 +221,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const signInWithGoogle = async () => {
-    const provider = new GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: 'select_account' });
-    await signInWithPopup(auth, provider);
+    try {
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: 'select_account' });
+      await signInWithPopup(auth, provider);
+    } catch (error: any) {
+      console.error("Lỗi signInWithGoogle:", error);
+      throw error;
+    }
   };
 
   const signOut = async () => {

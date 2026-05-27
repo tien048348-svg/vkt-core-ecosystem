@@ -40,6 +40,7 @@ export const Admin = () => {
   const [saveStatus, setSaveStatus] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [uploadingField, setUploadingField] = useState<string | null>(null);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
 
   useEffect(() => {
@@ -50,11 +51,13 @@ export const Admin = () => {
   }, [loading, apps, editId, selectedId]);
 
   useEffect(() => {
-    const targetApp = apps.find(a => a.id === selectedId);
-    if (targetApp) {
-      setFormData(targetApp);
+    if (!formData || formData.id !== selectedId) {
+      const targetApp = apps.find(a => a.id === selectedId);
+      if (targetApp) {
+        setFormData(targetApp);
+      }
     }
-  }, [selectedId, apps]);
+  }, [selectedId, apps, formData]);
 
   useEffect(() => {
     if (siteConfig) {
@@ -174,10 +177,15 @@ export const Admin = () => {
     setFormData({ ...formData, extraLinks: updatedLinks });
   };
 
-  const handleSaveApp = () => {
+  const handleSaveApp = async () => {
     if (formData) {
-      updateApp(formData);
-      showSaveStatus();
+      try {
+        await updateApp(formData);
+        showSaveStatus();
+      } catch (err: any) {
+        console.error("Lưu App lỗi:", err);
+        alert("Cập nhật thất bại!\nLỗi từ máy chủ: " + err.message + "\n\nNguyên nhân thường gặp:\n1. Firebase Database Rules của bạn đã hết hạn (mặc định 30 ngày).\n2. Bạn chưa cấp quyền 'allow write: if true;' cho bảng 'apps'.\n\nCách xử lý: Vui lòng vào Firebase Console -> Firestore Database -> Rules để kiểm tra và cập nhật lại quyền.");
+      }
     }
   };
 
@@ -188,17 +196,22 @@ export const Admin = () => {
       // Kiểm tra Gemini API Key nếu có nhập
       if (secretsData.geminiApiKey) {
         try {
-          const testUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${secretsData.geminiApiKey}`;
+          const testUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${secretsData.geminiApiKey}`;
           const res = await fetch(testUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: 'hi' }] }] })
           });
           if (!res.ok) {
-            const errData = await res.json();
-            alert(`Lỗi: Gemini API Key KHÔNG HỢP LỆ hoặc đã hết hạn!\nChi tiết: ${errData.error?.message || 'Không xác định'}\n\nVui lòng kiểm tra lại Key.`);
-            setIsSaving(false);
-            return; // Dừng lại, không lưu
+            // Nếu lỗi 503 (Hệ thống bận) hoặc 429 (Hết hạn mức nhưng key đúng), ta cảnh báo nhưng vẫn cho phép lưu
+            if (res.status === 503 || res.status === 429) {
+              console.warn("Hệ thống Gemini đang bận hoặc hết hạn mức (Status " + res.status + "), chấp nhận bỏ qua chặn lưu vì API Key đúng định dạng.");
+            } else {
+              const errData = await res.json();
+              alert(`Lỗi: Gemini API Key KHÔNG HỢP LỆ hoặc đã hết hạn!\nChi tiết: ${errData.error?.message || 'Không xác định'}\n\nVui lòng kiểm tra lại Key.`);
+              setIsSaving(false);
+              return; // Dừng lại, không lưu
+            }
           }
         } catch (err) {
           alert('Lỗi mạng khi kiểm tra Gemini API Key. Vui lòng thử lại.');
@@ -229,8 +242,18 @@ export const Admin = () => {
     try {
       const newId = await addApp();
       setSelectedId(newId);
-    } catch (e) {
-      alert("Không thể tạo ứng dụng mới");
+      setFormData({
+        id: newId,
+        name: 'Ứng dụng mới',
+        description: 'Mô tả ứng dụng mới',
+        url: '',
+        iconName: 'Sparkles',
+        color: 'from-slate-500 to-slate-700',
+        isHidden: false
+      });
+    } catch (err: any) {
+      console.error("Thêm App lỗi:", err);
+      alert("Không thể tạo ứng dụng mới!\nLỗi từ máy chủ: " + err.message + "\n\n=> Vui lòng vào Firebase Console -> Firestore Database -> Rules để cập nhật quyền 'allow write: if true;'");
     }
   };
 
@@ -246,8 +269,9 @@ export const Admin = () => {
           setSelectedId('');
           setFormData(null);
         }
-      } catch (e) {
-        alert("Không thể xóa ứng dụng");
+      } catch (err: any) {
+        console.error("Xóa App lỗi:", err);
+        alert("Không thể xóa ứng dụng!\nLỗi từ máy chủ: " + err.message + "\n\n=> Vui lòng vào Firebase Console -> Firestore Database -> Rules để cập nhật quyền 'allow write: if true;'");
       }
     }
   };
@@ -255,6 +279,21 @@ export const Admin = () => {
   const handleReset = () => {
     if (confirm("Hành động này sẽ khôi phục toàn bộ nội dung về mặc định. Bạn có chắc không?")) {
       resetToDefault();
+    }
+  };
+
+  const handleAdminLogin = async () => {
+    setIsLoggingIn(true);
+    try {
+      await signInWithGoogle();
+    } catch (err: any) {
+      if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
+        alert('Đăng nhập bị hủy hoặc trình duyệt của bạn đang chặn Popup.\n=> Vui lòng không đóng cửa sổ đăng nhập sớm, hoặc thử lại trên trình duyệt khác!');
+      } else {
+        alert('Lỗi đăng nhập: ' + err.message + '\n\nNếu bị lỗi lặp lại, hãy kiểm tra kết nối mạng hoặc thử lại.');
+      }
+    } finally {
+      setIsLoggingIn(false);
     }
   };
 
@@ -283,6 +322,7 @@ export const Admin = () => {
               <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl mb-6 text-sm leading-relaxed">
                 <p className="font-semibold mb-1">Truy cập bị từ chối!</p>
                 Tài khoản <span className="font-bold text-red-300">{user.email}</span> không có quyền quản trị hệ thống.
+                <p className="mt-2 text-xs text-red-300/80">Bạn vui lòng Đăng xuất và sử dụng đúng Email Admin để vào trang này.</p>
               </div>
               <div className="flex gap-3 justify-center">
                 <button onClick={signOut} className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition-colors font-medium">
@@ -297,11 +337,14 @@ export const Admin = () => {
             <div className="mt-8 text-center">
               <p className="text-slate-400 mb-6 text-sm">Chỉ dành riêng cho quản trị viên tối cao. Vui lòng đăng nhập bằng Gmail được cấp phép.</p>
               <button
-                onClick={signInWithGoogle}
-                className="w-full py-3.5 bg-white hover:bg-gray-50 text-gray-900 font-bold rounded-xl transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-100 flex items-center justify-center gap-3"
+                onClick={handleAdminLogin}
+                disabled={isLoggingIn}
+                className="w-full py-3.5 bg-white hover:bg-gray-50 text-gray-900 font-bold rounded-xl transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-100 flex items-center justify-center gap-3 disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                <svg className="w-5 h-5" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-                Tiếp tục bằng Google
+                {isLoggingIn ? <Loader2 className="animate-spin text-gray-600" size={20} /> : (
+                  <svg className="w-5 h-5" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+                )}
+                {isLoggingIn ? 'Đang xác thực...' : 'Tiếp tục bằng Google'}
               </button>
             </div>
           )}
@@ -864,7 +907,7 @@ export const Admin = () => {
         {activeTab === 'backup' && <AdminBackupTab />}
 
         {/* Tab 2: Apps Settings */}
-        {activeTab === 'apps' && formData && (
+        {activeTab === 'apps' && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {/* Sidebar */}
             <div className="md:col-span-1 space-y-2">
@@ -889,207 +932,221 @@ export const Admin = () => {
               </button>
             </div>
 
-            {/* Form */}
-            <div className="md:col-span-3 bg-slate-900 border border-slate-800 rounded-2xl p-6 md:p-8">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-slate-800 pb-4">
-                <h2 className="text-xl font-semibold text-white truncate flex items-center gap-2">
-                  <span>{formData.name}</span>
-                  {formData.url && (
-                    <a href={formData.url} target="_blank" rel="noopener noreferrer" 
-                      className="text-xs bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/40 px-2 py-1 rounded-md flex items-center gap-1 transition-colors"
-                      title="Mở ứng dụng trong tab mới">
-                      <ExternalLink size={14} /> Mở App
-                    </a>
-                  )}
-                </h2>
-                <label className="flex items-center gap-2 text-sm font-normal cursor-pointer bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800 flex-shrink-0">
-                  <span className={`${formData.isHidden ? 'text-amber-500' : 'text-emerald-400'}`}>
-                    {formData.isHidden ? 'Chỉ Admin Thấy (Ẩn)' : 'Công Khai (Trang chủ)'}
-                  </span>
-                  <div className="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" name="isHidden" checked={!formData.isHidden} onChange={() => setFormData({ ...formData, isHidden: !formData.isHidden })} className="sr-only peer" />
-                    <div className="w-9 h-5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
-                  </div>
-                </label>
-              </div>
-              
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-2">Tên ứng dụng</label>
-                  <input 
-                    type="text" name="name" value={formData.name || ''} onChange={handleChange}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-2">Đường link URL đích</label>
-                  <input 
-                    type="text" name="url" value={formData.url || ''} onChange={handleChange}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-                    placeholder="https://kids.vkt.com"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-2">Ảnh bìa (Hoặc Tải Lên)</label>
-                  <div className="flex items-center gap-2">
-                    <input 
-                      type="text" name="coverImage" value={formData.coverImage || ''} onChange={handleChange}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-                      placeholder="https://example.com/image.jpg"
-                    />
-                    <label className="flex-shrink-0 cursor-pointer bg-slate-800 hover:bg-slate-700 p-2.5 rounded-lg border border-slate-700 transition-colors flex items-center justify-center text-slate-300" title="Tải ảnh từ máy tính">
-                      {uploadingField === 'coverImage' ? <Loader2 className="animate-spin text-indigo-400" size={20} /> : <UploadCloud size={20} />}
-                      <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, 'coverImage', false)} disabled={uploadingField === 'coverImage'} />
+            {/* Form hoặc Empty State */}
+            <div className="md:col-span-3">
+              {formData ? (
+                <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 md:p-8">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-slate-800 pb-4">
+                    <h2 className="text-xl font-semibold text-white truncate flex items-center gap-2">
+                      <span>{formData.name}</span>
+                      {formData.url && (
+                        <a href={formData.url} target="_blank" rel="noopener noreferrer" 
+                          className="text-xs bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/40 px-2 py-1 rounded-md flex items-center gap-1 transition-colors"
+                          title="Mở ứng dụng trong tab mới">
+                          <ExternalLink size={14} /> Mở App
+                        </a>
+                      )}
+                    </h2>
+                    <label className="flex items-center gap-2 text-sm font-normal cursor-pointer bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800 flex-shrink-0">
+                      <span className={`${formData.isHidden ? 'text-amber-500' : 'text-emerald-400'}`}>
+                        {formData.isHidden ? 'Chỉ Admin Thấy (Ẩn)' : 'Công Khai (Trang chủ)'}
+                      </span>
+                      <div className="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="isHidden" checked={!formData.isHidden} onChange={() => setFormData({ ...formData, isHidden: !formData.isHidden })} className="sr-only peer" />
+                        <div className="w-9 h-5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                      </div>
                     </label>
                   </div>
-                  {formData.coverImage && (
-                    <div className="mt-3 rounded-lg overflow-hidden h-32 w-full max-w-sm border border-slate-800">
-                      <img src={formatDriveImage(formData.coverImage)} alt="Cover Preview" className="w-full h-full object-cover" />
-                    </div>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-2">Mô tả ngắn</label>
-                  <textarea 
-                    name="description" value={formData.description || ''} onChange={handleChange} rows={3}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-                  />
-                </div>
-
-                {/* Extra Links Section */}
-                <div className="border-t border-slate-800 pt-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <label className="block text-sm font-medium text-slate-400">Các nút liên kết phụ (Tùy chọn)</label>
-                    <button onClick={handleAddLink} type="button" className="flex items-center gap-1 px-3 py-1.5 text-xs bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 rounded-lg transition-colors">
-                      <Plus size={14} /> Thêm Nút
-                    </button>
-                  </div>
                   
-                  <div className="space-y-3">
-                    {(formData.extraLinks || []).map(link => (
-                      <div key={link.id} className="flex gap-2 items-start bg-slate-950 p-3 rounded-lg border border-slate-800">
-                        <select 
-                          value={link.type} 
-                          onChange={(e) => handleLinkChange(link.id, 'type', e.target.value)}
-                          className="bg-slate-900 border border-slate-800 text-slate-300 rounded-lg px-3 py-2 outline-none"
-                        >
-                          <option value="youtube">YouTube</option>
-                          <option value="facebook">Facebook</option>
-                          <option value="tiktok">TikTok</option>
-                          <option value="website">Website</option>
-                          <option value="other">Khác</option>
-                        </select>
-                        
-                        <div className="flex-1 space-y-2">
-                          <input 
-                            type="text" placeholder="Tên Nút (VD: Xem Hướng Dẫn)" 
-                            value={link.label} onChange={(e) => handleLinkChange(link.id, 'label', e.target.value)}
-                            className="w-full bg-slate-900 border border-slate-800 text-white rounded-lg px-3 py-2 outline-none text-sm"
-                          />
-                          <div className="flex items-center gap-2">
-                            <input 
-                              type="text" placeholder="https://..." 
-                              value={link.url} onChange={(e) => handleLinkChange(link.id, 'url', e.target.value)}
-                              className="flex-1 bg-slate-900 border border-slate-800 text-white rounded-lg px-3 py-2 outline-none text-sm"
-                            />
-                            <label className="flex-shrink-0 cursor-pointer bg-slate-800 hover:bg-slate-700 p-2 rounded-lg border border-slate-700 transition-colors flex items-center justify-center text-slate-300" title="Tải Video/File từ máy tính">
-                              {uploadingField === `link_${link.id}` ? <Loader2 className="animate-spin text-indigo-400" size={16} /> : <UploadCloud size={16} />}
-                              <input type="file" accept="video/*,audio/*,.pdf,.zip" className="hidden" onChange={(e) => handleLinkUpload(e, link.id)} disabled={uploadingField === `link_${link.id}`} />
-                            </label>
-                          </div>
+                  <div className="space-y-6">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-400 mb-2">Tên ứng dụng</label>
+                      <input 
+                        type="text" name="name" value={formData.name || ''} onChange={handleChange}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-slate-400 mb-2">Đường link URL đích</label>
+                      <input 
+                        type="text" name="url" value={formData.url || ''} onChange={handleChange}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                        placeholder="https://kids.vkt.com"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-slate-400 mb-2">Ảnh bìa (Hoặc Tải Lên)</label>
+                      <div className="flex items-center gap-2">
+                        <input 
+                          type="text" name="coverImage" value={formData.coverImage || ''} onChange={handleChange}
+                          className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                          placeholder="https://example.com/image.jpg"
+                        />
+                        <label className="flex-shrink-0 cursor-pointer bg-slate-800 hover:bg-slate-700 p-2.5 rounded-lg border border-slate-700 transition-colors flex items-center justify-center text-slate-300" title="Tải ảnh từ máy tính">
+                          {uploadingField === 'coverImage' ? <Loader2 className="animate-spin text-indigo-400" size={20} /> : <UploadCloud size={20} />}
+                          <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, 'coverImage', false)} disabled={uploadingField === 'coverImage'} />
+                        </label>
+                      </div>
+                      {formData.coverImage && (
+                        <div className="mt-3 rounded-lg overflow-hidden h-32 w-full max-w-sm border border-slate-800">
+                          <img src={formatDriveImage(formData.coverImage)} alt="Cover Preview" className="w-full h-full object-cover" />
                         </div>
-                        
-                        <button onClick={() => handleRemoveLink(link.id)} type="button" className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg transition-colors mt-1">
-                          <Trash2 size={18} />
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-slate-400 mb-2">Mô tả ngắn</label>
+                      <textarea 
+                        name="description" value={formData.description || ''} onChange={handleChange} rows={3}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                      />
+                    </div>
+
+                    {/* Extra Links Section */}
+                    <div className="border-t border-slate-800 pt-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <label className="block text-sm font-medium text-slate-400">Các nút liên kết phụ (Tùy chọn)</label>
+                        <button onClick={handleAddLink} type="button" className="flex items-center gap-1 px-3 py-1.5 text-xs bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 rounded-lg transition-colors">
+                          <Plus size={14} /> Thêm Nút
                         </button>
                       </div>
-                    ))}
-                    {(!formData.extraLinks || formData.extraLinks.length === 0) && (
-                      <p className="text-xs text-slate-600 italic">Chưa có liên kết nào. Bấm "Thêm Nút" để tạo mới.</p>
-                    )}
-                  </div>
-                </div>
+                      
+                      <div className="space-y-3">
+                        {(formData.extraLinks || []).map(link => (
+                          <div key={link.id} className="flex gap-2 items-start bg-slate-950 p-3 rounded-lg border border-slate-800">
+                            <select 
+                              value={link.type} 
+                              onChange={(e) => handleLinkChange(link.id, 'type', e.target.value)}
+                              className="bg-slate-900 border border-slate-800 text-slate-300 rounded-lg px-3 py-2 outline-none"
+                            >
+                              <option value="youtube">YouTube</option>
+                              <option value="facebook">Facebook</option>
+                              <option value="tiktok">TikTok</option>
+                              <option value="website">Website</option>
+                              <option value="other">Khác</option>
+                            </select>
+                            
+                            <div className="flex-1 space-y-2">
+                              <input 
+                                type="text" placeholder="Tên Nút (VD: Xem Hướng Dẫn)" 
+                                value={link.label} onChange={(e) => handleLinkChange(link.id, 'label', e.target.value)}
+                                className="w-full bg-slate-900 border border-slate-800 text-white rounded-lg px-3 py-2 outline-none text-sm"
+                              />
+                              <div className="flex items-center gap-2">
+                                <input 
+                                  type="text" placeholder="https://..." 
+                                  value={link.url} onChange={(e) => handleLinkChange(link.id, 'url', e.target.value)}
+                                  className="flex-1 bg-slate-900 border border-slate-800 text-white rounded-lg px-3 py-2 outline-none text-sm"
+                                />
+                                <label className="flex-shrink-0 cursor-pointer bg-slate-800 hover:bg-slate-700 p-2 rounded-lg border border-slate-700 transition-colors flex items-center justify-center text-slate-300" title="Tải Video/File từ máy tính">
+                                  {uploadingField === `link_${link.id}` ? <Loader2 className="animate-spin text-indigo-400" size={16} /> : <UploadCloud size={16} />}
+                                  <input type="file" accept="video/*,audio/*,.pdf,.zip" className="hidden" onChange={(e) => handleLinkUpload(e, link.id)} disabled={uploadingField === `link_${link.id}`} />
+                                </label>
+                              </div>
+                            </div>
+                            
+                            <button onClick={() => handleRemoveLink(link.id)} type="button" className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg transition-colors mt-1">
+                              <Trash2 size={18} />
+                            </button>
+                          </div>
+                        ))}
+                        {(!formData.extraLinks || formData.extraLinks.length === 0) && (
+                          <p className="text-xs text-slate-600 italic">Chưa có liên kết nào. Bấm "Thêm Nút" để tạo mới.</p>
+                        )}
+                      </div>
+                    </div>
 
-                {/* AI Knowledge Base Section for this App */}
-                <div className="border-t border-slate-800 pt-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <label className="block text-sm font-medium text-cyan-400 flex items-center gap-2">
-                      <Bot size={16} /> Dữ liệu đào tạo AI riêng cho dự án này (Knowledge Base)
-                    </label>
-                    <button 
-                      type="button" 
-                      onClick={() => {
-                        const templateText = `[TÊN DỰ ÁN: ${formData.name}]\n\n1. Mô tả chi tiết:\n- ...\n\n2. Tính năng chính:\n- ...\n\n3. Quy định & Chính sách:\n- ...\n\n4. Câu hỏi thường gặp (Q&A):\nQ: Giá bao nhiêu?\nA: ...\n\n(Chỉ đạo AI: Hãy từ chối khéo nếu khách hỏi thông tin không có trong file này.)`;
-                        const blob = new Blob([templateText], { type: 'text/plain' });
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = `AI_Template_${formData.id}.txt`;
-                        a.click();
-                        URL.revokeObjectURL(url);
-                      }}
-                      className="flex items-center gap-1 px-3 py-1.5 text-xs bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30 rounded-lg transition-colors"
-                    >
-                      Tải File Mẫu
-                    </button>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <textarea 
-                      name="aiKnowledge" 
-                      value={formData.aiKnowledge || ''} 
-                      onChange={handleChange} 
-                      rows={6}
-                      placeholder="Dán nội dung văn bản (Markdown/Text) để dạy AI hiểu sâu về dự án này..."
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-emerald-400 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 font-mono text-xs"
-                    />
-                    <div className="flex items-center justify-between text-[11px] text-slate-500">
-                      <span>Bạn có thể viết trực tiếp vào đây hoặc tải lên file văn bản (.txt, .md).</span>
-                      <label className="flex items-center gap-2 cursor-pointer text-cyan-400 hover:text-cyan-300 transition-colors">
-                        <UploadCloud size={14} /> Upload file Text/MD
-                        <input 
-                          type="file" 
-                          accept=".txt,.md" 
-                          className="hidden" 
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (!file) return;
-                            const reader = new FileReader();
-                            reader.onload = (event) => {
-                              if (formData && event.target?.result) {
-                                setFormData({ ...formData, aiKnowledge: event.target.result as string });
-                              }
-                            };
-                            reader.readAsText(file);
-                            e.target.value = ''; // reset input
-                          }} 
+                    {/* AI Knowledge Base Section for this App */}
+                    <div className="border-t border-slate-800 pt-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <label className="block text-sm font-medium text-cyan-400 flex items-center gap-2">
+                          <Bot size={16} /> Dữ liệu đào tạo AI riêng cho dự án này (Knowledge Base)
+                        </label>
+                        <button 
+                          type="button" 
+                          onClick={() => {
+                            const templateText = `[TÊN DỰ ÁN: ${formData.name}]\n\n1. Mô tả chi tiết:\n- ...\n\n2. Tính năng chính:\n- ...\n\n3. Quy định & Chính sách:\n- ...\n\n4. Câu hỏi thường gặp (Q&A):\nQ: Giá bao nhiêu?\nA: ...\n\n(Chỉ đạo AI: Hãy từ chối khéo nếu khách hỏi thông tin không có trong file này.)`;
+                            const blob = new Blob([templateText], { type: 'text/plain' });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `AI_Template_${formData.id}.txt`;
+                            a.click();
+                            URL.revokeObjectURL(url);
+                          }}
+                          className="flex items-center gap-1 px-3 py-1.5 text-xs bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30 rounded-lg transition-colors"
+                        >
+                          Tải File Mẫu
+                        </button>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        <textarea 
+                          name="aiKnowledge" 
+                          value={formData.aiKnowledge || ''} 
+                          onChange={handleChange} 
+                          rows={6}
+                          placeholder="Dán nội dung văn bản (Markdown/Text) để dạy AI hiểu sâu về dự án này..."
+                          className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-3 text-emerald-400 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 font-mono text-xs"
                         />
-                      </label>
+                        <div className="flex items-center justify-between text-[11px] text-slate-500">
+                          <span>Bạn có thể viết trực tiếp vào đây hoặc tải lên file văn bản (.txt, .md).</span>
+                          <label className="flex items-center gap-2 cursor-pointer text-cyan-400 hover:text-cyan-300 transition-colors">
+                            <UploadCloud size={14} /> Upload file Text/MD
+                            <input 
+                              type="file" 
+                              accept=".txt,.md" 
+                              className="hidden" 
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                const reader = new FileReader();
+                                reader.onload = (event) => {
+                                  if (formData && event.target?.result) {
+                                    setFormData({ ...formData, aiKnowledge: event.target.result as string });
+                                  }
+                                };
+                                reader.readAsText(file);
+                                e.target.value = ''; // reset input
+                              }} 
+                            />
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="pt-4 border-t border-slate-800 flex items-center justify-between">
+                      <button 
+                        onClick={handleDeleteApp}
+                        className="flex items-center gap-2 px-4 py-2 text-red-400 hover:text-white hover:bg-red-500/20 rounded-lg transition-colors text-sm"
+                      >
+                        <Trash2 size={16} /> Xóa ứng dụng
+                      </button>
+                      <div className="flex items-center gap-4">
+                        <span className="text-emerald-400 text-sm font-medium">{saveStatus}</span>
+                        <button 
+                          onClick={handleSaveApp}
+                          className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-lg transition-colors shadow-lg shadow-indigo-500/20"
+                        >
+                          <Save size={18} /> Lưu ứng dụng
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
-
-                <div className="pt-4 border-t border-slate-800 flex items-center justify-between">
-                  <button 
-                    onClick={handleDeleteApp}
-                    className="flex items-center gap-2 px-4 py-2 text-red-400 hover:text-white hover:bg-red-500/20 rounded-lg transition-colors text-sm"
-                  >
-                    <Trash2 size={16} /> Xóa ứng dụng
-                  </button>
-                  <div className="flex items-center gap-4">
-                    <span className="text-emerald-400 text-sm font-medium">{saveStatus}</span>
-                    <button 
-                      onClick={handleSaveApp}
-                      className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-lg transition-colors shadow-lg shadow-indigo-500/20"
-                    >
-                      <Save size={18} /> Lưu ứng dụng
-                    </button>
+              ) : (
+                <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 text-center text-slate-500 flex flex-col items-center justify-center min-h-[400px]">
+                  <div className="w-16 h-16 rounded-full bg-slate-800/50 flex items-center justify-center text-indigo-400 mb-4 border border-slate-700/50 animate-pulse">
+                    <Package size={28} />
                   </div>
+                  <p className="text-slate-300 font-semibold text-lg">Không có ứng dụng nào trong hệ thống</p>
+                  <p className="text-sm text-slate-500 mt-2 max-w-sm mx-auto leading-relaxed">
+                    Kho ứng dụng của bạn hiện đang trống. Hãy nhấn nút <strong className="text-indigo-400">"Thêm Ứng dụng"</strong> ở cột bên trái để bắt đầu khởi tạo dự án mới!
+                  </p>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         )}

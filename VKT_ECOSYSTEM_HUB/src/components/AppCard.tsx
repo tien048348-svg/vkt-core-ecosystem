@@ -262,7 +262,13 @@ export const AppCard = ({ app, index, isLocked = false, daysLeft = -1, onLockCli
               }
               return (
                 <a key={link.id} href={formatUrl(link.url)} target="_blank" rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (isLocked) {
+                      e.preventDefault();
+                      handleCardClick();
+                    }
+                  }}
                   className={`flex-1 min-w-[120px] py-2 px-3 rounded-xl border font-medium flex items-center justify-center gap-1.5 transition-all text-sm ${colorClass}`}>
                   <LinkIconComponent size={16} /> {link.label}
                 </a>

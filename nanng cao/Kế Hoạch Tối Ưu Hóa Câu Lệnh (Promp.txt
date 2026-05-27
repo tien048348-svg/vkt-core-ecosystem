@@ -1,0 +1,38 @@
+Kế Hoạch Tối Ưu Hóa Câu Lệnh (Prompt) Cho VEO 3
+Bài toán hiện tại: Chúng ta cần rút ngắn độ dài câu lệnh video_prompt (dưới 400 ký tự) để VEO 3 không bị "quá tải thông tin", nhưng vẫn phải đảm bảo video sinh ra không bị lỗi (sai tỷ lệ cơ thể, xuất hiện chữ viết rác, lỗi vật lý).
+
+Dưới đây là 3 phương án gợi ý để bạn xem xét và lựa chọn:
+
+Phương Án 1: Kỹ thuật "Nén Từ Khóa Chuyên Ngành" (Khuyên dùng)
+Thay vì dùng những câu dài dòng để rào lỗi, chúng ta sẽ ép AI sử dụng các thuật ngữ chuyên môn (Umbrella Terms) có tính bao trùm mạnh mẽ nhất.
+
+Chống lỗi tay chân/cơ thể:
+Cũ (130 ký tự): perfect human anatomy, exactly two arms, exactly two legs, perfect hands, no extra faces, no mutated limbs
+Mới (40 ký tự): flawless anatomy, coherent biophysics
+Chống lỗi dính chữ/logo:
+Cũ (65 ký tự): ABSOLUTELY ZERO TEXT, letters, watermarks, or graphic overlays
+Mới (26 ký tự): textless, clean raw footage
+Chống lỗi trượt/chuyển động mờ ảo:
+Cũ (100 ký tự): realistic ground friction, solid footing, zero sliding, no moonwalking, no motion blur
+Mới (38 ký tự): perfect temporal consistency, sharp motion
+=> Kết quả: Bộ khiên bảo vệ (Shield) giảm từ 1.000 ký tự xuống chỉ còn khoảng 100 ký tự, nhường toàn bộ dung lượng còn lại cho hành động chính của nhân vật.
+
+Phương Án 2: Cấu Trúc Khung Xương Tối Giản (Minimalist 4-Blocks)
+Ép buộc AI Kỹ sư trưởng (khi sinh kịch bản) chỉ được phép viết video_prompt theo đúng 4 cụm cố định, cách nhau bằng dấu phẩy, tuyệt đối không viết thành đoạn văn dài miên man:
+
+[Góc máy]: VD "Close-up tracking shot,"
+[Hành động chính]: VD "an old woodcutter carving a wooden dragon,"
+[Ánh sáng/Bối cảnh]: VD "warm cinematic sunlight filtering through bamboo,"
+[VEO-Shield]: VD "textless, flawless anatomy, coherent motion."
+=> Kết quả: Chặt đứt thói quen viết dông dài của Gemini/ChatGPT, đảm bảo mọi prompt xuất ra đều tuân thủ form ngắn gọn dưới 300 ký tự.
+
+Phương Án 3: Tách Lớp Negative Prompt (Nếu VEO 3 có hỗ trợ)
+Nếu nền tảng VEO 3 mà bạn đang dùng có hai ô nhập liệu riêng biệt (1 ô cho Prompt chính, 1 ô cho Negative Prompt - Lệnh phủ định):
+
+Chúng ta sẽ loại bỏ hoàn toàn các từ khóa cấm (như no text, no ghosting) ra khỏi video_prompt.
+Khi xuất kịch bản, hệ thống sẽ tự động cung cấp một chuỗi negative_prompt chuẩn hóa để bạn dán riêng vào ô Phủ định.
+Nhờ vậy, ô Prompt chính sẽ 100% là tinh hoa hành động của câu chuyện.
+Ý Kiến Của Bạn
+IMPORTANT
+
+Bạn nghiêng về phương án nào trong 3 cách trên? Hay bạn muốn kết hợp Phương án 1 (Nén từ) + Phương án 2 (Cấu trúc 4 blocks) để tạo ra một Kỷ luật thép tuyệt đối cho Prompt? Sau khi bạn chọn, tôi mới bắt đầu tiến hành sửa Code!

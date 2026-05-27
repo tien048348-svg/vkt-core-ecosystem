@@ -3,6 +3,36 @@ import { callAI } from '../services/aiService';
 import { SYSTEM_PROMPT_SCRIPT_WRITER, SYSTEM_PROMPT_AUDIO_REENGINEERING } from '../data/prompts';
 import { TARGET_MARKETS, VISUAL_STYLES, } from '../data/constants';
 import { showToast } from '../components/Toast';
+import ProgressBar from '../components/ProgressBar';
+import type { GlobalSettings } from '../App';
+
+interface ScriptModuleProps {
+  segments: any[];
+  setSegments: (segs: any[]) => void;
+  scriptData: any;
+  setScriptData: (data: any) => void;
+  onScriptGenerated: (segs: any[], style: string, topic?: string) => void;
+  onAudioRefined: (segs: any[], topic?: string) => void;
+  initialTopic?: string;
+  onNavigateToStudio: () => void;
+  globalSettings: GlobalSettings;
+  uiLang?: 'vi' | 'en';
+  isAdmin?: boolean;
+}
+
+// ==================================================================================
+// MARKET-STYLE RECOMMENDED MAPPING & VIETNAMESE STYLE SPECIFIER
+// ==================================================================================
+const MARKET_STYLE_RECOMMENDATIONS: Record<string, string[]> = {
+  vn_recycle: ['hybrid_multimaterial', 'dong_ho_folk', 'water_puppet', 'stop_motion_papercraft', 'popup_cardboard', 'nature_debris', 'hybrid_folk_automata', 'fabric_collage', 'plastic_mosaic'],
+  vn_kids: ['hybrid_multimaterial', 'stop_motion_papercraft', 'popup_cardboard', 'button_string', 'egg_carton_clay'],
+  us_diy: ['hybrid_multimaterial', 'stop_motion_papercraft', 'popup_cardboard', 'nature_debris', 'metal_can_origami', 'driftwood_twig', 'cardboard_gears'],
+  jp_craft: ['hybrid_multimaterial', 'metal_can_origami', 'egg_carton_clay', 'button_string', 'cardboard_gears', 'driftwood_twig'],
+  kr_eco: ['hybrid_multimaterial', 'egg_carton_clay', 'fabric_collage', 'nature_debris', 'driftwood_twig'],
+  global_eco: ['hybrid_multimaterial', 'stop_motion_papercraft', 'popup_cardboard', 'nature_debris', 'metal_can_origami']
+};
+
+const isVietnameseStyle = (id: string) => ['dong_ho_folk', 'water_puppet', 'hybrid_folk_automata'].includes(id);
 
 // ==================================================================================
 // STYLE RECOMMENDATION ENGINE — AI Brain Core
@@ -163,9 +193,12 @@ interface Props {
   onAudioRefined?: (segments: any[], topic?: string) => void;
   initialTopic?: string;
   onNavigateToStudio?: () => void;
+  globalSettings: GlobalSettings;
+  uiLang?: 'vi' | 'en';
+  isAdmin?: boolean;
 }
 
-const ScriptModule: React.FC<Props> = ({ 
+const ScriptModule: React.FC<ScriptModuleProps> = ({ 
   segments, 
   setSegments, 
   scriptData, 
@@ -173,33 +206,39 @@ const ScriptModule: React.FC<Props> = ({
   onScriptGenerated, 
   onAudioRefined, 
   initialTopic = '',
-  onNavigateToStudio
+  onNavigateToStudio,
+  globalSettings,
+  uiLang = 'vi',
+  isAdmin = false
 }) => {
   const [topic, setTopic] = useState(initialTopic);
   const [duration, setDuration] = useState<number | string>(1);
   const [secondsPerScene, setSecondsPerScene] = useState(8);
+  const [lockDuration, setLockDuration] = useState(true); // Bật mặc định (Khóa 8 giây)
   const [market, setMarket] = useState('vn_recycle');
   const [style, setStyle] = useState('auto');
+  const [speakerMode, setSpeakerMode] = useState<'multi' | 'single' | 'asmr'>('single');
   const [loading, setLoading] = useState(false);
   const [suggestedStyle, setSuggestedStyle] = useState<any>(null);
   const [loadingSuggestion, setLoadingSuggestion] = useState(false);
 
-  // Audio Re-Engineering V16.0
+  // Audio Re-Engineering
   const [refiningAudio, setRefiningAudio] = useState(false);
   const [audioRefinedCount, setAudioRefinedCount] = useState(0);
+  const [refiningProgress, setRefiningProgress] = useState(0);
 
-  // Dynamic Loading V16.0 - Cyber Console Stepper
-  const [loadingType, setLoadingType] = useState<'script' | 'audio'>('script');
-  const [loadingStep, setLoadingStep] = useState(1);
-  const [loadingPercent, setLoadingPercent] = useState(0);
-  const [loadingLogs, setLoadingLogs] = useState<string[]>([]);
-  const logEndRef = React.useRef<HTMLDivElement>(null);
-
-  React.useEffect(() => {
-    if (logEndRef.current) {
-      logEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [loadingLogs]);
+  // Omni-Progress Bar
+  const [progress, setProgress] = useState({ percent: 0, text: '' });
+  const [loadingMsgIdx, setLoadingMsgIdx] = useState(0);
+  const abortRef = React.useRef(false);
+  
+  const loadingMessages = [
+    "Đang phân tích cấu trúc kịch bản...",
+    "Đang lựa chọn vật liệu tái chế phù hợp...",
+    "Đang dệt hội thoại đa nhân vật...",
+    "Đang tinh chỉnh nhịp độ (Pacing)...",
+    "Đang hoàn thiện âm học và COPPA..."
+  ];
 
   React.useEffect(() => { 
     if (initialTopic) {
@@ -208,7 +247,8 @@ const ScriptModule: React.FC<Props> = ({
   }, [initialTopic]);
 
   const durationNum = parseFloat(duration as string) || 0;
-  const scenes = Math.ceil((Math.max(0.1, durationNum) * 60) / secondsPerScene);
+  const activeSecondsPerScene = lockDuration ? 8 : secondsPerScene;
+  const scenes = Math.ceil((Math.max(0.1, durationNum) * 60) / activeSecondsPerScene);
   const mode = durationNum < 3 ? { name: '🟢 QUICK CRAFT (<3m)', wpm: 260 } : durationNum <= 10 ? { name: '🔵 STORY WEAVER (3-10m)', wpm: 260 } : { name: '🟣 EPIC FOLKLORE (>10m)', wpm: 260 };
   const words = scenes * 35; // Đúng nguyên tắc cốt lõi: 30-40 từ cho một cảnh 8 giây (Trung bình 35 từ)
   const modeColor = durationNum < 3 ? 'text-green-400 border-green-500/50 bg-green-900/10' : durationNum <= 10 ? 'text-teal-400 border-teal-500/50 bg-teal-900/10' : 'text-purple-400 border-purple-500/50 bg-purple-900/10';
@@ -238,139 +278,132 @@ const ScriptModule: React.FC<Props> = ({
     setSuggestedStyle(null);
     setAudioRefinedCount(0);
     setLoading(true);
-    setLoadingType('script');
-    setLoadingStep(1);
-    setLoadingPercent(0);
-    setLoadingLogs([]);
+    abortRef.current = false;
+    setProgress({ percent: 2, text: loadingMessages[0] });
 
-    // Khởi động mô phỏng tiến trình thời gian thực
-    let percent = 0;
-    const logsList: string[] = [];
-    const addLog = (msg: string) => {
-      logsList.push(msg);
-      setLoadingLogs([...logsList]);
-    };
-
-    addLog('🔥 Khởi tạo động cơ Giả Kim Thuật Trí tuệ Nhân tạo V16.0...');
-
-    const interval = setInterval(() => {
-      percent += Math.floor(Math.random() * 3) + 2; // Tăng mượt 2-4% mỗi lần
-      if (percent > 98) percent = 98;
-      setLoadingPercent(percent);
-
-      // Định tuyến các bước
-      if (percent <= 20) {
-        setLoadingStep(1);
-      } else if (percent <= 45) {
-        setLoadingStep(2);
-      } else if (percent <= 70) {
-        setLoadingStep(3);
-      } else if (percent <= 88) {
-        setLoadingStep(4);
-      } else {
-        setLoadingStep(5);
-      }
-
-      // Đẩy log kỹ thuật ngẫu nhiên theo tiến độ để gây ấn tượng mạnh với người dùng
-      if (percent >= 10 && logsList.length === 1) {
-        addLog(`📝 Đã nhận dạng chủ đề kịch bản: "${topic}"`);
-      }
-      if (percent >= 20 && logsList.length === 2) {
-        addLog(`🎨 Lựa chọn vật liệu: ${VISUAL_STYLES.find(s => s.id === style)?.name || 'Tự động đề xuất style'}`);
-      }
-      if (percent >= 30 && logsList.length === 3) {
-        addLog(`🔄 Phân tích mâu thuẫn Drama để "bẻ lái" cốt truyện sang ngách Tái Chế phế liệu...`);
-      }
-      if (percent >= 40 && logsList.length === 4) {
-        addLog(`🎙️ THIẾT QUÂN LUẬT: Giới hạn tối đa 01 người nói (Single Speaker) trong mỗi phân cảnh.`);
-      }
-      if (percent >= 50 && logsList.length === 5) {
-        addLog(`🎭 Phân vai đa nhân vật thay phiên cất tiếng qua các cảnh để đảm bảo sinh động...`);
-      }
-      if (percent >= 60 && logsList.length === 6) {
-        addLog(`📸 Đang biên soạn câu lệnh vẽ ảnh (image_prompt) 8K siêu thực...`);
-      }
-      if (percent >= 70 && logsList.length === 7) {
-        addLog(`🎬 Đang thiết kế chuyển động video Stop-Motion mượt mà và vật lý chân thực...`);
-      }
-      if (percent >= 78 && logsList.length === 8) {
-        addLog(`🔊 Tổng hợp bản đồ âm thanh tương tác vật lý & tiếng động cơ học ASMR...`);
-      }
-      if (percent >= 84 && logsList.length === 9) {
-        addLog(`🛡️ Phân tích vật liệu để tự động kích hoạt bộ lọc Silent COPPA (Cảnh báo an toàn câm)...`);
-      }
-      if (percent >= 90 && logsList.length === 10) {
-        addLog(`📦 Đang đóng gói cấu trúc JSON phân cảnh đạt chuẩn V16.0 Failsafe...`);
-      }
-      if (percent >= 95 && logsList.length === 11) {
-        addLog(`📡 Đang chờ kết quả phản hồi gói tin kịch bản từ Máy chủ AI...`);
-      }
-    }, 350);
+    const progressInterval = setInterval(() => {
+      setProgress(prev => {
+        if (abortRef.current) return prev;
+        const newP = prev.percent < 95 ? prev.percent + 1 : prev.percent;
+        const msgIdx = Math.floor(newP / 25);
+        if (msgIdx !== loadingMsgIdx && msgIdx < loadingMessages.length) setLoadingMsgIdx(msgIdx);
+        return { percent: newP, text: loadingMessages[msgIdx] || loadingMessages[0] };
+      });
+    }, 400);
 
     try {
       const styleObj = VISUAL_STYLES.find(s => s.id === style);
       const mk = TARGET_MARKETS[market] || TARGET_MARKETS['vn_recycle'];
-      const prompt = `TOPIC: "${topic}"\nDURATION: ${durationNum}m\nSCENE_COUNT: ${scenes}\nTARGET_LANGUAGE: ${mk.voice_lang}\nTARGET_MARKET: ${mk.name}\nVISUAL_STYLE: ${styleObj?.name || 'Auto'}\nRESPOND ALL TEXT FIELDS IN VIETNAMESE.\nGENERATE JSON OBJECT.`;
-      const json = await callAI(prompt, SYSTEM_PROMPT_SCRIPT_WRITER);
       
-      // --- HIGHLY RESILIENT MULTI-KEY JSON ARRAY PARSER V16.0 ---
-      let segs: any[] = [];
-      if (json) {
-        if (Array.isArray(json)) {
-          segs = json;
-        } else if (json.script && Array.isArray(json.script)) {
-          segs = json.script;
-        } else if (json.scenes && Array.isArray(json.scenes)) {
-          segs = json.scenes;
-        } else if (json.refined_scenes && Array.isArray(json.refined_scenes)) {
-          segs = json.refined_scenes;
-        } else {
-          const arrayKey = Object.keys(json).find(k => Array.isArray(json[k]));
-          if (arrayKey) {
-            segs = json[arrayKey];
+      const chunkSize = 25;
+      const totalRounds = Math.ceil(scenes / chunkSize);
+      let allSegments: any[] = [];
+      let finalJson: any = null;
+
+      for (let round = 1; round <= totalRounds; round++) {
+        const startSceneNum = (round - 1) * chunkSize + 1;
+        const endSceneNum = Math.min(round * chunkSize, scenes);
+        const roundSceneCount = endSceneNum - startSceneNum + 1;
+        
+        let continuityContext = '';
+        if (allSegments.length > 0) {
+          const lastFew = allSegments.slice(-3);
+          continuityContext = `\n[CONTINUITY CONTEXT]: The story has already progressed through the first ${allSegments.length} scenes. Here are the last 3 scenes for context:
+${JSON.stringify(lastFew.map(s => ({ scene_number: s.scene_number, voice_text: s.voice_text, visual_desc_vi: s.visual_desc_vi })), null, 2)}
+CRITICAL: You MUST write the next scenes continuing this exact storyline seamlessly starting at Scene ${startSceneNum}. Do NOT repeat these scene contents, move the story forward.`;
+        }
+
+        const modeInstruction = speakerMode === 'multi' 
+          ? 'MULTI-SPEAKER MODE: Create dynamic dialogues between multiple characters. Include distinct voice profiles.' 
+          : speakerMode === 'single'
+          ? 'SINGLE-SPEAKER MODE: Write as a single narrator/storyteller reading the entire script. No dialogue between multiple characters.'
+          : 'ASMR NO-VOICE MODE: Do NOT write any voice_text or dialogue. Focus entirely on detailed ASMR sounds, environmental audio, and visual actions. Make "voice_text" empty and "sfx_music_suggestion" extremely detailed.';
+
+        const prompt = `TOPIC: "${topic}"\nDURATION: ${durationNum}m\nROUND_GENERATING: Round ${round} of ${totalRounds} (Generating scenes ${startSceneNum} to ${endSceneNum})\nROUND_SCENE_COUNT: ${roundSceneCount}\nTARGET_LANGUAGE: ${mk.voice_lang}\nTARGET_MARKET: ${mk.name}\nVISUAL_STYLE: ${styleObj?.name || 'Auto'}\nVISUAL_STYLE_MATERIAL_GUIDELINES: ${styleObj?.desc || ''}. ${styleObj?.prompt_enforce || ''}\n\nCRITICAL MATERIAL CONSISTENCY LOCK:\n- Bạn BẮT BUỘC phải viết toàn bộ nhân vật và bối cảnh ở trường 'character', 'visual_desc_vi', 'image_prompt', 'video_prompt' bằng ĐÚNG chất liệu của phong cách nghệ thuật được chọn là "${styleObj?.name}".\n- Tuyệt đối KHÔNG ĐƯỢC trộn lẫn chất liệu từ phong cách khác (Ví dụ: Đã chọn phong cách "Lá Khô & Hạt" thì nhân vật Cáo hay Cổng Trời phải làm từ lá tre khô, gáo dừa, cành củi khô, hạt đỗ... Tuyệt đối KHÔNG được tả làm bằng "bìa carton" hay "nhựa"). Sự không nhất quán chất liệu là lỗi cực kỳ nặng và sẽ bị phạt nặng.\n\nSPEAKER_MODE_INSTRUCTION: ${modeInstruction}${continuityContext}\n\nLANGUAGE ENFORCEMENT RULES (CRITICAL):\n1. RESPOND ONLY the spoken fields (voice_text, dialogues, visual_desc_vi, chunk_summary) in Vietnamese.\n2. ALL visual generator prompts and technical fields (video_prompt, image_prompt, character, character_lock_prompt, sfx_music_suggestion) MUST BE 100% IN ENGLISH. Zero Vietnamese words allowed here under any circumstances (translate terms like "ông lão" to "old man", "lá tre" to "bamboo leaves", "Cóc" to "Toad", etc.).\n\nCRITICAL: Return exactly ${roundSceneCount} scenes starting at scene_number ${startSceneNum}.\nGENERATE JSON OBJECT.`;
+        
+        let json: any = null;
+        let retries = 3;
+        while (retries > 0) {
+          try {
+            json = await callAI(prompt, SYSTEM_PROMPT_SCRIPT_WRITER);
+            break;
+          } catch (err: any) {
+            retries--;
+            if (retries === 0) throw err;
+            await new Promise(r => setTimeout(r, 8000));
           }
+        }
+        
+        if (round === 1) finalJson = json;
+
+        let segs: any[] = [];
+        if (json) {
+          if (Array.isArray(json)) segs = json;
+          else if (json.script && Array.isArray(json.script)) segs = json.script;
+          else if (json.scenes && Array.isArray(json.scenes)) segs = json.scenes;
+          else if (json.refined_scenes && Array.isArray(json.refined_scenes)) segs = json.refined_scenes;
+          else {
+            const arrayKey = Object.keys(json).find(k => Array.isArray(json[k]));
+            if (arrayKey) segs = json[arrayKey];
+          }
+        }
+
+        let enforce = '';
+        if (styleObj && styleObj.id !== 'auto') {
+          enforce = styleObj.prompt_enforce;
+        } else if (finalJson && finalJson.suggested_style) {
+          const autoStyle = VISUAL_STYLES.find(s => s.id === finalJson.suggested_style);
+          if (autoStyle) enforce = autoStyle.prompt_enforce;
+          else enforce = `, Visual Style: ${finalJson.suggested_style}`;
+        }
+        
+        // VEO 3: Insert aesthetic style correctly without breaking the All-In-One format.
+        if (enforce) {
+          segs = segs.map((s: any) => {
+            let vp = s.video_prompt || '';
+            let ip = s.image_prompt || '';
+            if (vp && !vp.includes('Visual Style:')) {
+              if (vp.includes('[AUDIO:')) vp = vp.replace('[AUDIO:', enforce + ' [AUDIO:');
+              else if (vp.includes('textless,')) vp = vp.replace('textless,', enforce + ' textless,');
+              else vp += enforce;
+            }
+            if (ip && !ip.includes('Visual Style:')) {
+              ip += enforce;
+            }
+            return { ...s, video_prompt: vp, image_prompt: ip };
+          });
+        }
+
+        segs = segs.map((s: any) => ({
+          ...s,
+          scene_number: s.scene_number || (startSceneNum + segs.indexOf(s)),
+        }));
+
+        allSegments = [...allSegments, ...segs];
+        setSegments([...allSegments]);
+        
+        if (round < totalRounds) {
+          await new Promise(r => setTimeout(r, 6000));
         }
       }
 
-      let enforce = '';
-      if (styleObj && styleObj.id !== 'auto') enforce = styleObj.prompt_enforce;
-      else if (json && json.suggested_style) enforce = `, Visual Style: ${json.suggested_style}`;
-      if (enforce) {
-        segs = segs.map((s: any) => ({
-          ...s,
-          video_prompt: s.video_prompt?.includes('Visual Style:') ? s.video_prompt : `${s.video_prompt} ${enforce}`,
-          image_prompt: s.image_prompt?.includes('Visual Style:') ? s.image_prompt : `${s.image_prompt} ${enforce}`,
-        }));
-      }
-
-      // === REALITY ANCHOR FAILSAFE (ANTI-TEXT, ANTI-GHOSTING & PERFECT CRAFT) ===
-      const imageAnatomyFailsafe = "8k resolution, highly detailed, sharp focus, masterpiece, raw photo of physical miniature model, clean textless image, blank background, pure craft showcase, (perfect human anatomy:1.2), exactly two arms, exactly two legs, perfect hands, --no text, words, letters, watermark, font, writing, typography, subtitles, burned-in text, captions, lyrics, lower thirds, signature, logo, banner, signs, labels, floating head, creepy face in background, double exposure, phantom face, blurry person, extra faces, mutated limbs, bad anatomy, poster, book cover, movie poster";
-      // VEO3 AUTO-SHIELD PROTOCOL — Comprehensive video render failsafe
-      const videoAnatomyFailsafe = "8k resolution, highly detailed, sharp focus, masterpiece, raw physical stop-motion miniature craft, clean textless footage, blank background, pure craft showcase, perfect human anatomy, exactly two arms, exactly two legs, perfect hands, smooth physical movement, cinematic studio lighting, ABSOLUTE TEMPORAL COHERENCE, slow and deliberate movements, sharp object borders, clear anatomical structure, anti-ghosting, high-fidelity motion vector, no motion blur, static directional lighting, shadow coordinates locked, no ambient flickering, permanently static background props, locked arrangement of objects, realistic ground friction, solid footing, zero sliding, no moonwalking, perfect limb separation, no clipping or hand fusion, no cinematic vignettes, uncropped full-frame lens, strict frame-to-frame clothing consistency, wardrobe locked across all scenes, perfect facial symmetry, identical symmetric circular pupils, unified wind vector physics, strict character count persistence, no ghost characters generated, ABSOLUTELY ZERO TEXT letters watermarks graphic overlays, strictly FULL FRAME no black bars";
-      segs = segs.map((s: any) => ({
-        ...s,
-        video_prompt: s.video_prompt?.includes('perfect human anatomy') ? s.video_prompt : `${s.video_prompt}, ${videoAnatomyFailsafe}`,
-        image_prompt: s.image_prompt?.includes('perfect human anatomy') ? s.image_prompt : `${s.image_prompt}, ${imageAnatomyFailsafe}`,
-      }));
-
       // Hoàn tất thành công
-      clearInterval(interval);
-      setLoadingPercent(100);
-      setLoadingStep(5);
-      addLog(`✨ Giả Kim Thuật hoàn tất! Kịch bản đã được dệt thành công.`);
+      clearInterval(progressInterval);
+      setProgress({ percent: 100, text: '✨ Giả Kim Thuật hoàn tất! Kịch bản đã được dệt thành công.' });
       await new Promise(r => setTimeout(r, 600));
 
-      setScriptData(json);
-      setSegments(segs);
-      localStorage.setItem('recycle_autosave_script', JSON.stringify({ segments: segs, scriptData: json, topic }));
-      onScriptGenerated(segs, (json && json.suggested_style) || '', topic);
+      setScriptData(finalJson);
+      setSegments(allSegments);
+      localStorage.setItem('recycle_autosave_script', JSON.stringify({ segments: allSegments, scriptData: finalJson, topic }));
+      onScriptGenerated(allSegments, (finalJson && finalJson.suggested_style) || '', topic);
     } catch (e: any) { 
-      clearInterval(interval);
+      clearInterval(progressInterval);
       showToast(e.message); 
     }
     finally { 
-      clearInterval(interval);
+      clearInterval(progressInterval);
       setLoading(false); 
+      setProgress({ percent: 0, text: '' });
     }
   };
 
@@ -385,69 +418,10 @@ const ScriptModule: React.FC<Props> = ({
     if (segments.length === 0) return showToast('Chưa có kịch bản để tinh chỉnh!');
     
     setRefiningAudio(true);
-    setLoading(true); // Kích hoạt overlay console tiến trình
-    setLoadingType('audio');
-    setLoadingStep(1);
-    setLoadingPercent(0);
-    setLoadingLogs([]);
-
-    // Khởi động mô phỏng tiến trình phân tích âm thanh thời gian thực
-    let percent = 0;
-    const logsList: string[] = [];
-    const addLog = (msg: string) => {
-      logsList.push(msg);
-      setLoadingLogs([...logsList]);
-    };
-
-    addLog('🎙️ Khởi động hệ thống Tái Cấu Trúc Thanh Âm V16.0...');
-
-    const interval = setInterval(() => {
-      percent += Math.floor(Math.random() * 4) + 3; // Tăng mượt 3-6% mỗi lần
-      if (percent > 98) percent = 98;
-      setLoadingPercent(percent);
-
-      // Định tuyến các bước âm thanh
-      if (percent <= 20) {
-        setLoadingStep(1);
-      } else if (percent <= 45) {
-        setLoadingStep(2);
-      } else if (percent <= 70) {
-        setLoadingStep(3);
-      } else if (percent <= 88) {
-        setLoadingStep(4);
-      } else {
-        setLoadingStep(5);
-      }
-
-      // Đẩy log âm học ngẫu nhiên theo tiến độ
-      if (percent >= 10 && logsList.length === 1) {
-        addLog(`📂 Đã tải thành công danh sách ${segments.length} phân cảnh đầu vào.`);
-      }
-      if (percent >= 22 && logsList.length === 2) {
-        addLog(`🎭 Đang phân vai giọng nói gốc & tối ưu hóa biểu cảm tiếng Việt...`);
-      }
-      if (percent >= 32 && logsList.length === 3) {
-        addLog(`🎙️ THIẾT QUÂN LUẬT: Kiểm chứng tối đa 01 người nói (Single Speaker) trên 8 giây thoại.`);
-      }
-      if (percent >= 45 && logsList.length === 4) {
-        addLog(`🗣️ Thiết lập cơ chế xoay tua đa nhân vật thay phiên cất tiếng nói sinh động...`);
-      }
-      if (percent >= 58 && logsList.length === 5) {
-        addLog(`🔊 Đang tạo dải tần âm học (voice_profile) và phân biệt ON-SCREEN / OFF-SCREEN...`);
-      }
-      if (percent >= 70 && logsList.length === 6) {
-        addLog(`⚡ Cấu trúc âm thanh tương tác vật lý ASMR phế liệu thích ứng chất liệu...`);
-      }
-      if (percent >= 80 && logsList.length === 7) {
-        addLog(`💥 Tích hợp hiệu ứng âm thanh tiếng động bùng nổ (sfx_music_suggestion) sắc nét...`);
-      }
-      if (percent >= 88 && logsList.length === 8) {
-        addLog(`🛡️ Áp dụng cơ chế Silent Disclaimer cho cảnh báo an toàn trẻ em (COPPA)...`);
-      }
-      if (percent >= 94 && logsList.length === 9) {
-        addLog(`📡 Đang truyền tải gói tin kết quả âm học JSON refined_scenes về client...`);
-      }
-    }, 280);
+    setRefiningProgress(2);
+    const audioInterval = setInterval(() => {
+      setRefiningProgress(prev => (prev < 90 ? prev + 1 : prev));
+    }, 200);
 
     try {
       const payload = segments.map(s => ({
@@ -460,25 +434,44 @@ const ScriptModule: React.FC<Props> = ({
         time: s.time || '',
         sfx_music_suggestion: s.sfx_music_suggestion || ''
       }));
-      const prompt = `KỊCH BẢN GỐC TÁI CHẾ (${payload.length} scenes):\n${JSON.stringify(payload, null, 2)}\n\nTINH CHỈNH THANH ÂM, LỜI THOẠI ĐA NHÂN VẬT VÀ HIỆU ỨNG ÂM THANH BÙNG NỔ CHO TẤT CẢ ${payload.length} SCENES. OUTPUT JSON.`;
-      const res = await callAI(prompt, SYSTEM_PROMPT_AUDIO_REENGINEERING);
       
-      // --- HIGHLY RESILIENT AUDIO JSON PARSER V16.0 ---
+      const chunkSize = 25;
+      const totalRounds = Math.ceil(payload.length / chunkSize);
       let refinedList: any[] = [];
-      if (res) {
-        if (Array.isArray(res)) {
-          refinedList = res;
-        } else if (res.refined_scenes && Array.isArray(res.refined_scenes)) {
-          refinedList = res.refined_scenes;
-        } else if (res.script && Array.isArray(res.script)) {
-          refinedList = res.script;
-        } else if (res.scenes && Array.isArray(res.scenes)) {
-          refinedList = res.scenes;
-        } else {
-          const arrayKey = Object.keys(res).find(k => Array.isArray(res[k]));
-          if (arrayKey) {
-            refinedList = res[arrayKey];
+      
+      for (let round = 1; round <= totalRounds; round++) {
+        const startIdx = (round - 1) * chunkSize;
+        const endIdx = Math.min(round * chunkSize, payload.length);
+        const chunkPayload = payload.slice(startIdx, endIdx);
+        
+        const prompt = `KỊCH BẢN GỐC TÁI CHẾ (Đợt ${round}/${totalRounds} - ${chunkPayload.length} scenes):\n${JSON.stringify(chunkPayload, null, 2)}\n\nTINH CHỈNH THANH ÂM, LỜI THOẠI ĐA NHÂN VẬT VÀ HIỆU ỨNG ÂM THANH BÙNG NỔ CHO ĐỢT ${round} CỦA KỊCH BẢN NÀY. OUTPUT JSON.`;
+        
+        let res: any = null;
+        let retries = 3;
+        while (retries > 0) {
+          try {
+            res = await callAI(prompt, SYSTEM_PROMPT_AUDIO_REENGINEERING);
+            break;
+          } catch (err: any) {
+            retries--;
+            if (retries === 0) throw err;
+            await new Promise(r => setTimeout(r, 5000));
           }
+        }
+        
+        if (res) {
+          if (Array.isArray(res)) refinedList = [...refinedList, ...res];
+          else if (res.refined_scenes && Array.isArray(res.refined_scenes)) refinedList = [...refinedList, ...res.refined_scenes];
+          else if (res.script && Array.isArray(res.script)) refinedList = [...refinedList, ...res.script];
+          else if (res.scenes && Array.isArray(res.scenes)) refinedList = [...refinedList, ...res.scenes];
+          else {
+            const arrayKey = Object.keys(res).find(k => Array.isArray(res[k]));
+            if (arrayKey) refinedList = [...refinedList, ...res[arrayKey]];
+          }
+        }
+        
+        if (round < totalRounds) {
+          await new Promise(r => setTimeout(r, 6000));
         }
       }
 
@@ -496,10 +489,8 @@ const ScriptModule: React.FC<Props> = ({
         });
 
         // Hoàn tất thành công
-        clearInterval(interval);
-        setLoadingPercent(100);
-        setLoadingStep(5);
-        addLog(`✨ Tinh chỉnh thanh âm hoàn tất! Toàn bộ phân cảnh đã được nâng cấp bùng nổ.`);
+        clearInterval(audioInterval);
+        setRefiningProgress(100);
         await new Promise(r => setTimeout(r, 600));
 
         setSegments(newSegments);
@@ -512,13 +503,13 @@ const ScriptModule: React.FC<Props> = ({
         throw new Error('AI không trả về dữ liệu thanh âm đúng cấu trúc.');
       }
     } catch (e: any) { 
-      clearInterval(interval);
+      clearInterval(audioInterval);
       showToast(`Audio Error: ${e.message}`); 
     }
     finally { 
-      clearInterval(interval);
-      setLoading(false);
+      clearInterval(audioInterval);
       setRefiningAudio(false); 
+      setRefiningProgress(0);
     }
   };
 
@@ -548,8 +539,10 @@ const ScriptModule: React.FC<Props> = ({
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6 animate-[slideIn_0.4s_ease-out]">
-      <div className="bg-[#12161e] border border-slate-700/30 p-6 rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)]">
+    <div className="max-w-[1600px] mx-auto grid grid-cols-1 lg:grid-cols-4 gap-6 animate-[slideIn_0.4s_ease-out]">
+      {/* Cột Trái: Trình biên soạn kịch bản */}
+      <div className="lg:col-span-3 space-y-6">
+        <div className="bg-[#12161e] border border-slate-700/30 p-6 rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)]">
         <h2 className="text-xl font-bold text-white mb-4 flex items-center justify-between">
           <span className="flex items-center gap-2"><i className="fa-solid fa-scroll text-teal-500" /> Soạn Kịch Bản Truyện Cổ Tích Tái Chế</span>
           <label className="cursor-pointer px-4 py-1.5 rounded-lg text-xs font-bold bg-amber-900/20 text-amber-300 border border-amber-500/30 hover:bg-amber-900/40 transition-all flex items-center gap-2">
@@ -625,9 +618,9 @@ const ScriptModule: React.FC<Props> = ({
                       return;
                     }
                     const num = parseFloat(val);
-                    if (num > 10) {
-                      showToast('⚠️ Giới hạn thời lượng tối đa là 10 phút!', 'warning');
-                      setDuration(10);
+                    if (num > globalSettings.maxDuration) {
+                      showToast(`⚠️ Giới hạn thời lượng tối đa là ${globalSettings.maxDuration} phút!`, 'warning');
+                      setDuration(globalSettings.maxDuration);
                     } else {
                       setDuration(val);
                     }
@@ -636,131 +629,184 @@ const ScriptModule: React.FC<Props> = ({
                     const num = parseFloat(e.target.value);
                     if (isNaN(num) || num < 0.5) {
                       setDuration(1);
-                    } else if (num > 10) {
-                      setDuration(10);
+                    } else if (num > globalSettings.maxDuration) {
+                      setDuration(globalSettings.maxDuration);
                     }
                   }}
                   className="w-20 bg-[#0a0e14] border border-slate-700/50 rounded-lg p-3 text-2xl font-black text-white text-center outline-none" 
                 />
                 
-                <div className="flex flex-col gap-1 w-24">
-                  <label className="text-[10px] text-slate-400 font-bold">GIÂY/CẢNH:</label>
-                  <input 
-                    type="number" 
-                    value={secondsPerScene} 
-                    onChange={e => setSecondsPerScene(Math.max(1, parseInt(e.target.value) || 8))}
-                    className="w-full bg-[#0a0e14] border border-slate-700/50 rounded p-1.5 text-sm font-bold text-teal-300 text-center outline-none" 
-                  />
+                <div className="flex flex-col gap-1 w-36 bg-[#0a0e14]/40 p-2 rounded-lg border border-slate-700/20">
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <label className="text-[10px] text-slate-400 font-bold tracking-wider">KHÓA 8S:</label>
+                    <button 
+                      type="button"
+                      onClick={() => setLockDuration(!lockDuration)}
+                      className={`w-9 h-5 rounded-full transition-all duration-200 focus:outline-none flex items-center p-0.5 ${lockDuration ? 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]' : 'bg-slate-700'}`}
+                    >
+                      <div className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${lockDuration ? 'translate-x-4' : 'translate-x-0'}`} />
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <input 
+                      type="number" 
+                      value={activeSecondsPerScene} 
+                      disabled={lockDuration}
+                      onChange={e => setSecondsPerScene(Math.max(1, parseInt(e.target.value) || 8))}
+                      className={`w-full bg-[#0a0e14] border rounded p-1 text-xs font-bold text-center outline-none transition-all ${lockDuration ? 'border-slate-800 text-slate-500 cursor-not-allowed opacity-50' : 'border-amber-500/50 text-amber-400'}`} 
+                    />
+                    <span className="text-[9px] text-slate-500 font-bold">GIÂY</span>
+                  </div>
                 </div>
                 <div className="flex flex-col gap-1.5 text-xs">
-                  <div><span className="text-slate-500">Số cảnh:</span> <span className="font-bold text-green-400 text-base">~{scenes} Cảnh</span></div>
-                  <div><span className="text-slate-500">Voice:</span> <span className="font-bold text-teal-400 text-base">~{words} từ</span></div>
+                  <div><span className="text-slate-500">Số cảnh:</span> <span className="font-bold text-amber-400 text-base">~{scenes} Cảnh</span></div>
+                  <div><span className="text-slate-500">Voice:</span> <span className="font-bold text-amber-400 text-base">~{words} từ</span></div>
                 </div>
               </div>
             </div>
             <div className="bg-[#10141c] border border-slate-700/30 rounded-xl p-4 flex flex-col justify-center">
               <label className="text-xs font-bold text-slate-400 uppercase mb-2 block flex items-center gap-2"><i className="fa-solid fa-globe text-amber-400" /> THỊ TRƯỜNG</label>
-              <select value={market} onChange={e => setMarket(e.target.value)} className="w-full bg-[#0a0e14] border border-slate-700/50 rounded-lg p-3 text-sm text-white outline-none cursor-pointer">
+              <select value={market} onChange={e => setMarket(e.target.value)} className="w-full bg-[#0a0e14] border border-slate-700/50 rounded-lg p-3 text-sm text-white outline-none cursor-pointer mb-4">
                 {Object.values(TARGET_MARKETS).map(m => <option key={m.id} value={m.id}>{m.flag} {m.name}</option>)}
               </select>
+
+              <label className="text-xs font-bold text-slate-400 uppercase mb-2 block flex items-center gap-2"><i className="fa-solid fa-microphone-lines text-teal-400" /> TÙY CHỌN GIỌNG ĐỌC</label>
+              <div className="flex bg-[#0a0e14] rounded-lg p-1 border border-slate-700/50">
+                <button 
+                  onClick={() => setSpeakerMode('multi')}
+                  className={`flex-1 py-1.5 text-xs font-bold rounded transition-all ${speakerMode === 'multi' ? 'bg-teal-900/40 text-teal-300 shadow' : 'text-slate-500 hover:text-slate-300'}`}
+                >
+                  Đa Nhân Vật
+                </button>
+                <button 
+                  onClick={() => setSpeakerMode('single')}
+                  className={`flex-1 py-1.5 text-xs font-bold rounded transition-all ${speakerMode === 'single' ? 'bg-teal-900/40 text-teal-300 shadow' : 'text-slate-500 hover:text-slate-300'}`}
+                >
+                  Độc Thoại
+                </button>
+                <button 
+                  onClick={() => setSpeakerMode('asmr')}
+                  className={`flex-1 py-1.5 text-xs font-bold rounded transition-all ${speakerMode === 'asmr' ? 'bg-teal-900/40 text-teal-300 shadow' : 'text-slate-500 hover:text-slate-300'}`}
+                >
+                  ASMR (No Voice)
+                </button>
+              </div>
             </div>
           </div>
           <div className={`border rounded-xl p-4 transition-all ${modeColor}`}>
             <div className="font-bold">{mode.name}</div>
           </div>
           <div className="bg-[#10141c] border border-slate-700/30 rounded-xl p-4">
-            <label className="text-xs font-bold text-slate-400 uppercase mb-2 block flex items-center gap-2"><i className="fa-solid fa-palette text-amber-400" /> PHONG CÁCH VẬT LIỆU TÁI CHẾ</label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-xs font-bold text-slate-400 uppercase block flex items-center gap-2">
+                <i className="fa-solid fa-palette text-amber-400" /> PHONG CÁCH VẬT LIỆU TÁI CHẾ
+              </label>
+              <span className="text-[9px] text-slate-500 font-bold">
+                * Khung viền đổi màu tự động theo Thị Trường
+              </span>
+            </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-              {VISUAL_STYLES.map(s => (
-                <button key={s.id} onClick={() => setStyle(s.id)}
-                  className={`text-[10px] p-2 rounded border text-left transition-all ${style === s.id ? 'bg-amber-900/30 border-amber-500/50 text-white shadow-[0_0_10px_rgba(16,185,129,0.2)]' : 'bg-[#12161e] border-slate-700/30 text-slate-400 hover:bg-[#1e2230]'}`}>
-                  <div className="font-bold mb-0.5">{s.name}</div>
-                  <div className="text-[9px] opacity-70 truncate">{s.desc}</div>
-                </button>
-              ))}
+              {VISUAL_STYLES.filter(s => globalSettings.allowedStyles.length === 0 || globalSettings.allowedStyles.includes(s.id)).map(s => {
+                const isRecommended = MARKET_STYLE_RECOMMENDATIONS[market]?.includes(s.id);
+                const isSelected = style === s.id;
+                const isVN = isVietnameseStyle(s.id);
+
+                let btnClass = "text-[10px] p-2 rounded border text-left transition-all duration-200 flex flex-col justify-between h-full ";
+                
+                if (isSelected) {
+                  if (market === 'vn_recycle' || market === 'vn_kids') {
+                    btnClass += "bg-emerald-950/40 border-emerald-400 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)] ring-1 ring-emerald-500/20";
+                  } else if (market === 'us_diy') {
+                    btnClass += "bg-blue-950/40 border-blue-400 text-white shadow-[0_0_15px_rgba(59,130,246,0.3)] ring-1 ring-blue-500/20";
+                  } else if (market === 'jp_craft') {
+                    btnClass += "bg-rose-950/40 border-rose-400 text-white shadow-[0_0_15px_rgba(244,63,94,0.3)] ring-1 ring-rose-500/20";
+                  } else if (market === 'kr_eco') {
+                    btnClass += "bg-purple-950/40 border-purple-400 text-white shadow-[0_0_15px_rgba(168,85,247,0.3)] ring-1 ring-purple-500/20";
+                  } else {
+                    btnClass += "bg-cyan-950/40 border-cyan-400 text-white shadow-[0_0_15px_rgba(6,182,212,0.3)] ring-1 ring-cyan-500/20";
+                  }
+                } else if (isRecommended) {
+                  if (market === 'vn_recycle' || market === 'vn_kids') {
+                    btnClass += "bg-emerald-950/10 border-emerald-800/40 text-emerald-400 hover:bg-emerald-950/20 hover:border-emerald-700/60";
+                  } else if (market === 'us_diy') {
+                    btnClass += "bg-blue-950/10 border-blue-800/40 text-blue-400 hover:bg-blue-950/20 hover:border-blue-700/60";
+                  } else if (market === 'jp_craft') {
+                    btnClass += "bg-rose-950/10 border-rose-800/40 text-rose-400 hover:bg-rose-950/20 hover:border-rose-700/60";
+                  } else if (market === 'kr_eco') {
+                    btnClass += "bg-purple-950/10 border-purple-800/40 text-purple-400 hover:bg-purple-950/20 hover:border-purple-700/60";
+                  } else {
+                    btnClass += "bg-cyan-950/10 border-cyan-800/40 text-cyan-400 hover:bg-cyan-950/20 hover:border-cyan-700/60";
+                  }
+                } else {
+                  btnClass += "bg-[#12161e] border-slate-800/50 text-slate-500 opacity-50 hover:opacity-80 hover:bg-[#1e2230]";
+                }
+
+                const isHybrid = s.id === 'hybrid_multimaterial';
+
+                return (
+                  <button key={s.id} onClick={() => setStyle(s.id)} className={btnClass}>
+                    <div className="w-full">
+                      <div className={`font-bold mb-0.5 flex items-center justify-between gap-1 
+                        ${isVN ? 'text-amber-300 font-extrabold text-[10.5px] drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]' : ''} 
+                        ${isHybrid ? 'text-transparent bg-clip-text bg-gradient-to-r from-teal-300 via-purple-300 to-amber-300 font-extrabold text-[10.5px] drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]' : ''}`}>
+                        <span>{s.name}</span>
+                        {isVN && <span className="text-[8px] bg-red-800/80 px-1 py-0.5 rounded text-red-100 border border-red-500/30 scale-90 flex items-center gap-0.5 font-normal">🇻🇳 Dân Gian</span>}
+                        {isHybrid && <span className="text-[8px] bg-purple-900/80 px-1 py-0.5 rounded text-purple-100 border border-purple-500/30 scale-90 flex items-center gap-0.5 font-bold">👑 Đặc Biệt</span>}
+                      </div>
+                      <div className="text-[9px] opacity-70 truncate">{s.desc}</div>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
-          {/* HIGH-TECH CYBERNETIC PROGRESS TERMINAL CONSOLE - BẢNG TIẾN TRÌNH TRỰC QUAN */}
-          {loading && (
-            <div className="bg-[#0a0e14] border border-teal-500/30 rounded-xl p-5 space-y-4 animate-[slideIn_0.3s_ease-out] shadow-[0_0_30px_rgba(20,184,166,0.1)] relative overflow-hidden">
-              {/* Hiệu ứng đường quét laser chạy quét dọc */}
-              <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-teal-400 to-transparent animate-[scan_2s_linear_infinite]" />
-              
-              {/* Header */}
-              <div className="flex justify-between items-center border-b border-slate-800 pb-3">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-teal-500 animate-ping" />
-                  <span className="text-[10px] font-bold text-teal-400 uppercase tracking-wider font-mono">
-                    {loadingType === 'script' ? 'REC-ALCHEMIST V16.0 SCRIPT PROCESSOR' : 'REC-ALCHEMIST V16.0 AUDIO RE-ENGINEER'}
-                  </span>
-                </div>
-                <div className="text-xs font-mono font-bold text-teal-400">{loadingPercent}%</div>
-              </div>
-
-              {/* Stepper Steps - Các bước chạy thực tế */}
-              <div className="grid grid-cols-5 gap-2 text-center">
-                {(loadingType === 'script'
-                  ? [
-                      { step: 1, label: 'Khởi Động' },
-                      { step: 2, label: 'Drama Cốt Truyện' },
-                      { step: 3, label: 'Visual & SFX' },
-                      { step: 4, label: 'Lọc COPPA' },
-                      { step: 5, label: 'Xuất JSON' }
-                    ]
-                  : [
-                      { step: 1, label: 'Khởi Động' },
-                      { step: 2, label: 'Thoại Phân Vai' },
-                      { step: 3, label: 'ASMR Phế Liệu' },
-                      { step: 4, label: 'Nhạc & Tiếng Động' },
-                      { step: 5, label: 'Xuất Audio JSON' }
-                    ]
-                ).map((s) => {
-                  const isActive = loadingStep === s.step;
-                  const isDone = loadingStep > s.step;
-                  return (
-                    <div key={s.step} className="space-y-1">
-                      <div className={`h-1.5 rounded-full transition-all duration-500 ${isDone ? 'bg-teal-500 shadow-[0_0_8px_rgba(20,184,166,0.5)]' : isActive ? 'bg-amber-500 animate-pulse shadow-[0_0_8px_rgba(245,158,11,0.5)]' : 'bg-slate-800'}`} />
-                      <div className={`text-[8px] sm:text-[9px] font-bold truncate ${isDone ? 'text-teal-400' : isActive ? 'text-amber-400' : 'text-slate-500'}`}>
-                        {s.label}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Rolling Console logs - Dòng nhật ký Terminal trực quan */}
-              <div className="bg-black/90 rounded-lg p-3 h-32 overflow-y-auto font-mono text-[10px] text-green-400/90 space-y-1 border border-slate-800/80 scrollbar-thin scrollbar-thumb-slate-800 select-none">
-                {loadingLogs.map((log, idx) => (
-                  <div key={idx} className="leading-relaxed animate-[fadeIn_0.15s_ease-out]">
-                    <span className="text-slate-600">[{new Date().toLocaleTimeString()}]</span> {log}
-                  </div>
-                ))}
-                <div ref={logEndRef} />
-              </div>
-            </div>
-          )}
-
-          {/* GENERATE BUTTON */}
-          <button onClick={handleGenerate} disabled={loading || refiningAudio}
-            className="w-full py-4 bg-teal-900/50 hover:bg-teal-800/50 border border-teal-500/30 text-teal-100 font-bold rounded-xl shadow-[0_0_20px_rgba(20,184,166,0.15)] flex items-center justify-center gap-2 transition-all disabled:opacity-50">
-            {loading && loadingType === 'script' ? (
-              <><i className="fa-solid fa-sync animate-spin" /> ĐANG BIÊN SOẠN KỊCH BẢN CỔ TÍCH ({loadingPercent}%)...</>
+          {/* ACTION AREA - OMNI PROGRESS BAR LAYOUT */}
+          <div className="flex gap-4">
+            {loading ? (
+              <ProgressBar 
+                percent={progress.percent} 
+                text={progress.text || loadingMessages[loadingMsgIdx]} 
+                subText="Tiến trình kiến tạo Kịch Bản AI"
+                colorTheme="teal"
+              />
             ) : (
-              <><i className="fa-solid fa-pen-nib" /> KIẾN TẠO KỊCH BẢN CỔ TÍCH</>
+              <button onClick={handleGenerate} disabled={refiningAudio}
+                className="flex-1 py-4 bg-teal-900/50 hover:bg-teal-800/50 border border-teal-500/30 text-teal-100 font-bold rounded-xl shadow-[0_0_20px_rgba(20,184,166,0.15)] flex items-center justify-center gap-2 transition-all disabled:opacity-50">
+                <i className="fa-solid fa-paper-plane" /> KIẾN TẠO KỊCH BẢN CỔ TÍCH
+              </button>
             )}
-          </button>
+            
+            {loading && (
+              <button onClick={() => { 
+                abortRef.current = true; 
+                setLoading(false); 
+                setSegments([]); 
+                setScriptData(null); 
+                setProgress({ percent: 0, text: '' });
+                showToast('🛑 Đã hủy dệt kịch bản.', 'warning'); 
+              }} 
+                className="px-6 py-4 bg-red-900/50 hover:bg-red-800/50 border border-red-500/50 text-red-100 font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-[0_0_20px_rgba(239,68,68,0.15)]">
+                <i className="fa-solid fa-stop" /> HỦY
+              </button>
+            )}
+          </div>
 
           {/* === MASTER COMMAND V16.0: AUDIO RE-ENGINEERING BUTTON === */}
-          {segments.length > 0 && (
-            <button onClick={handleAudioReengineering} disabled={loading || refiningAudio}
-              className="w-full py-4 bg-gradient-to-r from-purple-900/50 via-indigo-900/50 to-purple-900/50 hover:from-purple-800/50 hover:to-purple-800/50 border border-purple-500/30 text-purple-100 font-bold rounded-xl shadow-[0_0_20px_rgba(147,51,234,0.15)] flex items-center justify-center gap-2 transition-all disabled:opacity-50 relative overflow-hidden group">
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-              {loading && loadingType === 'audio' ? (
-                <><i className="fa-solid fa-sync animate-spin" /> 🎙️ ĐANG TÁI CẤU TRÚC THANH ÂM ({loadingPercent}%)...</>
-              ) : (
-                <><i className="fa-solid fa-headphones" /> 🎙️ TINH CHỈNH THANH ÂM (V16.0){audioRefinedCount > 0 && <span className="ml-2 px-2 py-0.5 rounded-full bg-purple-600 text-[9px] font-bold">×{audioRefinedCount}</span>}</>
-              )}
-            </button>
+          {globalSettings.enableAudioRefinement !== false && segments.length > 0 && (
+            refiningAudio ? (
+              <ProgressBar 
+                percent={refiningProgress} 
+                text="Đang tinh chỉnh âm thanh..." 
+                subText="Sóng âm thanh học V20.0"
+                colorTheme="purple"
+              />
+            ) : (
+              <button onClick={handleAudioReengineering} disabled={loading || refiningAudio}
+                className="w-full py-3.5 bg-gradient-to-r from-purple-900/50 via-indigo-900/50 to-purple-900/50 hover:from-purple-800/50 hover:to-purple-800/50 border border-purple-500/30 text-purple-200 font-bold rounded-xl shadow-[0_0_20px_rgba(147,51,234,0.15)] flex items-center justify-center gap-2 transition-all disabled:opacity-50 relative overflow-hidden group">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                <><i className="fa-solid fa-headphones-simple" /> 🎙️ TINH CHỈNH THANH ÂM (V20.0){audioRefinedCount > 0 && <span className="ml-2 px-2 py-0.5 rounded-full bg-purple-600 text-[9px] font-bold">×{audioRefinedCount}</span>}</>
+              </button>
+            )
           )}
         </div>
       </div>
@@ -768,12 +814,14 @@ const ScriptModule: React.FC<Props> = ({
       {/* Script Results */}
       {segments.length > 0 && (
         <div className="space-y-4 pb-10">
-          {scriptData?.coppa_disclaimer && (
-            <div className="bg-red-900/20 border border-red-500/30 p-3 rounded-xl flex items-start gap-3">
-              <i className="fa-solid fa-shield-halved text-red-500 mt-0.5 text-lg" />
+          {scriptData?.coppa_disclaimer && scriptData.coppa_disclaimer !== "null" && scriptData.coppa_disclaimer !== "None" && scriptData.coppa_disclaimer !== "" && (
+            <div className="bg-amber-950/20 border border-amber-500/20 p-3.5 rounded-xl flex items-start gap-3 shadow-[0_0_15px_rgba(245,158,11,0.05)]">
+              <i className="fa-solid fa-circle-info text-amber-400 mt-0.5 text-lg" />
               <div>
-                <div className="text-xs font-bold text-red-400 mb-1 uppercase">CẢNH BÁO AN TOÀN TRẺ EM (COPPA)</div>
-                <div className="text-xs text-red-200/80">{scriptData.coppa_disclaimer}</div>
+                <div className="text-xs font-bold text-amber-300 mb-1 uppercase tracking-wide flex items-center gap-1.5">
+                  🛡️ KHUYẾN NGHỊ AN TOÀN & TUÂN THỦ (SAFETY & COMPLIANCE)
+                </div>
+                <div className="text-xs text-amber-200/80 leading-relaxed font-medium">{scriptData.coppa_disclaimer}</div>
               </div>
             </div>
           )}
@@ -799,6 +847,84 @@ const ScriptModule: React.FC<Props> = ({
           )}
         </div>
       )}
+      </div> {/* Đóng cột trái lg:col-span-3 */}
+
+      {/* Cột Phải: Bảng Quy Chuẩn Viral VKT */}
+      <div className="lg:col-span-1 space-y-6">
+        <div className="bg-[#12161e] border border-slate-700/30 p-6 rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] sticky top-6">
+          <h3 className="text-sm font-extrabold text-amber-400 uppercase tracking-wider mb-4 pb-2 border-b border-amber-500/20 flex items-center gap-2">
+            <i className="fa-solid fa-fire text-amber-500 animate-pulse" />
+            Quy Chuẩn Viral VKT
+          </h3>
+          <div className="space-y-4">
+            {/* Quy chuẩn 1 */}
+            <div className="p-3 rounded-lg bg-[#0a0e14]/60 border border-slate-700/30 hover:border-amber-500/30 transition-all">
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="w-5 h-5 rounded-full bg-amber-500/10 text-amber-400 text-xs font-bold flex items-center justify-center shrink-0 border border-amber-500/20">1</span>
+                <span className="text-xs font-bold text-white uppercase tracking-wide">Hook 3 Giây Đầu</span>
+              </div>
+              <p className="text-[11px] text-slate-400 leading-relaxed pl-7">
+                Bắt buộc xuất hiện biến đổi thị giác kỳ diệu từ phế liệu thô sơ sang tác phẩm nghệ thuật để giữ chân người xem ngay tức khắc.
+              </p>
+            </div>
+
+            {/* Quy chuẩn 2 */}
+            <div className="p-3 rounded-lg bg-[#0a0e14]/60 border border-slate-700/30 hover:border-amber-500/30 transition-all">
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="w-5 h-5 rounded-full bg-amber-500/10 text-amber-400 text-xs font-bold flex items-center justify-center shrink-0 border border-amber-500/20">2</span>
+                <span className="text-xs font-bold text-white uppercase tracking-wide">Drama Kịch Tính</span>
+              </div>
+              <p className="text-[11px] text-slate-400 leading-relaxed pl-7">
+                Cốt truyện luôn có điểm nút thắt bẻ lái bất ngờ, kết thúc nhân văn cảm hóa thay vì bạo lực, lồng ghép thông điệp xanh tinh tế.
+              </p>
+            </div>
+
+            {/* Quy chuẩn 3 */}
+            <div className="p-3 rounded-lg bg-[#0a0e14]/60 border border-slate-700/30 hover:border-amber-500/30 transition-all">
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="w-5 h-5 rounded-full bg-amber-500/10 text-amber-400 text-xs font-bold flex items-center justify-center shrink-0 border border-amber-500/20">3</span>
+                <span className="text-xs font-bold text-white uppercase tracking-wide">ASMR Vật Liệu</span>
+              </div>
+              <p className="text-[11px] text-slate-400 leading-relaxed pl-7">
+                Gia tăng trải nghiệm thính giác bằng tiếng kéo cắt giấy, tiếng gõ nắp chai, tiếng nặn đất sét hoặc xé vải chân thực.
+              </p>
+            </div>
+
+            {/* Quy chuẩn 4 */}
+            <div className="p-3 rounded-lg bg-[#0a0e14]/60 border border-slate-700/30 hover:border-amber-500/30 transition-all">
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="w-5 h-5 rounded-full bg-amber-500/10 text-amber-400 text-xs font-bold flex items-center justify-center shrink-0 border border-amber-500/20">4</span>
+                <span className="text-xs font-bold text-white uppercase tracking-wide">1 Cảnh 1 Người Nói</span>
+              </div>
+              <p className="text-[11px] text-slate-400 leading-relaxed pl-7">
+                Mỗi phân cảnh 8 giây chỉ cho phép tối đa 01 người nói (độc thoại/dẫn chuyện) để bảo toàn nhịp độ thoại rõ ràng.
+              </p>
+            </div>
+
+            {/* Quy chuẩn 5 */}
+            <div className="p-3 rounded-lg bg-[#0a0e14]/60 border border-slate-700/30 hover:border-amber-500/30 transition-all">
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="w-5 h-5 rounded-full bg-amber-500/10 text-amber-400 text-xs font-bold flex items-center justify-center shrink-0 border border-amber-500/20">5</span>
+                <span className="text-xs font-bold text-white uppercase tracking-wide">Vật Lý Chân Thực</span>
+              </div>
+              <p className="text-[11px] text-slate-400 leading-relaxed pl-7">
+                Mô tả chính xác đặc tính vật liệu tái chế (lá khô giòn vụn, giấy gấp nếp) và quy luật trọng lực tự nhiên trong kịch bản.
+              </p>
+            </div>
+
+            {/* Quy chuẩn 6 */}
+            <div className="p-3 rounded-lg bg-[#0a0e14]/60 border border-slate-700/30 hover:border-amber-500/30 transition-all">
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="w-5 h-5 rounded-full bg-amber-500/10 text-amber-400 text-xs font-bold flex items-center justify-center shrink-0 border border-amber-500/20">6</span>
+                <span className="text-xs font-bold text-white uppercase tracking-wide">Silent COPPA</span>
+              </div>
+              <p className="text-[11px] text-slate-400 leading-relaxed pl-7">
+                Bắt buộc đính kèm cảnh báo an toàn cho các hoạt động thủ công sử dụng dao rọc giấy, súng bắn keo hay nhiệt độ cao.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

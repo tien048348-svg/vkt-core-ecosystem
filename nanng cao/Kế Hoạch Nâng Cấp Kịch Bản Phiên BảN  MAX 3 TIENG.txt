@@ -1,0 +1,23 @@
+Kế Hoạch Nâng Cấp Kịch Bản: Phiên Bản Tối Thượng (Peak Architecture)
+1. Cơ Chế Bền Bỉ: Auto-Retry & Exponential Backoff (Tự Động Phục Hồi)
+Thay vì bị lỗi 429 là dừng lại, hệ thống sẽ được trang bị Trí tuệ Tự phục hồi.
+
+Nếu Đợt 4 bị API từ chối do quá tải, hệ thống sẽ KHÔNG báo lỗi và KHÔNG dừng lại.
+Nó sẽ tự động "ngủ đông" 10 giây để API hạ nhiệt, sau đó Tự động bắn lại (Retry) chính Đợt 4 đó.
+Nó sẽ kiên trì thử lại tối đa 3 lần cho đến khi thành công rồi mới đi tiếp sang Đợt 5. Đảm bảo luồng chạy không bao giờ đứt gãy.
+2. Lưu Trữ Sinh Tồn: Real-time Autosave (Chống Sập Trình Duyệt)
+Sau khi dệt xong mỗi đợt, kịch bản sẽ được Tự động lưu ngay lập tức vào bộ nhớ cứng của Trình duyệt (Local Storage).
+Lợi ích: Tránh rủi ro Cúp điện, Sập trình duyệt. Mở lại web, kịch bản đang dệt vẫn ở đó để chạy tiếp.
+3. Quyền Hủy Bỏ Tối Cao: Nút "HỦY KỊCH BẢN" (Abort & Discard)
+Bổ sung nút "🛑 HỦY & VIẾT LẠI".
+Chức năng: Đang dệt mà thấy văn phong của những đợt đầu không hay, sai hướng, anh/chị bấm Hủy. Hệ thống sẽ cắt luồng ngay lập tức và xóa sạch phần dang dở, trả lại màn hình trống để anh/chị bắt đầu một ý tưởng mới. Không có chuyện giữ lại kịch bản "đầu voi đuôi chuột" không có phần kết!
+4. Xử Lý Tăng Dần (Progressive Rendering)
+Kịch bản dệt xong Đợt nào hiển thị Đợt đó lên màn hình ngay lập tức để anh/chị đọc và đánh giá văn phong.
+5. Mở Khóa Trần Thời Lượng (Lên Tới 3 Tiếng - Cho Ngách Phật Pháp)
+Gỡ bỏ hoàn toàn giới hạn 10 phút cũ.
+Thiết lập mức trần an toàn mới: 180 phút (3 tiếng). (Mức trần này chỉ nhằm chống việc gõ nhầm số như 1000 phút gây lãng phí tiền API).
+Anh/chị hoàn toàn thoải mái xuất bản các video Phật pháp, kinh tụng, hay thiền định dài 1 tiếng, 2 tiếng liên tục. Máy chủ và API sẽ từ từ cày mượt mà cho đến khi xong bài!
+User Review Required
+IMPORTANT
+
+Em đã đưa mức trần lên 3 Tiếng (180 phút) theo đúng nhu cầu ngách Phật Pháp của anh/chị. Mọi thứ đã hoàn hảo, anh/chị chỉ cần duyệt là em sẽ tiến hành phẫu thuật mã nguồn ngay!

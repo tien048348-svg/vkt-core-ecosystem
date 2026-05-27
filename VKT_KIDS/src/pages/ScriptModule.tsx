@@ -294,6 +294,7 @@ interface Props {
   onAudioRefined?: (segments: any[], topic?: string) => void;
   initialTopic?: string;
   onNavigateToStudio?: () => void;
+  uiLang?: 'vi' | 'en';
 }
 
 const ScriptModule: React.FC<Props> = ({ 
@@ -304,7 +305,8 @@ const ScriptModule: React.FC<Props> = ({
   onScriptGenerated, 
   onAudioRefined, 
   initialTopic = '',
-  onNavigateToStudio
+  onNavigateToStudio,
+  uiLang = 'vi'
 }) => {
   const [topic, setTopic] = useState(initialTopic);
   const [duration, setDuration] = useState<number | string>(1);
@@ -313,6 +315,7 @@ const ScriptModule: React.FC<Props> = ({
   const [style, setStyle] = useState('auto');
   const [market, setMarket] = useState('vn_kids');
   const [englishTopic, setEnglishTopic] = useState('fruits');
+  const [speakerMode, setSpeakerMode] = useState<'multi' | 'single' | 'asmr'>('single');
   const [loading, setLoading] = useState(false);
   const [suggestedStyle, setSuggestedStyle] = useState<any>(null);
   const [loadingSuggestion, setLoadingSuggestion] = useState(false);
@@ -527,6 +530,12 @@ CRITICAL: You MUST write the next scenes continuing this exact storyline seamles
         }
 
         const randomSeed = Math.floor(Math.random() * 1000000);
+        const modeInstruction = speakerMode === 'multi' 
+          ? 'MULTI-SPEAKER MODE: Create dynamic dialogues between multiple characters. Include distinct voice profiles.' 
+          : speakerMode === 'single'
+          ? 'SINGLE-SPEAKER MODE: Write as a single narrator/storyteller reading the entire script. No dialogue between multiple characters.'
+          : 'ASMR NO-VOICE MODE: Do NOT write any voice_text or dialogue. Focus entirely on detailed ASMR sounds, environmental audio, and visual actions. Make "voice_text" empty and "sfx_music_suggestion" extremely detailed.';
+
         const prompt = `TOPIC: "${topic}"
 DURATION: ${targetDuration}m (Total video duration)
 ROUND_GENERATING: Round ${round} of ${totalRounds} (Generating scenes ${startSceneNum} to ${endSceneNum})
@@ -534,6 +543,7 @@ ROUND_SCENE_COUNT: ${roundSceneCount} (Generate exactly ${roundSceneCount} scene
 TARGET_LANGUAGE: ${mk.voice_lang}
 TARGET_MARKET: ${mk.name}
 VISUAL_STYLE: ${styleContext}
+SPEAKER_MODE_INSTRUCTION: ${modeInstruction}
 [ANTI-REPETITION SEED]: ${randomSeed}${continuityContext}
 CRITICAL LANGUAGE RULES:
 1. SYSTEM/UI LANGUAGE: Write all director notes, visual descriptions (visual_desc_vi), and JSON keys in Vietnamese.
@@ -940,9 +950,31 @@ GENERATE JSON OBJECT.`;
             </div>
             <div className="bg-[#10141c] border border-slate-700/30 rounded-xl p-4 flex flex-col justify-center">
               <label className="text-xs font-bold text-slate-400 uppercase mb-2 block flex items-center gap-2"><i className={"fa-solid fa-globe text-amber-400"} /> THI TRUONG</label>
-              <select value={market} onChange={e => setMarket(e.target.value)} className="w-full bg-[#0a0e14] border border-slate-700/50 rounded-lg p-3 text-sm text-white outline-none cursor-pointer">
+              <select value={market} onChange={e => setMarket(e.target.value)} className="w-full bg-[#0a0e14] border border-slate-700/50 rounded-lg p-3 text-sm text-white outline-none cursor-pointer mb-4">
                 {Object.values(TARGET_MARKETS).map(m => <option key={m.id} value={m.id}>{m.flag} {m.name}</option>)}
               </select>
+
+              <label className="text-xs font-bold text-slate-400 uppercase mb-2 block flex items-center gap-2"><i className="fa-solid fa-microphone-lines text-teal-400" /> TÙY CHỌN GIỌNG ĐỌC</label>
+              <div className="flex bg-[#0a0e14] rounded-lg p-1 border border-slate-700/50">
+                <button 
+                  onClick={() => setSpeakerMode('multi')}
+                  className={`flex-1 py-1.5 text-xs font-bold rounded transition-all ${speakerMode === 'multi' ? 'bg-teal-900/40 text-teal-300 shadow' : 'text-slate-500 hover:text-slate-300'}`}
+                >
+                  Đa Nhân Vật
+                </button>
+                <button 
+                  onClick={() => setSpeakerMode('single')}
+                  className={`flex-1 py-1.5 text-xs font-bold rounded transition-all ${speakerMode === 'single' ? 'bg-teal-900/40 text-teal-300 shadow' : 'text-slate-500 hover:text-slate-300'}`}
+                >
+                  Độc Thoại
+                </button>
+                <button 
+                  onClick={() => setSpeakerMode('asmr')}
+                  className={`flex-1 py-1.5 text-xs font-bold rounded transition-all ${speakerMode === 'asmr' ? 'bg-teal-900/40 text-teal-300 shadow' : 'text-slate-500 hover:text-slate-300'}`}
+                >
+                  ASMR (No Voice)
+                </button>
+              </div>
             </div>
           </div>
           <div className={`border rounded-xl p-4 transition-all ${modeColor}`}>

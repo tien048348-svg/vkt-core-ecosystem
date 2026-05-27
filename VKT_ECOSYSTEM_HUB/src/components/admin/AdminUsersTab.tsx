@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Search, AlertTriangle, Clock, CheckCircle2, XCircle, Loader2, Trash2, RefreshCw, Download } from 'lucide-react';
 import { db } from '../../lib/firebase';
-import { collection, query, orderBy, getDocs, doc, setDoc, deleteDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, setDoc, deleteDoc } from 'firebase/firestore';
 import { useAppContext } from '../../context/AppContext';
 import { calcExpiryDate, calcDaysRemaining, type UserProfile } from '../../context/AuthContext';
 
@@ -55,7 +55,9 @@ const UserRow = React.memo(({
           <div className="flex items-center gap-3">
             <img src={user.photoURL || `https://ui-avatars.com/api/?name=${user.email}&background=random`} alt="" className="w-8 h-8 rounded-full border border-slate-700" />
             <div>
-              <p className="text-sm font-medium text-white">{user.displayName || 'Người dùng mới'}</p>
+              <p className="text-sm font-medium text-white flex items-center gap-1.5">
+                {user.displayName || 'Người dùng mới'}
+              </p>
               <p className="text-xs text-slate-500">{user.email}</p>
             </div>
           </div>
@@ -196,13 +198,15 @@ export const AdminUsersTab = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  const [activeTab, setActiveTab] = useState<TabType>('expiring');
+  const [activeTab, setActiveTab] = useState<TabType>('all');
   const [searchQuery, setSearchQuery] = useState('');
   
   const [expandedUserId, setExpandedUserId] = useState<string | null>(null);
   const [selectedPlanId, setSelectedPlanId] = useState<string>('');
   const [planStartDate, setPlanStartDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [savingUser, setSavingUser] = useState<string | null>(null);
+
+
 
   // Phân trang hiển thị phía Client để giữ DOM cực nhẹ và cuộn 60 FPS
   const [visibleCount, setVisibleCount] = useState(30);
@@ -217,7 +221,7 @@ export const AdminUsersTab = () => {
       }
       setError(null);
 
-      const q = query(collection(db, 'users'), orderBy('createdAt', 'desc'));
+      const q = collection(db, 'users');
       const snap = await getDocs(q);
       const loaded = snap.docs.map(d => d.data() as UserProfile);
       
@@ -461,7 +465,10 @@ export const AdminUsersTab = () => {
           const daysB = b.enrichedLowestDays ?? 9999;
           return daysA - daysB;
         }
-        return 0; // Giữ nguyên thứ tự createdAt
+        // Sắp xếp mặc định: Người mới nhất lên đầu (createdAt desc)
+        const dateA = a.createdAt ? parseCreatedDate(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? parseCreatedDate(b.createdAt).getTime() : 0;
+        return dateB - dateA;
       });
   }, [enrichedUsers, searchQuery, activeTab]);
 
@@ -625,6 +632,8 @@ export const AdminUsersTab = () => {
     setExpandedUserId(userId);
   }, []);
 
+
+
   // ─── GIAO DIỆN CHÍNH ─────────────────────────────────────────────────────────────
   if (loading) {
     return (
@@ -697,6 +706,7 @@ export const AdminUsersTab = () => {
             <input type="text" placeholder="Tìm email, tên..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
               className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-9 pr-4 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 placeholder-slate-600 transition-colors" />
           </div>
+
           <button 
             onClick={handleRefresh} 
             disabled={refreshing}
@@ -757,9 +767,11 @@ export const AdminUsersTab = () => {
         </div>
       </div>
 
+
+
       {/* 4. Client-side Pagination Trigger (Load More) */}
       {hasMoreToLoad && (
-        <div className="text-center pt-2">
+        <div className="text-center pt-6">
           <button 
             onClick={handleLoadMore}
             className="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white rounded-lg border border-slate-800 hover:border-slate-700 text-sm font-medium transition-all shadow-md active:scale-95"

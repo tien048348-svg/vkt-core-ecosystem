@@ -94,10 +94,11 @@ const App: React.FC = () => {
               onAudioRefined={handleAudioRefined} 
               initialTopic={strategyTopic}
               onNavigateToStudio={() => setActiveTab('studio')}
+              uiLang={uiLang}
             />
           </div>
           <div style={{ display: activeTab === 'studio' ? 'block' : 'none' }}>
-            <StudioModule segments={scriptSegments} topic={scriptTopic} />
+            <StudioModule segments={scriptSegments} topic={scriptTopic} uiLang={uiLang} />
           </div>
           <div style={{ display: activeTab === 'seo' ? 'block' : 'none' }}>
             <SeoModule initialTopic={strategyTopic} scriptSegments={scriptSegments} />

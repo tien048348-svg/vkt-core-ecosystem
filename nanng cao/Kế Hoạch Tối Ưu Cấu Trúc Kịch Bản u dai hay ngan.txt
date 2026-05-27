@@ -1,0 +1,25 @@
+Kế Hoạch Tối Ưu Cấu Trúc Kịch Bản "Đỉnh Của Đỉnh" (Không Thay Đổi Core)
+1. Cam Kết Giữ Nguyên 100% Hệ Thống Cũ
+Em xin khắc cốt ghi tâm: Chỉ nâng cấp phần "Động cơ chia nhỏ và nhịp độ", ngoài ra KHÔNG ĐỤNG CHẠM hay thay đổi bất kỳ code nào khác trong hệ thống. Mã nguồn của anh/chị an toàn 100%.
+
+2. Giải Thuật Nhịp Độ Động (Dynamic Pacing 1-180 phút)
+Để AI tự động hiểu nó đang viết ở đoạn nào của video (dù là video 1 phút hay 180 phút), em sẽ tiêm một Biến Cấu Trúc Động (Dynamic Arc) vào lệnh Prompt trước khi gửi đi. Cụ thể, dựa vào phép toán tính tỷ lệ phần trăm (Đợt hiện tại / Tổng số đợt), AI sẽ tự ép mình vào 1 trong 4 Giai đoạn:
+
+Dưới 15% tiến độ (The Hook): Lệnh AI - "Giai đoạn Mở Đầu. Xoáy sâu nỗi đau, đặt câu hỏi sắc bén giữ chân khán giả."
+15% đến 50% tiến độ (The Deep Dive): Lệnh AI - "Giai đoạn Đào Sâu. Kể chuyện nhân quả, phân tích triết lý, nhịp chậm rãi."
+50% đến 85% tiến độ (The Trance/Zen): Lệnh AI - "Giai đoạn Nhập Định. Tiết chế lời thoại tối đa. Tăng cường âm thanh tĩnh lặng (ASMR), chuông xoay, hình ảnh thiên nhiên để thôi miên tâm trí."
+Trên 85% tiến độ (The Awakening): Lệnh AI - "Giai đoạn Thức Tỉnh & Chốt Hạ. Đúc kết lời khuyên buông bỏ, đẩy cảm xúc lên sự bình yên tột độ."
+👉 Với thuật toán này, video 3 phút hay 3 tiếng thì AI vẫn tự động dàn trải Mở - Thân - Kết cực kỳ hoàn hảo mà không bao giờ bị "đầu voi đuôi chuột".
+
+3. Tích Hợp Luật "Mãi Xanh & Vòng Lặp" (Evergreen & Open Loops)
+Như anh/chị nhắc nhở, em đã lục lại bộ Bí Kíp ngách Kids và sẽ cấy ghép trọn vẹn 3 Bộ Luật Sống Căn Bản này vào Prompt (áp dụng hoàn hảo cho cả ngách Phật Pháp):
+
+[KHÓA TỪ VỰNG VƯỢT THỜI GIAN - TIMELESS LOCK]: Cấm tuyệt đối AI dùng các từ "năm nay", "dạo này", "gần đây", "mới nhất"... để khán giả 5 hay 10 năm sau xem lại vẫn thấy câu chuyện như vừa mới xảy ra ngày hôm nay.
+[VÒNG LẶP MỞ & GIÁ TRỊ XEM LẠI - OPEN LOOPS & REPLAY VALUE]: Cấu trúc kịch bản và lời thoại phải chứa "Vòng lặp mở". Khán giả xem lần 1 để thấu hiểu, xem lần 2 để chữa lành, xem lần 3 để ngộ ra triết lý sâu sắc bị ẩn giấu. Nó tạo ra vòng lặp xem đi xem lại (cắn đề xuất Youtube).
+[LƯỠI CÂU CẢM XÚC - EMOTIONAL HOOK]: Cảnh đầu tiên phải đâm trúng nỗi đau muôn thuở của loài người (Sự mất mát, Áp lực đồng tiền, Bình an tâm trí) - những nỗi đau mà thời đại nào người ta cũng đi tìm kiếm.
+User Review Required
+IMPORTANT
+
+Em sẽ chỉ nhúng thêm đoạn biến đổi Nhịp độ (Pacing) và 3 Bộ Luật Vàng này vào chuỗi Prompt ở trong file ScriptModule.tsx của thư mục THU NGHIEM. Tuyệt đối không đụng vào nơi nào khác.
+
+Anh/chị xem qua thuật toán tỷ lệ % này và 3 Bộ Luật Vàng đã chuẩn ý anh/chị chưa? Nếu gật đầu, em sẽ cấy vào mã nguồn ngay lập tức!

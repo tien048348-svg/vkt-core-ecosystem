@@ -48,6 +48,13 @@
 - **10-Minute Hard Limit (Giới Hạn 10 Phút):** Thiết lập giới hạn cứng tối đa 10 phút (~75 phân cảnh) cho mỗi kịch bản để tối ưu hóa sự ổn định bộ nhớ trình duyệt, tokens đầu ra và đảm bảo chất lượng nội dung cao cấp nhất.
 - **Live Deploy Sync:** Đồng bộ toàn bộ logic sinh cảnh lũy tiến mới lên hạ tầng trực tuyến qua Vercel cho cả 3 phân hệ VKT Tái Chế (`taiche.kiemtienvu.com`), VKT Kids (`kids.kiemtienvu.com`), và VKT Dharma Studio (`phatphap.kiemtienvu.com`).
 
+## 🚀 CHANGELOG: V16.6 PODCAST STUDIO ADVANCED UPGRADE (Podcast Deep Talk & Viral)
+
+- **Scene Duration Lock Switch (Công tắc khóa 8s):** Thêm công tắc khóa cứng 8 giây (mặc định) cho phân cảnh video, tự động tính toán số cảnh tối ưu từ số phút thời lượng. Cho phép mở khóa để sửa thành số giây bất kỳ và tự động chia phân cảnh động theo thời gian thực.
+- **VKT Viral Checklist Grid Panel:** Tái thiết kế layout cột phải dạng Grid 4 cột để tích hợp độc lập bảng 6 quy chuẩn lên xu hướng của VKT (Hook 3s, Drama, SFX/ASMR Sóng não, 1 cảnh 1 người nói, Vật lý chân thực, COPPA).
+- **3-Platform SEO Integration & Timestamps:** Tích hợp bộ SEO đa nền tảng gồm YouTube SEO (có tự động tạo Timeline Timestamps theo phân cảnh kịch bản nạp sang), TikTok Viral (bắt hook nhanh, hashtag), và Facebook Reels (khơi gợi tương tác). Hỗ trợ xuất file văn bản tổng hợp 3-trong-1 tiện lợi.
+- **Failsafe JSX Compilation & Live Vercel Deploy:** Khắc phục lỗi cú pháp rác/dư thừa tại chân tệp ScriptModule.tsx, nâng cấp biên dịch đóng gói sản phẩm hoàn chỉnh và deploy trực tiếp thông qua Vercel CLI lên địa chỉ `https://vkt-podcast-studio.vercel.app`.
+
 ---
 
 ## 🎯 MỤC TIÊU DỰ ÁN
@@ -465,6 +472,7 @@ npx -y vercel --prod --yes
 | v3.0 | 2026-05-12 | Deploy taiche.kiemtienvu.com + MASTER COMMAND V16.0 Audio |
 | **v4.0** | **2026-05-19** | **Hợp nhất VKT MASTER AGENT spec: +7 tính năng mới (Audio Truncation Shield, Dynamic Speed Matrix, Compound Word Lock, Breath Control, Global English Mode, VEO3 AUTO-SHIELD, Expanded Voice Profile). Mở rộng 8→18 visual styles. Nâng cấp code failsafe.** |
 | **v4.1** | **2026-05-21** | **Cập nhật Bức tường lửa bản quyền (Copyright Firewall). Chặn nghiêm ngặt việc nhắc đến tên người thật, người nổi tiếng hoặc nhân vật có bản quyền trong video_prompt và image_prompt để khắc phục lỗi vi phạm chính sách của AI (DALL-E 3/Imagen/Veo3).** |
+| **v4.2** | **2026-05-22** | **Nâng cấp tính năng Podcast Studio: Khóa 8s, Panel Quy chuẩn Viral VKT, Liên kết SEO 3 nền tảng (YouTube, TikTok, FB Reels) có Timeline Timestamps tự động và sửa lỗi cú pháp JSX.** |
 
 ---
 

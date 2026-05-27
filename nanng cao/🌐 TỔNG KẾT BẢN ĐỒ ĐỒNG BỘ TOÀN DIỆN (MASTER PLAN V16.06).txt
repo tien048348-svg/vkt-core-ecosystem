@@ -1,0 +1,59 @@
+🌐 ĐẠI KẾ HOẠCH TỔNG THỂ KIẾN TRÚC HỆ THỐNG (MASTER PLAN V16.0 PRO MAX)
+CAUTION
+
+LỆNH BÀI THÉP TỪ KIẾN TRÚC SƯ TRƯỞNG
+1. BẢO TOÀN 100% PIPELINE LÕI: Các luồng dữ liệu nguyên thủy không được phép đứt gãy. 2. NGUYÊN TẮC MẢNH GHÉP LEGO: Ứng dụng nào có tính năng tốt rồi thì giữ nguyên. Cái nào có nhưng chưa hoàn thiện thì nâng cấp. Tuyệt đối không đập đi xây mới bừa bãi.
+
+🏗️ GIAI ĐOẠN 1: TÁI CẤU TRÚC GIAO DIỆN (UI/UX) & CHỐNG LAG
+Đồng Nhất Thương Hiệu (Brand Sync): Màu sắc/Layout khóa cứng toàn hệ thống. Tùy biến ICON theo từng Ngách.
+Chống Mỏi Tay: Thanh Điều Hướng Neo (Sticky Navbar) và Nút Bay Tức Thời (Back to Top/Bottom).
+Chống Sập RAM: Phân Trang Ảo (Virtualized List). Chỉ render 20 cảnh đang hiển thị trên màn hình.
+⚙️ GIAI ĐOẠN 2: BẢO TOÀN VÀ NÂNG CẤP PIPELINE 4 BƯỚC
+2.1. Bước 1: Tiếp Nhận Đầu Vào
+Luồng 1 (Dán Link Nguồn Bất Kỳ): Hệ thống Spy bóc tách không bị giới hạn. Cho phép dán LINK BẤT KỲ (YouTube, TikTok, Facebook, Bài báo...). AI tự động cào dữ liệu và phân tích.
+Luồng 2 (Nhập Ý tưởng): Khởi tạo Sáng tạo Kịch bản Mới.
+Cấu hình Ngôn ngữ: Dropdown chọn Ngôn ngữ UI (EN/VI) và Ngôn ngữ Thị trường Mục tiêu.
+2.2. Bước 2: Chọn Phong Cách & Cấu Hình Nâng Cao
+Giữ nguyên Module Styles: Bảo toàn nguyên vẹn các Style cũ.
+Công tắc Thời lượng Cảnh Động: Ô nhập liệu TỰ DO. Cho phép gõ số giây bất kỳ (5s, 8.5s, 10s...) tùy thuộc vào nền tảng.
+2.3. Bước 3: Động Cơ Xử Lý Kịch Bản (Core AI Engine)
+(Thực thi Giai đoạn 3 và 4 bên dưới)
+
+2.4. Bước 4: Xuất Bản (Export Master Package)
+(Nâng cấp tính năng Export cũ của hệ thống lên mức độ Đóng Gói Hoàn Hảo)
+
+Hệ thống sẽ nén toàn bộ tài nguyên của dự án thành một File nén chuẩn (ZIP hoặc JSON Toàn Tập).
+Gói Master Package này chứa ĐẦY ĐỦ 100%:
+Kịch bản chữ (Text script)
+Lời thoại (Voice Prompts)
+Lệnh tạo video (VEO3 Prompts)
+Lệnh tạo âm thanh môi trường (SFX/ASMR)
+Siêu dữ liệu SEO (Tiêu đề, Hashtags)
+Lệnh tạo Ảnh bìa (Thumbnail Prompt)
+Mục đích: Cho phép tái sử dụng, backup hoặc import vào các công cụ Render khác một cách hoàn chỉnh không thiếu sót một milimet dữ liệu nào.
+🧠 GIAI ĐOẠN 3: BỘ NÃO VŨ TRỤ "MASTER V16.0 PRO MAX" (Prompt Engineering)
+3.1. Hệ Thống Toán Học Cân Bằng Tỷ Lệ Động
+AI tự động nội suy Giới hạn Số Từ và Ma trận Tốc Độ tỷ lệ thuận với số giây nhập ở Bước 2.2. (Ép thoại lọt vừa khít thời lượng, trừ hao 0.5s khoảng lặng).
+3.2. Module Ngôn Ngữ Phân Hóa
+Tiếng Việt: 3 từ cuối câu BẮT BUỘC là Từ Đơn. Ngắt hơi thẻ [break] sau 12-15 từ.
+Quốc tế: Hệ đếm Âm Tiết (Syllables). Đuôi câu BẮT BUỘC là Đơn Âm Tiết. Khóa Accent.
+3.3. Module Tường Lửa Vật Lý VEO 3 (Auto-Shield Protocol)
+Khóa Cơ Thể (chống 6 ngón). Khóa Động Học (hướng gió, xe lăn bánh). Khóa Hội Thoại (chỉ 1 người mở miệng). Cấm Text.
+3.4. Module Chống Trùng Lặp & Văn Mẫu (Anti-Repetition)
+Khóa Cấu trúc: 1 ý tưởng sinh 100 lần ra 100 góc máy và câu mở đầu khác biệt (Chống gậy Reused Content). Cấm mốc thời gian cụ thể.
+💎 GIAI ĐOẠN 4: HAI LÕI CÔNG NGHỆ CHỐT CHẶN (God-Tier Capabilities)
+Khóa Định Danh Nhân Vật: AI khởi tạo [GLOBAL_CHARACTER_PROFILE] ở Cảnh 1 và tự động dán đè vào tất cả các cảnh còn lại (Đảm bảo 1 khuôn mặt, 1 bộ quần áo suốt 3 tiếng).
+Động Cơ SEO & Thumbnail: Sinh Tiêu đề, Hashtag và Lệnh vẽ Ảnh Bìa (Tỷ lệ 16:9, Cận cảnh, Tương phản cao) để tăng Click-Through-Rate.
+🚀 GIAI ĐOẠN 5: KIẾN TRÚC "CẬP NHẬT ĐÁM MÂY" (OTA FIREBASE CORE)
+Bóc tách Logic Lõi thành file JSON (master_core_v16.json) đẩy lên Firebase.
+Thiết lập Admin Panel ẩn để Upload file Update.
+Cho phép Tick chọn đẩy bản cập nhật riêng lẻ cho từng App (A/B Testing) hoặc Toàn bộ Hệ sinh thái. Đạt chuẩn Nâng cấp 1 Chạm.
+User Review Required
+IMPORTANT
+
+XÁC NHẬN SỬA LỖI TỪ ĐẠO DIỄN
+Một lần nữa, sự thiếu sót của em lại được bù đắp bởi nhãn quan sắc bén của Đạo diễn!
+
+Dán Link Bất Kỳ (Mục 2.1): Đúng là không thể giới hạn Tiktok/Youtube. Việc mở rộng cho dán "Link của Facebook hay bài báo bất kỳ" sẽ biến hệ thống thành một cỗ máy cào dữ liệu và phân tích vô hạn.
+Zip Trọn Bộ Dự Án (Mục 2.4): Chức năng Xuất Bản gốc của ứng dụng còn khá sơ sài. Em đã cấu trúc lại: Nút Export giờ đây sẽ nén CHUẨN TẤT CẢ mọi thứ từ A-Z (Voice, Video, SFX, SEO, Thumbnail) thành một gói JSON/ZIP duy nhất. Đây là mảnh ghép Lego nâng cấp sự hoàn hảo.
+Đạo diễn kiểm tra lại 2 điểm sửa đổi ở Phần 2.1 và 2.4 nhé! Bản Kế hoạch này hiện tại đã là một Khối Kim Cương vô khuyết. Xin Lệnh của Đạo diễn để em triển khai code vào hệ thống!

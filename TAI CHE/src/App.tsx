@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import type { TabId } from './data/constants';
 import { loadApiConfig, getValidKeyCount, hasAnyApiKey } from './services/aiService';
+import { db } from './services/firebase';
+import { doc, onSnapshot } from 'firebase/firestore';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import ApiKeyModal from './components/ApiKeyModal';
@@ -9,24 +11,50 @@ import SpyModule from './pages/SpyModule';
 import ScriptModule from './pages/ScriptModule';
 import StudioModule from './pages/StudioModule';
 import SeoModule from './pages/SeoModule';
+import AdminModule from './pages/AdminModule';
+
+export interface GlobalSettings {
+  maxDuration: number;
+  allowedStyles: string[];
+  enableAudioRefinement: boolean;
+}
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabId>('spy');
   const [showConfig, setShowConfig] = useState(false);
   const [uiLang, setUiLang] = useState<'vi' | 'en'>('vi');
+  const [isAdmin, setIsAdmin] = useState(false);
   const [keyCount, setKeyCount] = useState(0);
   const [scriptSegments, setScriptSegments] = useState<any[]>([]);
   const [scriptTopic, setScriptTopic] = useState('');
   const [strategyTopic, setStrategyTopic] = useState('');
   const [scriptData, setScriptData] = useState<any>(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  // V20.0 Global Settings from Firebase
+  const [globalSettings, setGlobalSettings] = useState<GlobalSettings>({
+    maxDuration: 180,
+    allowedStyles: [],
+    enableAudioRefinement: true
+  });
 
   useEffect(() => {
     loadApiConfig();
     setKeyCount(getValidKeyCount());
     if (!hasAnyApiKey()) setShowConfig(true);
 
-    // Tự động khôi phục kịch bản phiên cũ từ localStorage khi F5 để giữ nguyên trải nghiệm người dùng
-    // ⚠️ KHI CLONE: Thay [NGACH] bằng tên ngách của bạn (ví dụ: recycle, dharma, horror...)
+    // V20.0 Firebase Listener
+    const unsub = onSnapshot(doc(db, 'config', 'global_settings'), (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setGlobalSettings({
+          maxDuration: data.maxDuration || 180,
+          allowedStyles: data.allowedStyles || [],
+          enableAudioRefinement: data.enableAudioRefinement !== false
+        });
+      }
+    });
+
     const saved = localStorage.getItem('recycle_autosave_script');
     if (saved) {
       try {
@@ -41,7 +69,44 @@ const App: React.FC = () => {
         console.error('Failed to restore autosaved script in App:', e);
       }
     }
+    
+    return () => unsub();
   }, []);
+
+  useEffect(() => {
+    const handleScroll = (e: Event) => {
+      const target = e.target as HTMLElement;
+      if (target.scrollTop > 300) {
+        setShowScrollTop(true);
+      } else {
+        setShowScrollTop(false);
+      }
+    };
+    
+    const container = document.getElementById('main-scroll-container');
+    if (container) {
+      container.addEventListener('scroll', handleScroll);
+    }
+    
+    const handleWindowScroll = () => {
+      if (window.scrollY > 300) setShowScrollTop(true);
+      else setShowScrollTop(false);
+    };
+    window.addEventListener('scroll', handleWindowScroll);
+
+    return () => {
+      if (container) container.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('scroll', handleWindowScroll);
+    };
+  }, [activeTab]);
+
+  const scrollToTop = () => {
+    const container = document.getElementById('main-scroll-container');
+    if (container) {
+      container.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const handleConfigClose = () => {
     setShowConfig(false);
@@ -51,10 +116,8 @@ const App: React.FC = () => {
   const handleScriptGenerated = (segs: any[], _style: string, topic?: string) => {
     setScriptSegments(segs);
     if (topic) setScriptTopic(topic);
-    // GIỮ NGUYÊN TAB 2: Để người dùng duyệt danh sách cảnh từ 1 đến N trực quan theo yêu cầu!
   };
 
-  // Audio refinement: chỉ cập nhật data, KHÔNG chuyển tab
   const handleAudioRefined = (segs: any[], topic?: string) => {
     setScriptSegments(segs);
     if (topic) setScriptTopic(topic);
@@ -62,13 +125,12 @@ const App: React.FC = () => {
 
   const handleUseStrategy = (title: string) => {
     setStrategyTopic(title);
-    setScriptSegments([]); // Xóa sạch dữ liệu cũ khi kích hoạt chủ đề mới
+    setScriptSegments([]);
     setScriptData(null);
     localStorage.removeItem('recycle_autosave_script');
     setActiveTab('script');
   };
 
-  // ⭐ Bước 7.2: Render ALL modules, use display:none to preserve state
   return (
     <div className="min-h-screen flex flex-col">
       <Header
@@ -76,6 +138,21 @@ const App: React.FC = () => {
         onToggleLang={() => setUiLang(p => p === 'vi' ? 'en' : 'vi')}
         onOpenConfig={() => setShowConfig(true)}
         keyCount={keyCount}
+        onOpenAdmin={() => {
+          if (!isAdmin) {
+            setTimeout(() => {
+              const pass = prompt('Hệ thống yêu cầu Mật mã Quản trị:');
+              if (pass === 'admin' || pass === 'vkt') {
+                setIsAdmin(true);
+                setActiveTab('admin');
+              } else if (pass !== null) {
+                alert('Mã truy cập không hợp lệ!');
+              }
+            }, 50);
+          } else {
+            setActiveTab('admin');
+          }
+        }}
       />
 
       <main className="flex-1 max-w-[1800px] mx-auto w-full p-4 md:p-6 flex flex-col md:flex-row gap-4 md:gap-6 md:h-[calc(100vh-70px)] h-auto">
@@ -83,10 +160,11 @@ const App: React.FC = () => {
           activeTab={activeTab}
           onTabChange={setActiveTab}
           hasScriptData={scriptSegments.length > 0}
+          uiLang={uiLang}
         />
-        <div className="flex-1 bg-[#10141c]/80 rounded-2xl border border-slate-700/30 p-4 md:p-6 md:overflow-y-auto relative min-h-[500px] backdrop-blur-sm">
+        <div id="main-scroll-container" className="flex-1 bg-[#10141c]/80 rounded-2xl border border-slate-700/30 p-4 md:p-6 md:overflow-y-auto relative min-h-[500px] backdrop-blur-sm scroll-smooth">
           <div style={{ display: activeTab === 'spy' ? 'block' : 'none' }}>
-            <SpyModule onUseStrategy={handleUseStrategy} />
+            <SpyModule onUseStrategy={handleUseStrategy} uiLang={uiLang} />
           </div>
           <div style={{ display: activeTab === 'script' ? 'block' : 'none' }}>
             <ScriptModule 
@@ -98,13 +176,19 @@ const App: React.FC = () => {
               onAudioRefined={handleAudioRefined} 
               initialTopic={strategyTopic}
               onNavigateToStudio={() => setActiveTab('studio')}
+              globalSettings={globalSettings}
+              uiLang={uiLang}
+              isAdmin={isAdmin}
             />
           </div>
           <div style={{ display: activeTab === 'studio' ? 'block' : 'none' }}>
-            <StudioModule segments={scriptSegments} topic={scriptTopic} />
+            <StudioModule segments={scriptSegments} topic={scriptTopic} uiLang={uiLang} />
           </div>
           <div style={{ display: activeTab === 'seo' ? 'block' : 'none' }}>
-            <SeoModule initialTopic={strategyTopic} />
+            <SeoModule initialTopic={strategyTopic} scriptSegments={scriptSegments} scriptTopic={scriptTopic} uiLang={uiLang} />
+          </div>
+          <div style={{ display: activeTab === 'admin' ? 'block' : 'none' }}>
+            {activeTab === 'admin' && <AdminModule globalSettings={globalSettings} uiLang={uiLang} />}
           </div>
         </div>
       </main>
@@ -121,6 +205,17 @@ const App: React.FC = () => {
 
       <ApiKeyModal isOpen={showConfig} onClose={handleConfigClose} />
       <ToastContainer />
+
+      {/* Floating Scroll To Top Button */}
+      {showScrollTop && (
+        <button 
+          onClick={scrollToTop}
+          className="fixed bottom-6 right-6 w-12 h-12 bg-teal-500/20 hover:bg-teal-500 text-teal-400 hover:text-white rounded-full flex items-center justify-center border border-teal-500/50 shadow-[0_0_15px_rgba(20,184,166,0.3)] transition-all z-50 animate-[fadeIn_0.3s_ease-out]"
+          title={uiLang === 'vi' ? 'Lên đầu trang' : 'Scroll to top'}
+        >
+          <i className="fa-solid fa-arrow-up text-lg"></i>
+        </button>
+      )}
     </div>
   );
 };

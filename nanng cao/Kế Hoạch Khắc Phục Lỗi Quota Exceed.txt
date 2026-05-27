@@ -1,0 +1,40 @@
+Kế Hoạch Khắc Phục Lỗi Quota Exceeded (Tràn Lượt Ghi Firestore)
+1. Phân Tích Nguyên Nhân Gốc Rễ
+Dựa trên biểu đồ hệ thống (20.000 lượt Writes) và rà soát mã nguồn, em đã xác định được thủ phạm là một Vòng Lặp Vô Hạn (Infinite Write Loop) nằm trong file AuthContext.tsx.
+
+Cụ thể, chức năng "Tự động ghi nhận thời gian đăng nhập" đang hoạt động như sau:
+
+Mỗi khi người dùng vào web, hệ thống kiểm tra: Lần đăng nhập cuối cách đây bao lâu?.
+Nếu quá 5 phút, hệ thống gửi lệnh setDoc lên Firebase để cập nhật thành thời gian hiện tại (serverTimestamp()).
+Ngay lập tức, Firebase Web SDK sẽ phản hồi lại phía máy khách (Local Cache) rằng "Dữ liệu đang được ghi". Sự kiện onSnapshot kích hoạt lại vòng lặp.
+Tuy nhiên, giá trị serverTimestamp() khi chưa tới được Đám mây sẽ có giá trị là null.
+Do nó là null, phép tính thời gian lại trả về 0, hệ thống lại tưởng là chưa cập nhật, và tiếp tục gửi setDoc một lần nữa.
+Kết quả: Ngay khi một người dùng đăng nhập, trình duyệt của họ "bắn phá" máy chủ Firebase hàng chục ngàn lần trong vài giây cho đến khi chạm mốc giới hạn tối đa (20K Writes) và bị khóa toàn hệ thống!
+2. Hệ Quả Do Lỗi Này Gây Ra
+Ứng dụng "Xóa" không được thực thi (Mắc kẹt ở Client).
+Người dùng mới đăng nhập không được lưu vào cơ sở dữ liệu users.
+Admin bị vô hiệu hóa toàn bộ quyền sửa/xóa/lưu (Firebase báo lỗi ngầm do hết lượt ghi).
+User Review Required
+IMPORTANT
+
+Dưới đây là phương án kỹ thuật để chặn đứng 100% vòng lặp này. Quá trình sửa lỗi không mất nhiều thời gian, nhưng anh/chị cần đọc qua và phản hồi đồng ý để em tiến hành triển khai.
+
+Proposed Changes
+[MODIFY] 
+AuthContext.tsx
+Cắt đứt vòng lặp vô hạn bằng cơ chế hasPendingWrites của Firebase:
+javascript
+
+if (profileSnap.metadata.hasPendingWrites) {
+  // Bỏ qua các sự kiện cập nhật nội bộ (của chính máy khách phát ra)
+  // Điều này chặn đứng hoàn toàn vòng lặp vô hạn!
+  return;
+}
+Nâng cấp độ an toàn cho phép tính lastLoginTime để không bao giờ bị rơi vào giá trị 0 khi tính toán thời gian serverTimestamp(). Cụ thể, nếu thời gian là null, sẽ sử dụng thời gian của Trình duyệt làm bộ đệm phụ trợ.
+Verification Plan
+Kiểm tra Mã nguồn: Lưu và chạy lại quá trình npm run build để xác minh Code không bị lỗi 문 pháp.
+Triển khai Production: Push thẳng lên Vercel để cập nhật web.
+Phục hồi Hệ thống: Do lỗi code đã được vá, vòng lặp "đốt Writes" bị dừng lại. Sau mốc 14:00 (2h chiều) khi Firebase tự động cấp phát lại 20.000 lượt mới, web sẽ quay trở lại hoạt động hoàn hảo mãi mãi.
+TIP
+
+Em đã lên xong kế hoạch này. Nếu anh/chị phản hồi "Đồng ý", em sẽ vá lỗi ngay lập tức. Sau đó anh/chị chỉ việc nghỉ ngơi và chờ qua đầu giờ chiều là mọi thứ sẽ chạy mượt như chưa từng có chuyện gì xảy ra!

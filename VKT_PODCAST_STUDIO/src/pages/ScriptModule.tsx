@@ -213,10 +213,108 @@ const SceneCard = React.memo(({ seg, idx, uiLang }: { seg: any, idx: number, uiL
 
 interface Props { onScriptGenerated: (segments: any[], style: string, topic?: string) => void; onAudioRefined?: (segments: any[], topic?: string) => void; initialTopic?: string; uiLang: 'vi' | 'en'; }
 
+const ViralChecklist = ({ uiLang }: { uiLang: 'vi' | 'en' }) => {
+  const isVi = uiLang === 'vi';
+  const checklistItems = [
+    {
+      id: 'hook',
+      title: isVi ? '🧲 Mở đầu Giật gân (First 3s Hook)' : '🧲 First 3s Viral Hook',
+      desc: isVi ? 'Đặt câu hỏi xoáy sâu vào nỗi đau hoặc mâu thuẫn để giữ chân người nghe lập tức.' : 'Ask a deep question or state a paradox to hook the listener instantly.',
+    },
+    {
+      id: 'single_speaker',
+      title: isVi ? '🗣️ Một giọng nói duy nhất (Single Speaker)' : '🗣️ Single Speaker Rhythm',
+      desc: isVi ? 'Tối đa 01 người nói trong mỗi cảnh để bảo vệ nhịp độ thoại chuẩn Podcast.' : 'Max 1 speaker per scene to maintain professional podcast pacing.',
+    },
+    {
+      id: 'asmr',
+      title: isVi ? '🍃 Thanh âm chữa lành (ASMR & Healing FX)' : '🍃 Healing Frequencies (ASMR)',
+      desc: isVi ? 'Tận dụng tần số 432Hz/528Hz hoặc tiếng ASMR tự nhiên để kích thích xúc cảm.' : 'Use 432Hz/528Hz background or nature ASMR to induce deep emotions.',
+    },
+    {
+      id: 'visual',
+      title: isVi ? '👁️ Thị giác lôi cuốn (Hypnotic Visuals)' : '👁️ Hypnotic Visual Prompts',
+      desc: isVi ? 'Mô tả hình ảnh có chiều sâu tâm lý, zoom chậm tinh tế, tránh chuyển cảnh giật cục.' : 'Deep psychological visuals, slow pans, avoid sudden flashy cuts.',
+    },
+    {
+      id: 'value',
+      title: isVi ? '💎 Đỉnh ngách mãi xanh (Evergreen Value)' : '💎 Evergreen Philosophical Value',
+      desc: isVi ? 'Mỗi phân cảnh phải đúc kết một triết lý nhân sinh hoặc kiến thức cốt lõi.' : 'Every scene must deliver a powerful life lesson or core insight.',
+    },
+    {
+      id: 'cta',
+      title: isVi ? '🎯 Kêu gọi tự nhiên (Smooth CTA)' : '🎯 Natural Call to Action',
+      desc: isVi ? 'Kêu gọi bình luận trải nghiệm cá nhân thay vì nút bấm mua hàng thô thiển.' : 'Invite personal experience sharing in comments instead of hard selling.',
+    }
+  ];
+
+  const [checked, setChecked] = useState<Record<string, boolean>>({
+    hook: true,
+    single_speaker: true,
+    asmr: true,
+    value: true
+  });
+
+  return (
+    <div className="bg-[#12161e] border border-amber-500/20 rounded-2xl p-5 lg:sticky lg:top-6 space-y-4 shadow-[0_10px_30px_rgba(245,158,11,0.05)] animate-[slideIn_0.4s_ease-out]">
+      <div className="flex items-center gap-2 border-b border-slate-700/30 pb-3">
+        <div className="p-2 rounded-lg bg-amber-500/10 text-amber-400">
+          <i className="fa-solid fa-fire-flame-curved text-lg animate-pulse" />
+        </div>
+        <div>
+          <h3 className="text-sm font-bold text-white uppercase tracking-wide">
+            {isVi ? 'QUY CHUẨN VIRAL VKT' : 'VKT VIRAL STANDARDS'}
+          </h3>
+          <p className="text-[9px] text-slate-500">
+            {isVi ? 'Checklist tối ưu thuật toán Podcast' : 'Podcast algorithm optimization checklist'}
+          </p>
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        {checklistItems.map(item => (
+          <div 
+            key={item.id}
+            onClick={() => setChecked(prev => ({ ...prev, [item.id]: !prev[item.id] }))}
+            className={`p-3 rounded-xl border cursor-pointer transition-all ${
+              checked[item.id] 
+                ? 'bg-teal-950/20 border-teal-500/30 text-slate-300' 
+                : 'bg-[#0a0e14] border-slate-800 text-slate-500 hover:border-slate-700'
+            }`}
+          >
+            <div className="flex items-start gap-2.5">
+              <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 mt-0.5 transition-all ${
+                checked[item.id] ? 'bg-teal-500 border-teal-500 text-white' : 'border-slate-700 bg-black/40'
+              }`}>
+                {checked[item.id] && <i className="fa-solid fa-check text-[9px]" />}
+              </div>
+              <div className="space-y-0.5">
+                <div className={`text-xs font-bold transition-colors ${checked[item.id] ? 'text-white' : 'text-slate-500'}`}>
+                  {item.title}
+                </div>
+                <p className="text-[9px] text-slate-400 leading-relaxed">
+                  {item.desc}
+                </p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="p-3 bg-[#0a0e14] rounded-xl border border-slate-700/20 text-center">
+        <span className="text-[10px] font-bold text-teal-400">
+          ✨ {isVi ? 'LUÔN BẢO TỒN KỊCH BẢN GỐC' : 'ALWAYS CONSERVE ORIGINAL SCRIPT'}
+        </span>
+      </div>
+    </div>
+  );
+};
+
 const ScriptModule: React.FC<Props> = ({ onScriptGenerated, onAudioRefined, initialTopic = '', uiLang }) => {
   const [topic, setTopic] = useState(initialTopic);
   const [duration, setDuration] = useState<number | string>(1);
   const [secondsPerScene, setSecondsPerScene] = useState(8);
+  const [lockDuration, setLockDuration] = useState(true);
   const [market, setMarket] = useState('vn_podcast');
   const [style, setStyle] = useState('auto');
   const [podcastTopic, setPodcastTopic] = useState('psychology');
@@ -254,7 +352,8 @@ const ScriptModule: React.FC<Props> = ({ onScriptGenerated, onAudioRefined, init
   }, [initialTopic]);
 
   const durationNum = parseFloat(duration as string) || 0;
-  const scenes = Math.ceil((Math.max(0.1, durationNum) * 60) / secondsPerScene);
+  const activeSecondsPerScene = lockDuration ? 8 : secondsPerScene;
+  const scenes = Math.ceil((Math.max(0.1, durationNum) * 60) / activeSecondsPerScene);
   const mode = durationNum < 3 ? { name: '🟢 QUICK CRAFT (<3m)', wpm: 130 } : durationNum <= 10 ? { name: '🔵 STORY WEAVER (3-10m)', wpm: 140 } : { name: '🟣 EPIC FOLKLORE (>10m)', wpm: 120 };
   const words = Math.floor(durationNum * mode.wpm);
   const modeColor = durationNum < 3 ? 'text-green-400 border-green-500/50 bg-green-900/10' : durationNum <= 10 ? 'text-teal-400 border-teal-500/50 bg-teal-900/10' : 'text-purple-400 border-purple-500/50 bg-purple-900/10';
@@ -312,7 +411,8 @@ const ScriptModule: React.FC<Props> = ({ onScriptGenerated, onAudioRefined, init
       styleContext += ` - PODCAST TOPIC: ${topicObj?.label}. MICRO-CONTEXT (CRITICAL): ${randomContext}.`;
 
       // 1. Calculate the total requested scenes
-      const totalScenes = Math.ceil((Math.max(0.1, targetDuration) * 60) / secondsPerScene);
+      const activeSecs = lockDuration ? 8 : secondsPerScene;
+      const totalScenes = Math.ceil((Math.max(0.1, targetDuration) * 60) / activeSecs);
       
       // 2. Define safe chunk size: 25 scenes per API call
       const chunkSize = 25;
@@ -358,10 +458,12 @@ CRITICAL: You MUST write the next scenes continuing this exact storyline seamles
           ? `\n[SPEAKER MODE - SINGLE SPEAKER MONOLOGUE ACTIVE]:
 - The entire video script MUST be written for only ONE single character/narrator from the first scene to the last scene (e.g., 'Người dẫn chuyện' or 'Thiền sư' or 'Trưởng lão' or 'Người mẹ'...).
 - The 'character' name and 'voice_profile.speaker' MUST be identical across all scenes (e.g. if Scene 1 is 'Trưởng lão', Scene 2, 3, etc. must also be 'Trưởng lão'). Do NOT introduce multiple characters, do NOT have different characters speaking in different scenes.
-- OVERRIDE the rule that says "Tuyệt đối cấm chỉ để 1 narrator nói suốt từ đầu đến cuối" or "ĐA NHÂN VẬT THAY PHIÊN" in the system prompt. Instead, keep a single voice speaking from beginning to end.`
+- OVERRIDE the rule that says "Tuyệt đối cấm chỉ để 1 narrator nói suốt từ đầu đến cuối" or "ĐA NHÂN VẬT THAY PHIÊN" in the system prompt. Instead, keep a single voice speaking from beginning to end.
+- CRITICAL: EACH SCENE MUST BE STRICTLY LIMITED TO AT MOST 1 SPEAKER.`
           : `\n[SPEAKER MODE - MULTI-CHARACTER DIALOGUE ACTIVE]:
 - The script should feature multiple characters taking turns speaking across different scenes to create a dialogue or alternating storytelling (e.g., scene 1: A speaks, scene 2: B speaks...).
-- Ensure different scenes use appropriate characters from the story.`;
+- Ensure different scenes use appropriate characters from the story.
+- CRITICAL: EACH SCENE MUST BE STRICTLY LIMITED TO AT MOST 1 SPEAKER TO PRESERVE DIALOGUE PACING. NO SCENE SHOULD HAVE MULTIPLE CHARACTERS TALKING SIMULTANEOUSLY.`;
 
         const randomSeed = Math.floor(Math.random() * 1000000);
         const prompt = `TOPIC: "${topic}"
@@ -395,10 +497,10 @@ CRITICAL INSTRUCTION:
         // Standardize output structure
         roundSegs = roundSegs.map((s: any, idx: number) => {
           const calculatedNum = startSceneNum + idx;
-          const min = Math.floor(((calculatedNum - 1) * secondsPerScene) / 60);
-          const secStart = ((calculatedNum - 1) * secondsPerScene) % 60;
-          const secEnd = (calculatedNum * secondsPerScene) % 60;
-          const minEnd = Math.floor((calculatedNum * secondsPerScene) / 60);
+          const min = Math.floor(((calculatedNum - 1) * activeSecs) / 60);
+          const secStart = ((calculatedNum - 1) * activeSecs) % 60;
+          const secEnd = (calculatedNum * activeSecs) % 60;
+          const minEnd = Math.floor((calculatedNum * activeSecs) / 60);
           
           const formatTime = (m: number, s: number) => `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
           
@@ -486,10 +588,12 @@ CRITICAL INSTRUCTION:
         ? `\n[SPEAKER MODE: SINGLE SPEAKER MONOLOGUE ACTIVE]
 - This script is in SINGLE SPEAKER mode (only 1 narrator/voice speaks throughout).
 - You MUST maintain the EXACT same character name ('speaker') and voice profile for all scenes. Do NOT introduce multiple characters, do NOT have different characters speaking in different scenes.
-- Ensure 'voice_profile.speaker' is identical for every refined scene (e.g. all 'Trưởng lão' or all 'Người dẫn chuyện').`
+- Ensure 'voice_profile.speaker' is identical for every refined scene (e.g. all 'Trưởng lão' or all 'Người dẫn chuyện').
+- CRITICAL: EACH SCENE MUST BE STRICTLY LIMITED TO AT MOST 1 SPEAKER.`
         : `\n[SPEAKER MODE: MULTI-CHARACTER DIALOGUE ACTIVE]
 - This script is in MULTI-CHARACTER mode.
-- Maintain the alternating characters as specified in the original input.`;
+- Maintain the alternating characters as specified in the original input.
+- CRITICAL: EACH SCENE MUST BE STRICTLY LIMITED TO AT MOST 1 SPEAKER TO PRESERVE DIALOGUE PACING. NO SCENE SHOULD HAVE MULTIPLE CHARACTERS TALKING SIMULTANEOUSLY.`;
 
       const prompt = `KỊCH BẢN GỐC (${payload.length} scenes):\n${JSON.stringify(payload, null, 2)}\n\nTINH CHỈNH THANH ÂM CHO TẤT CẢ ${payload.length} SCENES.${refinedInstructions}\nRESPOND IN ${uiLang === 'vi' ? 'VIETNAMESE' : 'ENGLISH'}.`;
       const res = await callAI(prompt, SYSTEM_PROMPT_AUDIO_REENGINEERING);
@@ -532,223 +636,251 @@ CRITICAL INSTRUCTION:
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6 animate-[slideIn_0.4s_ease-out]">
-      <div className="bg-[#12161e] border border-slate-700/30 p-6 rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)]">
-        <h2 className="text-xl font-bold text-white mb-4 flex items-center justify-between">
-          <span className="flex items-center gap-2"><i className="fa-solid fa-om text-teal-500" /> {t.script.title}</span>
-          <label className="cursor-pointer px-4 py-1.5 rounded-lg text-xs font-bold bg-amber-900/20 text-amber-300 border border-amber-500/30 hover:bg-amber-900/40 transition-all flex items-center gap-2">
-            <i className="fa-solid fa-folder-open" /> {uiLang === 'vi' ? 'Mở Dự Án' : 'Open Project'}
-            <input type="file" accept=".json" className="hidden" onChange={handleImportProject} />
-          </label>
-        </h2>
-        <div className="space-y-4">
-          <div className="relative mb-6">
-            <label className="text-xs font-bold text-slate-400 uppercase mb-1.5 block">{uiLang === 'vi' ? 'Chủ Đề Truyện' : 'Story Topic'}</label>
-            <div className="flex gap-2">
-              <input 
-                value={topic} 
-                onChange={e => {
-                  setTopic(e.target.value);
-                  if (e.target.value.trim() === '') {
-                    setSegments([]);
-                    setScriptData(null);
-                  }
-                }}
-                className="flex-1 bg-[#0a0e14] border border-slate-700/50 rounded-lg p-3 text-sm text-white outline-none focus:border-teal-500/50 placeholder-slate-600" 
-                placeholder={uiLang === 'vi' ? "VD: Luật nhân quả, An trú hiện tại, Buông bỏ phiền não..." : "e.g., Karma law, Living in the present..."} 
-              />
-              <button onClick={handleSuggestStyle} disabled={loadingSuggestion || !topic}
-                className="px-4 py-2 bg-amber-900/30 hover:bg-amber-800/40 border border-amber-500/30 text-amber-300 rounded-lg text-xs font-bold flex items-center gap-2 transition-all disabled:opacity-50 shrink-0">
-                {loadingSuggestion ? <><i className="fa-solid fa-sync animate-spin" /> {uiLang === 'vi' ? 'Đang phân tích...' : 'Analyzing...'}</> : <><i className="fa-solid fa-wand-magic-sparkles" /> {uiLang === 'vi' ? 'AI Đề Xuất Style' : 'AI Suggest Style'}</>}
-              </button>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-[#10141c] border border-slate-700/30 rounded-xl p-4 relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-1 h-full bg-teal-500/50" />
-              <label className="text-xs font-bold text-slate-400 uppercase mb-3 block flex items-center gap-2"><i className="fa-solid fa-clock text-teal-400" /> {uiLang === 'vi' ? 'THỜI LƯỢNG (PHÚT)' : 'DURATION (MINS)'}</label>
-              <div className="flex items-center gap-5">
+    <div className="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-4 gap-6 animate-[slideIn_0.4s_ease-out]">
+      {/* LEFT COLUMN: Scripting and scenes */}
+      <div className="lg:col-span-3 space-y-6">
+        <div className="bg-[#12161e] border border-slate-700/30 p-6 rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)]">
+          <h2 className="text-xl font-bold text-white mb-4 flex items-center justify-between">
+            <span className="flex items-center gap-2"><i className="fa-solid fa-om text-teal-500" /> {t.script.title}</span>
+            <label className="cursor-pointer px-4 py-1.5 rounded-lg text-xs font-bold bg-amber-900/20 text-amber-300 border border-amber-500/30 hover:bg-amber-900/40 transition-all flex items-center gap-2">
+              <i className="fa-solid fa-folder-open" /> {uiLang === 'vi' ? 'Mở Dự Án' : 'Open Project'}
+              <input type="file" accept=".json" className="hidden" onChange={handleImportProject} />
+            </label>
+          </h2>
+          <div className="space-y-4">
+            <div className="relative mb-6">
+              <label className="text-xs font-bold text-slate-400 uppercase mb-1.5 block">{uiLang === 'vi' ? 'Chủ Đề Truyện' : 'Story Topic'}</label>
+              <div className="flex gap-2">
                 <input 
-                  type="number" 
-                  value={duration} 
-                  step={0.5} 
+                  value={topic} 
                   onChange={e => {
-                    const val = e.target.value;
-                    if (val === '') {
-                      setDuration('');
-                      return;
-                    }
-                    const num = parseFloat(val);
-                    if (num > 10) {
-                      showToast(uiLang === 'vi' 
-                        ? '⚠️ Giới hạn thời lượng tối đa là 10 phút!' 
-                        : '⚠️ Maximum duration limit is 10 minutes!', 'warning');
-                      setDuration(10);
-                    } else {
-                      setDuration(num);
+                    setTopic(e.target.value);
+                    if (e.target.value.trim() === '') {
+                      setSegments([]);
+                      setScriptData(null);
                     }
                   }}
-                  onBlur={e => {
-                    const num = parseFloat(e.target.value);
-                    if (isNaN(num) || num < 0.5) {
-                      setDuration(1);
-                    } else if (num > 10) {
-                      setDuration(10);
-                    }
-                  }}
-                  className="w-20 bg-[#0a0e14] border border-slate-700/50 rounded-lg p-3 text-2xl font-black text-white text-center outline-none" 
+                  className="flex-1 bg-[#0a0e14] border border-slate-700/50 rounded-lg p-3 text-sm text-white outline-none focus:border-teal-500/50 placeholder-slate-600" 
+                  placeholder={uiLang === 'vi' ? "VD: Luật nhân quả, An trú hiện tại, Buông bỏ phiền não..." : "e.g., Karma law, Living in the present..."} 
                 />
-                
-                <div className="flex flex-col gap-1 w-24">
-                  <label className="text-[10px] text-slate-400 font-bold">GIÂY/CẢNH:</label>
+                <button onClick={handleSuggestStyle} disabled={loadingSuggestion || !topic}
+                  className="px-4 py-2 bg-amber-900/30 hover:bg-amber-800/40 border border-amber-500/30 text-amber-300 rounded-lg text-xs font-bold flex items-center gap-2 transition-all disabled:opacity-50 shrink-0">
+                  {loadingSuggestion ? <><i className="fa-solid fa-sync animate-spin" /> {uiLang === 'vi' ? 'Đang phân tích...' : 'Analyzing...'}</> : <><i className="fa-solid fa-wand-magic-sparkles" /> {uiLang === 'vi' ? 'AI Đề Xuất Style' : 'AI Suggest Style'}</>}
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-[#10141c] border border-slate-700/30 rounded-xl p-4 relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-1 h-full bg-teal-500/50" />
+                <label className="text-xs font-bold text-slate-400 uppercase mb-3 block flex items-center gap-2"><i className="fa-solid fa-clock text-teal-400" /> {uiLang === 'vi' ? 'THỜI LƯỢNG (PHÚT)' : 'DURATION (MINS)'}</label>
+                <div className="flex items-center justify-between gap-4 flex-wrap sm:flex-nowrap">
                   <input 
                     type="number" 
-                    value={secondsPerScene} 
-                    onChange={e => setSecondsPerScene(Math.max(1, parseInt(e.target.value) || 8))}
-                    className="w-full bg-[#0a0e14] border border-slate-700/50 rounded p-1.5 text-sm font-bold text-teal-300 text-center outline-none" 
+                    value={duration} 
+                    step={0.5} 
+                    onChange={e => {
+                      const val = e.target.value;
+                      if (val === '') {
+                        setDuration('');
+                        return;
+                      }
+                      const num = parseFloat(val);
+                      if (num > 10) {
+                        showToast(uiLang === 'vi' 
+                          ? '⚠️ Giới hạn thời lượng tối đa là 10 phút!' 
+                          : '⚠️ Maximum duration limit is 10 minutes!', 'warning');
+                        setDuration(10);
+                      } else {
+                        setDuration(num);
+                      }
+                    }}
+                    onBlur={e => {
+                      const num = parseFloat(e.target.value);
+                      if (isNaN(num) || num < 0.5) {
+                        setDuration(1);
+                      } else if (num > 10) {
+                        setDuration(10);
+                      }
+                    }}
+                    className="w-16 bg-[#0a0e14] border border-slate-700/50 rounded-lg p-2.5 text-xl font-black text-white text-center outline-none" 
                   />
-                </div>
-                <div className="flex flex-col gap-1.5 text-xs">
-                  <div><span className="text-slate-500">{uiLang === 'vi' ? 'Số cảnh' : 'Scenes'}:</span> <span className="font-bold text-green-400 text-base">~{scenes}</span></div>
-                  <div><span className="text-slate-500">Voice:</span> <span className="font-bold text-teal-400 text-base">~{words} {uiLang === 'vi' ? 'từ' : 'words'}</span></div>
+                  
+                  <div className="flex items-center gap-3">
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="text-[9px] text-slate-500 font-bold uppercase">{uiLang === 'vi' ? 'Khóa 8s' : 'Lock 8s'}</span>
+                      <button 
+                        onClick={() => {
+                          const next = !lockDuration;
+                          setLockDuration(next);
+                          if (next) {
+                            setSecondsPerScene(8);
+                          }
+                        }}
+                        className={`w-10 h-6 rounded-full p-0.5 transition-colors duration-200 outline-none focus:outline-none flex items-center ${lockDuration ? 'bg-teal-500' : 'bg-slate-700'}`}
+                      >
+                        <div className={`bg-[#0a0e14] w-5 h-5 rounded-full shadow-md transform transition-transform duration-200 ${lockDuration ? 'translate-x-4' : 'translate-x-0'}`} />
+                      </button>
+                    </div>
+                    
+                    <div className="flex flex-col gap-1 w-16">
+                      <label className="text-[9px] text-slate-500 font-bold uppercase text-center">{uiLang === 'vi' ? 'Giây/Cảnh' : 'Sec/Scene'}</label>
+                      <input 
+                        type="number" 
+                        value={activeSecondsPerScene} 
+                        disabled={lockDuration}
+                        onChange={e => setSecondsPerScene(Math.max(1, parseInt(e.target.value) || 8))}
+                        className={`w-full bg-[#0a0e14] border border-slate-700/50 rounded p-1 text-xs font-bold text-center outline-none transition-all ${lockDuration ? 'text-slate-500 border-slate-800 cursor-not-allowed' : 'text-teal-300 border-teal-500/30'}`} 
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-1 text-xs shrink-0">
+                    <div><span className="text-slate-500">{uiLang === 'vi' ? 'Cảnh' : 'Scenes'}:</span> <span className="font-bold text-green-400">~{scenes}</span></div>
+                    <div><span className="text-slate-500">Voice:</span> <span className="font-bold text-teal-400">~{words} {uiLang === 'vi' ? 'từ' : 'w'}</span></div>
+                  </div>
                 </div>
               </div>
+              <div className="bg-[#10141c] border border-slate-700/30 rounded-xl p-4 flex flex-col justify-center">
+                <label className="text-xs font-bold text-slate-400 uppercase mb-2 block flex items-center gap-2"><i className="fa-solid fa-globe text-amber-400" /> {uiLang === 'vi' ? 'THỊ TRƯỜNG' : 'MARKET'}</label>
+                <select value={market} onChange={e => setMarket(e.target.value)} className="w-full bg-[#0a0e14] border border-slate-700/50 rounded-lg p-3 text-sm text-white outline-none cursor-pointer">
+                  {Object.values(TARGET_MARKETS).map(m => <option key={m.id} value={m.id}>{m.flag} {m.name}</option>)}
+                </select>
+              </div>
             </div>
-            <div className="bg-[#10141c] border border-slate-700/30 rounded-xl p-4 flex flex-col justify-center">
-              <label className="text-xs font-bold text-slate-400 uppercase mb-2 block flex items-center gap-2"><i className="fa-solid fa-globe text-amber-400" /> {uiLang === 'vi' ? 'THỊ TRƯỜNG' : 'MARKET'}</label>
-              <select value={market} onChange={e => setMarket(e.target.value)} className="w-full bg-[#0a0e14] border border-slate-700/50 rounded-lg p-3 text-sm text-white outline-none cursor-pointer">
-                {Object.values(TARGET_MARKETS).map(m => <option key={m.id} value={m.id}>{m.flag} {m.name}</option>)}
+            <div className="bg-[#10141c] border border-slate-700/30 rounded-xl p-4">
+              <label className="text-xs font-bold text-teal-400 uppercase mb-2 block flex items-center gap-2"><i className="fa-solid fa-microphone-lines text-teal-400" /> {uiLang === 'vi' ? 'CHỌN PHÂN NGÁCH PODCAST' : 'PODCAST SUB-TOPIC'}</label>
+              <select value={podcastTopic} onChange={e => setPodcastTopic(e.target.value)} className="w-full bg-[#0a0e14] border border-teal-500/50 rounded-lg p-3 text-sm text-white outline-none cursor-pointer">
+                {PODCAST_TOPICS.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
               </select>
             </div>
-          </div>
-          <div className="bg-[#10141c] border border-slate-700/30 rounded-xl p-4">
-            <label className="text-xs font-bold text-teal-400 uppercase mb-2 block flex items-center gap-2"><i className="fa-solid fa-microphone-lines text-teal-400" /> {uiLang === 'vi' ? 'CHỌN PHÂN NGÁCH PODCAST' : 'PODCAST SUB-TOPIC'}</label>
-            <select value={podcastTopic} onChange={e => setPodcastTopic(e.target.value)} className="w-full bg-[#0a0e14] border border-teal-500/50 rounded-lg p-3 text-sm text-white outline-none cursor-pointer">
-              {PODCAST_TOPICS.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
-            </select>
-          </div>
 
-          <div className="bg-[#10141c] border border-slate-700/30 rounded-xl p-4">
-            <label className="text-xs font-bold text-slate-400 uppercase mb-3 block flex items-center gap-2">
-              <i className="fa-solid fa-microphone text-purple-400" /> {t.script.speakerMode}
-            </label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div 
-                onClick={() => setSpeakerMode('multi')}
-                className={`cursor-pointer p-3 rounded-xl border flex items-start gap-3 transition-all ${
-                  speakerMode === 'multi' 
-                    ? 'bg-purple-900/20 border-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.2)] text-white' 
-                    : 'bg-[#0a0e14] border-slate-700/50 hover:border-slate-500 text-slate-400'
-                }`}
-              >
-                <div className={`p-2 rounded-lg shrink-0 ${speakerMode === 'multi' ? 'bg-purple-500 text-white' : 'bg-slate-800 text-slate-400'}`}>
-                  <i className="fa-solid fa-users text-sm"></i>
-                </div>
-                <div>
-                  <div className="text-xs font-bold">{t.script.multiSpeaker}</div>
-                  <div className="text-[10px] text-slate-500 mt-1 leading-tight">{t.script.multiSpeakerDesc}</div>
-                </div>
-              </div>
-
-              <div 
-                onClick={() => setSpeakerMode('single')}
-                className={`cursor-pointer p-3 rounded-xl border flex items-start gap-3 transition-all ${
-                  speakerMode === 'single' 
-                    ? 'bg-purple-900/20 border-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.2)] text-white' 
-                    : 'bg-[#0a0e14] border-slate-700/50 hover:border-slate-500 text-slate-400'
-                }`}
-              >
-                <div className={`p-2 rounded-lg shrink-0 ${speakerMode === 'single' ? 'bg-purple-500 text-white' : 'bg-slate-800 text-slate-400'}`}>
-                  <i className="fa-solid fa-user text-sm"></i>
-                </div>
-                <div>
-                  <div className="text-xs font-bold">{t.script.singleSpeaker}</div>
-                  <div className="text-[10px] text-slate-500 mt-1 leading-tight">{t.script.singleSpeakerDesc}</div>
-                </div>
-              </div>
-
-              <div 
-                onClick={() => setSpeakerMode('asmr')}
-                className={`cursor-pointer p-3 rounded-xl border flex items-start gap-3 transition-all ${
-                  speakerMode === 'asmr' 
-                    ? 'bg-purple-900/20 border-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.2)] text-white' 
-                    : 'bg-[#0a0e14] border-slate-700/50 hover:border-slate-500 text-slate-400'
-                }`}
-              >
-                <div className={`p-2 rounded-lg shrink-0 ${speakerMode === 'asmr' ? 'bg-purple-500 text-white' : 'bg-slate-800 text-slate-400'}`}>
-                  <i className="fa-solid fa-volume-xmark text-sm"></i>
-                </div>
-                <div>
-                  <div className="text-xs font-bold">{t.script.pureAsmr}</div>
-                  <div className="text-[10px] text-slate-500 mt-1 leading-tight">{t.script.pureAsmrDesc}</div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="bg-[#10141c] border border-slate-700/30 rounded-xl p-4">
-            <label className="text-xs font-bold text-slate-400 uppercase mb-3 block flex items-center gap-2">
-              <i className="fa-solid fa-palette text-pink-400" /> {uiLang === 'vi' ? 'PHONG CÁCH NGHỆ THUẬT (VISUAL STYLE)' : 'VISUAL STYLE'}
-            </label>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
-              <div 
-                onClick={() => setStyle('auto')}
-                className={`cursor-pointer p-3 rounded-xl border flex items-center justify-center text-center transition-all ${style === 'auto' ? 'bg-pink-900/40 border-pink-500 shadow-[0_0_15px_rgba(236,72,153,0.3)] text-white' : 'bg-[#0a0e14] border-slate-700/50 hover:border-slate-500 text-slate-400'}`}
-              >
-                <div className="text-sm font-bold"><i className="fa-solid fa-wand-magic-sparkles mb-1 block text-lg"></i> Auto AI</div>
-              </div>
-              {VISUAL_STYLES.map(s => (
+            <div className="bg-[#10141c] border border-slate-700/30 rounded-xl p-4">
+              <label className="text-xs font-bold text-slate-400 uppercase mb-3 block flex items-center gap-2">
+                <i className="fa-solid fa-microphone text-purple-400" /> {t.script.speakerMode}
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div 
-                  key={s.id} 
-                  onClick={() => setStyle(s.id)}
-                  className={`cursor-pointer p-3 rounded-xl border flex flex-col items-center justify-center text-center transition-all ${style === s.id ? 'bg-pink-900/40 border-pink-500 shadow-[0_0_15px_rgba(236,72,153,0.3)] text-white' : 'bg-[#0a0e14] border-slate-700/50 hover:border-slate-500 text-slate-400'}`}
-                  title={s.desc}
+                  onClick={() => setSpeakerMode('multi')}
+                  className={`cursor-pointer p-3 rounded-xl border flex items-start gap-3 transition-all ${
+                    speakerMode === 'multi' 
+                      ? 'bg-purple-900/20 border-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.2)] text-white' 
+                      : 'bg-[#0a0e14] border-slate-700/50 hover:border-slate-500 text-slate-400'
+                  }`}
                 >
-                  <div className="text-xs font-bold leading-tight">{s.name}</div>
+                  <div className={`p-2 rounded-lg shrink-0 ${speakerMode === 'multi' ? 'bg-purple-500 text-white' : 'bg-slate-800 text-slate-400'}`}>
+                    <i className="fa-solid fa-users text-sm"></i>
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold">{t.script.multiSpeaker}</div>
+                    <div className="text-[10px] text-slate-500 mt-1 leading-tight">{t.script.multiSpeakerDesc}</div>
+                  </div>
                 </div>
-              ))}
+
+                <div 
+                  onClick={() => setSpeakerMode('single')}
+                  className={`cursor-pointer p-3 rounded-xl border flex items-start gap-3 transition-all ${
+                    speakerMode === 'single' 
+                      ? 'bg-purple-900/20 border-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.2)] text-white' 
+                      : 'bg-[#0a0e14] border-slate-700/50 hover:border-slate-500 text-slate-400'
+                  }`}
+                >
+                  <div className={`p-2 rounded-lg shrink-0 ${speakerMode === 'single' ? 'bg-purple-500 text-white' : 'bg-slate-800 text-slate-400'}`}>
+                    <i className="fa-solid fa-user text-sm"></i>
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold">{t.script.singleSpeaker}</div>
+                    <div className="text-[10px] text-slate-500 mt-1 leading-tight">{t.script.singleSpeakerDesc}</div>
+                  </div>
+                </div>
+
+                <div 
+                  onClick={() => setSpeakerMode('asmr')}
+                  className={`cursor-pointer p-3 rounded-xl border flex items-start gap-3 transition-all ${
+                    speakerMode === 'asmr' 
+                      ? 'bg-purple-900/20 border-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.2)] text-white' 
+                      : 'bg-[#0a0e14] border-slate-700/50 hover:border-slate-500 text-slate-400'
+                  }`}
+                >
+                  <div className={`p-2 rounded-lg shrink-0 ${speakerMode === 'asmr' ? 'bg-purple-500 text-white' : 'bg-slate-800 text-slate-400'}`}>
+                    <i className="fa-solid fa-volume-xmark text-sm"></i>
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold">{t.script.pureAsmr}</div>
+                    <div className="text-[10px] text-slate-500 mt-1 leading-tight">{t.script.pureAsmrDesc}</div>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
+            <div className="bg-[#10141c] border border-slate-700/30 rounded-xl p-4">
+              <label className="text-xs font-bold text-slate-400 uppercase mb-3 block flex items-center gap-2">
+                <i className="fa-solid fa-palette text-pink-400" /> {uiLang === 'vi' ? 'PHONG CÁCH NGHỆ THUẬT (VISUAL STYLE)' : 'VISUAL STYLE'}
+              </label>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
+                <div 
+                  onClick={() => setStyle('auto')}
+                  className={`cursor-pointer p-3 rounded-xl border flex items-center justify-center text-center transition-all ${style === 'auto' ? 'bg-pink-900/40 border-pink-500 shadow-[0_0_15px_rgba(236,72,153,0.3)] text-white' : 'bg-[#0a0e14] border-slate-700/50 hover:border-slate-500 text-slate-400'}`}
+                >
+                  <div className="text-sm font-bold"><i className="fa-solid fa-wand-magic-sparkles mb-1 block text-lg"></i> Auto AI</div>
+                </div>
+                {VISUAL_STYLES.map(s => (
+                  <div 
+                    key={s.id} 
+                    onClick={() => setStyle(s.id)}
+                    className={`cursor-pointer p-3 rounded-xl border flex flex-col items-center justify-center text-center transition-all ${style === s.id ? 'bg-pink-900/40 border-pink-500 shadow-[0_0_15px_rgba(236,72,153,0.3)] text-white' : 'bg-[#0a0e14] border-slate-700/50 hover:border-slate-500 text-slate-400'}`}
+                    title={s.desc}
+                  >
+                    <div className="text-xs font-bold leading-tight">{s.name}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
 
-          <button onClick={handleGenerate} disabled={loading || refiningAudio}
-            className="w-full py-4 bg-teal-900/50 hover:bg-teal-800/50 border border-teal-500/30 text-teal-100 font-bold rounded-xl shadow-[0_0_20px_rgba(20,184,166,0.15)] flex items-center justify-center gap-2 transition-all disabled:opacity-50">
-            {loading ? <><i className="fa-solid fa-sync animate-spin" /> {loadingMessages[loadingMsgIdx]}</> : <><i className="fa-solid fa-paper-plane" /> {uiLang === 'vi' ? 'KIẾN TẠO KỊCH BẢN PODCAST' : 'GENERATE PODCAST SCRIPT'}</>}
-          </button>
-
-          {segments.length > 0 && (
-            <button onClick={handleAudioRefining} disabled={loading || refiningAudio}
-              className="w-full py-3.5 bg-purple-900/30 hover:bg-purple-800/40 border border-purple-500/30 text-purple-200 font-bold rounded-xl flex items-center justify-center gap-2 transition-all disabled:opacity-50">
-              {refiningAudio ? <><i className="fa-solid fa-sync animate-spin" /> {uiLang === 'vi' ? 'Đang tinh chỉnh âm thanh...' : 'Refining audio...'}</> : <><i className="fa-solid fa-headphones-simple" /> <span>{uiLang === 'vi' ? '🎙️ TINH CHỈNH THANH ÂM (V16.0)' : '🎙️ AUDIO RE-ENGINEERING (V16.0)'}</span><span className="text-[10px] bg-purple-500 text-white px-1.5 py-0.5 rounded font-black">+{audioRefinedCount}</span></>}
+            <button onClick={handleGenerate} disabled={loading || refiningAudio}
+              className="w-full py-4 bg-teal-900/50 hover:bg-teal-800/50 border border-teal-500/30 text-teal-100 font-bold rounded-xl shadow-[0_0_20px_rgba(20,184,166,0.15)] flex items-center justify-center gap-2 transition-all disabled:opacity-50">
+              {loading ? <><i className="fa-solid fa-sync animate-spin" /> {loadingMessages[loadingMsgIdx]}</> : <><i className="fa-solid fa-paper-plane" /> {uiLang === 'vi' ? 'KIẾN TẠO KỊCH BẢN PODCAST' : 'GENERATE PODCAST SCRIPT'}</>}
             </button>
-          )}
+
+            {segments.length > 0 && (
+              <button onClick={handleAudioRefining} disabled={loading || refiningAudio}
+                className="w-full py-3.5 bg-purple-900/30 hover:bg-purple-800/40 border border-purple-500/30 text-purple-200 font-bold rounded-xl flex items-center justify-center gap-2 transition-all disabled:opacity-50">
+                {refiningAudio ? <><i className="fa-solid fa-sync animate-spin" /> {uiLang === 'vi' ? 'Đang tinh chỉnh âm thanh...' : 'Refining audio...'}</> : <><i className="fa-solid fa-headphones-simple" /> <span>{uiLang === 'vi' ? '🎙️ TINH CHỈNH THANH ÂM (V16.0)' : '🎙️ AUDIO RE-ENGINEERING (V16.0)'}</span><span className="text-[10px] bg-purple-500 text-white px-1.5 py-0.5 rounded font-black">+{audioRefinedCount}</span></>}
+              </button>
+            )}
+          </div>
         </div>
+
+        {segments.length > 0 && (
+          <div className="space-y-4 pb-10">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-[#12161e] border border-slate-700/30 p-4 rounded-xl">
+              <div className="flex flex-wrap gap-2 items-center">
+                <span className="text-xs text-slate-500 font-bold">{uiLang === 'vi' ? `Đã tạo: ${segments.length} phân đoạn` : `Generated: ${segments.length} segments`}</span>
+                {scriptData?.suggested_watermark && (
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-teal-500/10 border border-teal-500/30 text-teal-400 flex items-center gap-1.5 shadow-[0_0_10px_rgba(20,184,166,0.1)]">
+                    <i className="fa-solid fa-copyright text-teal-500" /> 
+                    <span>Logo Emblem: <strong className="uppercase font-extrabold">{scriptData.suggested_watermark}</strong></span>
+                  </span>
+                )}
+                {scriptData?.coppa_disclaimer && (
+                  <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center gap-1.5">
+                    <i className="fa-solid fa-shield-halved text-amber-500" /> 
+                    <span>{scriptData.coppa_disclaimer}</span>
+                  </span>
+                )}
+              </div>
+              <button onClick={copyAll} className="text-xs font-bold px-3 py-1.5 rounded flex items-center gap-2 bg-white text-black hover:bg-slate-200 transition-colors shrink-0"><i className="fa-solid fa-copy" /> {uiLang === 'vi' ? 'Copy Voice Toàn Bộ' : 'Copy Voice All'}</button>
+            </div>
+            {segments.map((seg, idx) => (
+              <SceneCard key={idx} seg={seg} idx={idx} uiLang={uiLang} />
+            ))}
+          </div>
+        )}
       </div>
 
-      {segments.length > 0 && (
-        <div className="space-y-4 pb-10">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-[#12161e] border border-slate-700/30 p-4 rounded-xl">
-            <div className="flex flex-wrap gap-2 items-center">
-              <span className="text-xs text-slate-500 font-bold">{uiLang === 'vi' ? `Đã tạo: ${segments.length} phân đoạn` : `Generated: ${segments.length} segments`}</span>
-              {scriptData?.suggested_watermark && (
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-teal-500/10 border border-teal-500/30 text-teal-400 flex items-center gap-1.5 shadow-[0_0_10px_rgba(20,184,166,0.1)]">
-                  <i className="fa-solid fa-copyright text-teal-500" /> 
-                  <span>Logo Emblem: <strong className="uppercase font-extrabold">{scriptData.suggested_watermark}</strong></span>
-                </span>
-              )}
-              {scriptData?.coppa_disclaimer && (
-                <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center gap-1.5">
-                  <i className="fa-solid fa-shield-halved text-amber-500" /> 
-                  <span>{scriptData.coppa_disclaimer}</span>
-                </span>
-              )}
-            </div>
-            <button onClick={copyAll} className="text-xs font-bold px-3 py-1.5 rounded flex items-center gap-2 bg-white text-black hover:bg-slate-200 transition-colors shrink-0"><i className="fa-solid fa-copy" /> {uiLang === 'vi' ? 'Copy Voice Toàn Bộ' : 'Copy Voice All'}</button>
-          </div>
-          {segments.map((seg, idx) => (
-            <SceneCard key={idx} seg={seg} idx={idx} uiLang={uiLang} />
-          ))}
-        </div>
-      )}
+      {/* RIGHT COLUMN: Viral checklist standard panel */}
+      <div className="lg:col-span-1">
+        <ViralChecklist uiLang={uiLang} />
+      </div>
     </div>
   );
 };

@@ -1,0 +1,31 @@
+🌐 TỔNG KẾT BẢN ĐỒ ĐỒNG BỘ TOÀN DIỆN (MASTER PLAN V16.0)
+CAUTION
+
+LỆNH BÀI THÉP TỪ TỔNG CÔNG TRÌNH SƯ
+1. BẢO TOÀN 100% PIPELINE 4 BƯỚC: Giữ nguyên luồng vận hành gốc. Tuyệt đối không xóa bỏ. 2. NGUYÊN TẮC MẢNH GHÉP LEGO: Chỉ nâng cấp (Upgrade) hoặc cấy thêm (Append).
+
+📱 PHẦN 1: ĐỘNG CƠ GIAO DIỆN & TRẢI NGHIỆM NGƯỜI DÙNG (UI/UX)
+Brand Identity Sync (Đồng nhất Thương Hiệu Toàn Cầu): Toàn bộ giao diện (Khung layout, Màu sắc chủ đạo) bị KHÓA CỨNG dùng chung 1 "Theme" cho Toàn Hệ Sinh Thái. Dù là ứng dụng Phật Pháp hay Kids, mở lên là phải nhận diện ngay lập tức Thương hiệu của chúng ta (Không lòe loẹt, không bôi bác).
+Niche-Specific Icons (Chỉ Biến Đổi Biểu Tượng): Thành phần duy nhất được phép thay đổi theo ngách là các ICON. (VD: Giao diện giữ nguyên màu gốc, nhưng Icon app Kids là hoạt hình, Icon app Phật Pháp là hoa sen).
+Global Theme Update (Cập nhật Theme Một Chạm): Khi Admin thay đổi Theme trên Lõi Đám Mây, giao diện Toàn Bộ Hệ Thống sẽ được đổi màu đồng loạt.
+Giao Diện Mobile/Desktop. Menu Cố định (Sticky). Nút Trượt nhanh. Render Ảo chống lag.
+⚙️ PHẦN 2: BẢO TOÀN VÀ NÂNG CẤP PIPELINE 4 BƯỚC LÕI
+B1: Tiếp nhận Đầu vào.
+B2: Chọn Style & Thời lượng (Nhập tự do số giây theo nền tảng).
+B3: Xử lý Kịch Bản.
+B4: Xuất bản.
+🏗️ PHẦN 3: NÂNG CẤP ĐỘNG CƠ PHÂN PHỐI (Chống Sập)
+Bộ nhớ Trượt. Ghi tạm LocalStorage. Auto-Retry API. Nút Hủy & Viết Lại. Kịch bản 3 Tiếng.
+🧠 PHẦN 4: BỘ LUẬT VŨ TRỤ "MASTER COMMAND V16.0" (Prompt Core)
+4.1 Khóa Tỷ lệ Động: Ép số từ/tốc độ tương thích số giây do Đạo diễn nhập.
+4.2 Global Language: Khóa từ đơn (Việt), Âm tiết đơn (Anh).
+4.3 VEO 3 Auto-Shield: Khóa vật lý, chống ngược hướng gió, bánh xe trượt.
+4.4 Chống Trùng Lặp: Đột biến góc máy, phá vỡ văn mẫu.
+4.5 Tính nhất quán: Khóa Định Danh Nhân Vật Xuyên Suốt. SEO Thumbnail.
+🛡️ PHẦN 5: TƯỜNG LỬA BẢO VỆ 360 ĐỘ (Universal Compliance)
+Cấm tên thật, bản quyền. An toàn trẻ em. Chống bạo lực máu me. Lọc Y tế.
+🚀 PHẦN 6: KIẾN TRÚC "CẬP NHẬT LÕI TỪ XA" (OTA FIREBASE CORE UPDATE)
+Lưu Trữ Đám Mây (Cloud Core): "Bộ Luật V16.0" được đóng gói thành file JSON trên Đám mây.
+Trạm Nâng Cấp (Admin Control Panel): Tab ẩn dành riêng cho Đạo Diễn để tải file nâng cấp lên.
+Phân Phối Bản Cập Nhật Có Chọn Lọc (Granular Target Rollout): Tùy chọn Push cập nhật cho Toàn bộ Hệ thống, hoặc Push riêng cho 1 nhánh ứng dụng (Kids, Dharma...).
+Đồng Bộ Tức Thời: 1 Nút Bấm, vạn ứng dụng thay máu!

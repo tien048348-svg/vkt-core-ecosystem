@@ -41,7 +41,8 @@ export interface VisualStyle {
 
 export const VISUAL_STYLES: VisualStyle[] = [
   { id: 'auto', name: '✨ AI Director Auto', desc: 'AI tự chọn phong cách phù hợp nhất với truyện.', prompt_enforce: '' },
-  { id: 'stop_motion_papercraft', name: '📦 Stop-Motion Papercraft', desc: 'Thế giới giấy thủ công, stop-motion chân thực, bìa carton, keo dán.', prompt_enforce: ', Visual Style: Hyper-detailed realistic physical stop-motion handcrafted paper universe, layered paper cutout animation, mechanical pop-up book engineering, miniature theater diorama, tactile cardboard machinery, heavy cardstock, corrugated cardboard, gold foil paper, visible paper fibers, subtle wrinkles, imperfect scissor cuts, macro cinematic photography, extreme shallow depth of field, warm studio spotlights' },
+  { id: 'hybrid_multimaterial', name: '♻️ Siêu Vật Liệu Tổng Hợp', desc: 'Kết hợp đa vật liệu: giấy thô, nhôm lon dập nổi, nhựa phế thải, lá khô quả hạt bản địa theo thị trường.', prompt_enforce: ', Visual Style: Masterpiece hyper-detailed hybrid multi-material upcycling art diorama, seamlessly combining raw textured handmade paper sheets, shiny embossed recycled soda can aluminum armor plates, corrugated cardboard layers, colorful discarded plastic mosaic elements, organic driftwood twigs, and regional plant foliage, extremely rich physical textures, dramatic studio lighting highlighting both matte cardboard and reflective metallic edges, cinematic macro photography' },
+  { id: 'stop_motion_papercraft', name: '📦 Stop-Motion Papercraft', desc: 'Thế giới giấy thủ công, stop-motion chân thực, bìa carton, keo dán.', prompt_enforce: ', Visual Style: Hyper-detailed realistic physical stop-motion handcrafted paper universe, layered paper cutout animation, mechanical pop-up book engineering, diorama, corrugated cardboard, heavy cardstock, gold foil paper, visible paper fibers, subtle wrinkles, imperfect scissor cuts, macro cinematic photography, warm studio spotlights' },
   { id: 'dong_ho_folk', name: '🎨 Đông Hồ Folk Art', desc: 'Tranh Đông Hồ truyền thống, giấy dó, bột điệp, mộc bản.', prompt_enforce: ', Visual Style: Authentic Vietnamese Đông Hồ folk woodblock painting aesthetic, handmade dó paper coated with crushed seashell powder, mineral pigments, flattened folk perspective, simplified anatomy, symbolic composition, strong black woodblock outlines, limited traditional color palette vermilion red indigo yellow ochre leaf green, printed texture resembles manually pressed woodblock ink' },
   { id: 'water_puppet', name: '🎭 Múa Rối Nước', desc: 'Múa rối nước truyền thống, sân khấu nổi, chuyển động cơ học.', prompt_enforce: ', Visual Style: Authentic Vietnamese Water Puppetry aesthetic, hand-carved wooden puppets with glossy lacquer coating, visible artisan carving marks, traditional folk exaggeration, deep lacquer red aged gold moss green, warm fire-lit evening ambience, lantern reflections dancing across water, humid atmospheric diffusion' },
   { id: 'plastic_mosaic', name: '♻️ Plastic Mosaic', desc: 'Nắp chai, mảnh nhựa tái chế tạo hình linh vật thần thoại.', prompt_enforce: ', Visual Style: Vietnamese recycled plastic mosaic folk-art aesthetic, discarded bottle caps broken plastic shards translucent packaging fragments, mythological Vietnamese folk symbolism fused with urban recycling-art craftsmanship, faded red oxidized blue washed yellow cloudy white algae green, warm late-afternoon sunlight reflecting softly across glossy plastic surfaces' },
@@ -80,7 +81,7 @@ export const SEO_CHECKLIST_DATA: Record<string, { id: string; label: string }[]>
 
 export const SECONDS_PER_SCENE = 8;
 
-export type TabId = 'spy' | 'script' | 'studio' | 'seo' | 'market';
+export type TabId = 'spy' | 'script' | 'studio' | 'seo' | 'market' | 'admin';
 
 export const TAB_COLORS: Record<TabId, { bg: string; border: string; text: string; shadow: string }> = {
   spy: { bg: 'bg-[#0a1f15]', border: 'border-emerald-500/50', text: 'text-emerald-400', shadow: 'shadow-[0_0_15px_rgba(16,185,129,0.15)]' },
@@ -88,4 +89,5 @@ export const TAB_COLORS: Record<TabId, { bg: string; border: string; text: strin
   studio: { bg: 'bg-[#1f1a0f]', border: 'border-amber-500/50', text: 'text-amber-300', shadow: 'shadow-[0_0_15px_rgba(245,158,11,0.15)]' },
   seo: { bg: 'bg-[#0f1f20]', border: 'border-cyan-500/50', text: 'text-cyan-300', shadow: 'shadow-[0_0_15px_rgba(6,182,212,0.15)]' },
   market: { bg: 'bg-[#1f0f1a]', border: 'border-pink-500/50', text: 'text-pink-300', shadow: 'shadow-[0_0_15px_rgba(236,72,153,0.15)]' },
+  admin: { bg: 'bg-[#1a0f12]', border: 'border-red-500/50', text: 'text-red-300', shadow: 'shadow-[0_0_15px_rgba(239,68,68,0.15)]' },
 };

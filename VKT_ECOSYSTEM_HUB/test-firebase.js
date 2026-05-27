@@ -14,8 +14,8 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 async function test() {
-  const secretsDoc = await getDoc(doc(db, 'settings', 'secrets'));
-  console.log("Firebase Secrets:", secretsDoc.data());
+  const settingsDoc = await getDoc(doc(db, 'settings', 'main'));
+  console.log("Firebase Settings Main:", JSON.stringify(settingsDoc.data(), null, 2));
 }
 
 test();

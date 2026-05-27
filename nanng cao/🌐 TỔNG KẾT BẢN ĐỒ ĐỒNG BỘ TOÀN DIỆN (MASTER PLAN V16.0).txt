@@ -1,0 +1,53 @@
+🌐 TỔNG KẾT BẢN ĐỒ ĐỒNG BỘ TOÀN DIỆN (MASTER PLAN V16.0)
+CAUTION
+
+LỆNH BÀI THÉP TỪ TỔNG CÔNG TRÌNH SƯ
+1. BẢO TOÀN 100% PIPELINE 4 BƯỚC: Hệ thống phải duy trì luồng vận hành gốc từ Bước 1 đến Bước 4. Tuyệt đối không cắt xén, xóa bỏ bất kỳ quy trình nào. 2. NGUYÊN TẮC MẢNH GHÉP LEGO: Chỉ nâng cấp (Upgrade) hoặc cấy thêm (Append). TUYỆT ĐỐI KHÔNG XÓA (Delete).
+
+⚙️ PHẦN 1: BẢO TOÀN VÀ NÂNG CẤP PIPELINE 4 BƯỚC LÕI
+BƯỚC 1: TIẾP NHẬN ĐẦU VÀO -> [BẢO TOÀN 100%] (Giữ nguyên luồng nhập Link/Ý tưởng. Tích hợp tùy chọn Ngôn ngữ UI & Thị trường Mục tiêu).
+BƯỚC 2: CHỌN PHONG CÁCH VÀ CẤU HÌNH -> [BẢO TOÀN & NÂNG CẤP]
+Tích hợp Công tắc Thời lượng Cảnh Động: Mặc định 8s/Cảnh. Mở khóa cho phép nhập số giây bất kỳ (VD: 5s Sora, 10s Kling).
+BƯỚC 3: XỬ LÝ KỊCH BẢN (Core Script Engine) -> [ĐẠI PHẪU THUẬT & NÂNG CẤP LÕI]
+BƯỚC 4: XUẤT BẢN & RENDER (Export) -> [BẢO TOÀN & NÂNG CẤP VĨ MÔ]
+🏗️ PHẦN 2: NÂNG CẤP ĐỘNG CƠ PHÂN PHỐI (BƯỚC 3 & 4)
+Sliding Window Context (Bộ nhớ trượt cho AI): Chống sập bộ nhớ khi dệt 180 phút.
+Local-First & Batch Sync: Ghi tạm vào LocalStorage, chống cháy Quota Firebase.
+Auto-Retry & Exponential Backoff: Chống lỗi API 429.
+Quyền Hủy Bỏ Tối Cao: Nút 🛑 HỦY & VIẾT LẠI.
+Trần Thời Lượng Tối Thượng: Nâng trần lên 180 phút (3 Tiếng).
+Giải Thuật Nhịp Độ Động (Dynamic Pacing %): Mở - Thân - Kết (Hook -> Deep Dive -> Trance -> Awakening).
+🧠 PHẦN 3: BỘ LUẬT VŨ TRỤ "MASTER COMMAND V16.0" (Prompt Core - BƯỚC 3)
+🗣️ 3.1. KHÓA TỰ ĐỘNG ĐIỀU CHỈNH THEO THỜI LƯỢNG CẢNH (Dynamic Word/Speed Routing)
+Hệ Thống Tự Động Cân Chỉnh: Nếu đổi từ 8s xuống 5s, AI tự động trừ hao khoảng lặng, tự động cắt giảm Giới Hạn Số Từ và ép hẹp Ma trận Tốc Độ tỷ lệ thuận để không bao giờ bị nuốt chữ.
+🗣️ 3.2. GLOBAL MULTI-LANGUAGE ROUTING SWITCH
+Thị trường Tiếng Việt: 3 từ cuối câu BẮT BUỘC là TỪ ĐƠN. Ngắt hơi sau 12-15 từ.
+Thị trường Quốc tế: Dùng bộ đếm Âm Tiết. Từ cuối câu BẮT BUỘC là TỪ ĐƠN ÂM TIẾT.
+🎭 3.3. KHÓA TỌA ĐỘ VẬT LÝ TUYỆT ĐỐI (VEO3 NATIVE AUTO-SHIELD PROTOCOL)
+Khóa Cấu Trúc Giải Phẫu: Chống tay chân 6 ngón, ranh giới cơ thể sắc nét, tuổi MỘT con số duy nhất.
+Khóa Động Lực Học: Chống ngược hướng gió. Khói xịt đằng sau máy bay. Chống trượt bánh xe.
+Khóa Không Gian: Tường/Cột đứng im khi lia máy.
+Khóa Tính Hợp Lý: Bôi kem lên da trần. Chỉ tay về đâu, vật ở đó.
+Khóa Hội Thoại Trực Diện: Chỉ MỘT NGƯỜI được mở miệng.
+Khóa Âm Thanh Môi Trường Động: Phân tích bối cảnh sinh âm thanh. Cấm Text/Watermark.
+🌀 3.4. KHÓA CHỐNG TRÙNG LẶP & VÒNG LẶP MÃI XANH (Anti-Repetition & Evergreen Protocol)
+(Bảo vệ Kênh khỏi gậy "Reused Content" của Youtube/Tiktok)
+
+Luật Chống Trùng Lặp Trăm Lần Như Một (High Entropy Lexicon): Ép buộc AI: Dù Đạo diễn đưa đúng 1 chủ đề, đúng 1 Style, đúng 1 thời lượng... sinh 100 lần thì BẮT BUỘC phải ra 100 kịch bản có Nguồn Mở Đầu (Hook) khác nhau, góc quay Camera khác nhau, Bối cảnh ánh sáng (Lighting) khác nhau. Cấm sử dụng các câu mẫu Boilerplate (Ví dụ: cấm dùng "Có bao giờ bạn tự hỏi...").
+Luật Mãi Xanh (Timeless Lock): Cấm mốc thời gian cụ thể (Hôm nay, Năm nay...).
+Luật Giá Trị Xem Lại (Open Loops): Tiêm Vòng lặp Mở. Xem lần 1 giải trí, xem lần 2 chữa lành.
+🛡️ PHẦN 4: TƯỜNG LỬA BẢO VỆ 360 ĐỘ (Universal Compliance Firewall)
+Bản Quyền & Người Thật: CẤM gọi tên thật, nhân vật có bản quyền.
+Luật Trẻ Em (COPPA): An toàn tuyệt đối.
+Luật Chống Bạo Lực & Máu Me: Hoạt hình hóa hành động.
+Bộ Lọc Y Tế An Toàn: Blacklist "thuốc Tây, chữa khỏi". Khuyên dùng "điều hòa".
+Chống Tin Giả & Chính Trị: Cấm chính trị, thông tin y tế sai lệch.
+User Review Required
+IMPORTANT
+
+XÁC NHẬN BẢN ĐỒ TỪ TỔNG CÔNG TRÌNH SƯ
+Ám ảnh lớn nhất của làm Youtube/Tiktok AI hiện nay chính là gậy "Trùng lặp nội dung" (Reused Content). Nếu không có thuật toán tạo Đột biến (High Entropy Lexicon), thì AI sinh ra 100 video sẽ na ná nhau 100 góc quay và 100 câu mở đầu y chang nhau.
+
+Lệnh Bài [MỤC 3.4: KHÓA CHỐNG TRÙNG LẶP] đã chính thức được thiết lập để buộc AI phải tư duy góc quay chéo, góc quay thẳng, góc nhìn thứ nhất, thứ ba... đan xen liên tục, và cấu trúc lời thoại phải biến đổi không lường. Video tạo ra ngày mai sẽ hoàn toàn xa lạ với video tạo ra ngày hôm nay dù chung 1 ý tưởng!
+
+Đạo diễn kiểm tra giúp em! Bức tranh này đã đạt đến cảnh giới Tuyệt Hảo Tối Thượng chưa ạ? Nếu đã ưng cái bụng 100%, xin ban lệnh thi công!
