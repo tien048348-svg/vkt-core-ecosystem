@@ -1,20 +1,18 @@
 // ==================================================================================
 // AI SERVICE — Multi-Provider with Round Robin & Fallback
-// VKT MASTER TEMPLATE — Dùng chung cho mọi ngách
+// Dharma Studio
 // ==================================================================================
 import { MODELS } from '../data/constants';
 
-// ⚠️ KHI CLONE NGÁCH MỚI: Thay [NGACH] bằng tên ngách viết thường không dấu
-// Ví dụ: recycle, dharma, horror, criminal, kidcartoon, v.v.
 const STORAGE_KEYS = {
-  keyPool: '[NGACH]_key_pool',
-  openRouterKey: '[NGACH]_openrouter_key',
-  openRouterModel: '[NGACH]_openrouter_model',
-  openAiKey: '[NGACH]_openai_key',
-  openAiModel: '[NGACH]_openai_model',
-  youtubeKey: '[NGACH]_youtube_key',
-  apiEnabled: '[NGACH]_api_enabled',
-  uiLanguage: '[NGACH]_ui_language',
+  keyPool: 'recycle_key_pool',
+  openRouterKey: 'recycle_openrouter_key',
+  openRouterModel: 'recycle_openrouter_model',
+  openAiKey: 'recycle_openai_key',
+  openAiModel: 'recycle_openai_model',
+  youtubeKey: 'recycle_youtube_key',
+  apiEnabled: 'recycle_api_enabled',
+  uiLanguage: 'recycle_ui_language',
 };
 
 export interface ApiEnabledFlags {
@@ -41,6 +39,7 @@ const defaultConfig: ApiConfig = {
   openRouterKey: '',
   openRouterModel: MODELS.openrouter_default,
   openAiKey: '',
+  openAiModel: 'gpt-4-turbo-preview',
   openAiModel: 'gpt-4-turbo-preview',
   youtubeApiKey: '',
   apiEnabled: { google: true, openrouter: false, openai: false, youtube: false },
@@ -135,20 +134,39 @@ async function callGoogleWithRetry(prompt: string, systemPrompt: string, retries
         generationConfig: { responseMimeType: "application/json" },
       };
       const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-      if (res.status === 429) throw new Error("429 Quota Exceeded");
+      
+      if (res.status === 429) {
+        throw new Error("API_LIMIT_EXCEEDED: Hạn mức API Gemini của bạn đã hết lượt miễn phí (429 Quota Exceeded). Vui lòng thêm/thay Key mới hoặc đổi sang OpenAI/OpenRouter!");
+      }
+      
       if (!res.ok) {
         const errText = await res.text();
+        if (res.status === 400 && (errText.includes("API_KEY_INVALID") || errText.includes("invalid"))) {
+          throw new Error("API_KEY_INVALID: API Key Gemini này không hợp lệ hoặc đã bị Google khóa! Vui lòng mở Config (chìa khóa) để thay thế Key hoạt động.");
+        }
+        if (res.status === 403) {
+          throw new Error("API_KEY_FORBIDDEN: API Key Gemini bị từ chối truy cập (403 Forbidden). Hãy chắc chắn rằng bạn đã kích hoạt dịch vụ Google AI Studio cho tài khoản này.");
+        }
         throw new Error(`Google Error ${res.status}: ${errText}`);
       }
+      
       const data = await res.json();
       if (!data.candidates?.[0]?.content) throw new Error("Invalid Gemini Response");
       return safeJSONParse(data.candidates[0].content.parts[0].text);
     } catch (e: any) {
       lastError = e;
-      const isQuota = e.message?.includes('429');
+      const isQuota = e.message?.includes('429') || e.message?.includes('API_LIMIT_EXCEEDED');
+      const isInvalid = e.message?.includes('API_KEY_INVALID') || e.message?.includes('API_KEY_FORBIDDEN');
       console.warn(`Attempt ${i + 1}/${retries} failed:`, e.message);
+      
+      if (isInvalid) {
+        if (getValidKeyCount() <= 1) {
+          throw e; 
+        }
+      }
+      
       if (i < retries - 1) {
-        const waitTime = isQuota ? 2000 * (i + 1) : 1000;
+        const waitTime = isQuota ? 2000 * (i + 1) : 500;
         await new Promise(r => setTimeout(r, waitTime));
       }
     }
@@ -164,7 +182,7 @@ async function callOpenRouter(prompt: string, systemPrompt: string): Promise<any
       'Authorization': `Bearer ${config.openRouterKey}`,
       'Content-Type': 'application/json',
       'HTTP-Referer': window.location.href,
-      'X-Title': 'VKT Recycle Styles Master',
+      'X-Title': 'VKT Dharma Studio',
     },
     body: JSON.stringify({
       model: config.openRouterModel || MODELS.openrouter_default,
@@ -231,9 +249,8 @@ export async function callAI(prompt: string, systemPrompt: string): Promise<any>
   throw new Error("❌ All enabled APIs failed or no valid API keys!");
 }
 
+// === YouTube Meta Fetcher ===
 export async function fetchYoutubeMeta(url: string): Promise<any> {
-
-
   const videoIdMatch = url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
   const videoId = videoIdMatch ? videoIdMatch[1] : null;
   if (!videoId) return { title: "Invalid URL", author: "Unknown", thumb: "" };
@@ -268,10 +285,10 @@ export async function fetchYoutubeMeta(url: string): Promise<any> {
     const res = await fetch(`https://www.youtube.com/oembed?url=${url}&format=json`);
     if (res.ok) {
       const data = await res.json();
-      return { title: data.title, author: data.author_name, thumb: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`, fullData: false };
+      return { title: data.title, author: data.author_name, thumb: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`, fullData: false };
     }
   } catch { /* ignore */ }
-  return { title: "YouTube Video", author: "YouTube Channel", thumb: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`, fullData: false };
+  return { title: "YouTube Video", author: "YouTube Channel", thumb: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`, fullData: false };
 }
 
 // === Image Generation ===

@@ -1,8 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import type { TabId } from './data/constants';
 import { loadApiConfig, getValidKeyCount, hasAnyApiKey } from './services/aiService';
-import { db } from './services/firebase';
-import { doc, onSnapshot } from 'firebase/firestore';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import ApiKeyModal from './components/ApiKeyModal';
@@ -12,50 +10,53 @@ import ScriptModule from './pages/ScriptModule';
 import StudioModule from './pages/StudioModule';
 import SeoModule from './pages/SeoModule';
 import AdminModule from './pages/AdminModule';
+import { db } from './services/firebase';
+import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
+import { VISUAL_STYLES } from './data/constants';
 
 export interface GlobalSettings {
   maxDuration: number;
   allowedStyles: string[];
-  enableAudioRefinement: boolean;
+  enableAudioRefinement?: boolean;
 }
+
+const DEFAULT_SETTINGS: GlobalSettings = {
+  maxDuration: 60,
+  allowedStyles: VISUAL_STYLES.map(s => s.id),
+  enableAudioRefinement: true
+};
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabId>('spy');
   const [showConfig, setShowConfig] = useState(false);
   const [uiLang, setUiLang] = useState<'vi' | 'en'>('vi');
-  const [isAdmin, setIsAdmin] = useState(false);
   const [keyCount, setKeyCount] = useState(0);
   const [scriptSegments, setScriptSegments] = useState<any[]>([]);
   const [scriptTopic, setScriptTopic] = useState('');
   const [strategyTopic, setStrategyTopic] = useState('');
   const [scriptData, setScriptData] = useState<any>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [globalSettings, setGlobalSettings] = useState<GlobalSettings>(DEFAULT_SETTINGS);
 
-  // V20.0 Global Settings from Firebase
-  const [globalSettings, setGlobalSettings] = useState<GlobalSettings>({
-    maxDuration: 180,
-    allowedStyles: [],
-    enableAudioRefinement: true
-  });
+  useEffect(() => {
+    const docRef = doc(db, 'dharma_settings', 'global_config');
+    const unsubscribe = onSnapshot(docRef, (snap) => {
+      if (snap.exists()) {
+        setGlobalSettings(snap.data() as GlobalSettings);
+      } else {
+        setDoc(docRef, DEFAULT_SETTINGS);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     loadApiConfig();
     setKeyCount(getValidKeyCount());
     if (!hasAnyApiKey()) setShowConfig(true);
 
-    // V20.0 Firebase Listener
-    const unsub = onSnapshot(doc(db, 'config', 'global_settings'), (docSnap) => {
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        setGlobalSettings({
-          maxDuration: data.maxDuration || 180,
-          allowedStyles: data.allowedStyles || [],
-          enableAudioRefinement: data.enableAudioRefinement !== false
-        });
-      }
-    });
-
-    const saved = localStorage.getItem('recycle_autosave_script');
+    const saved = localStorage.getItem('dharmaP_autosave_script');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -66,11 +67,9 @@ const App: React.FC = () => {
           setStrategyTopic(parsed.topic || '');
         }
       } catch (e) {
-        console.error('Failed to restore autosaved script in App:', e);
+        console.error('Failed to restore autosaved script:', e);
       }
     }
-    
-    return () => unsub();
   }, []);
 
   useEffect(() => {
@@ -108,35 +107,50 @@ const App: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleConfigClose = () => {
+  const handleConfigClose = useCallback(() => {
     setShowConfig(false);
     setKeyCount(getValidKeyCount());
-  };
+  }, []);
 
-  const handleScriptGenerated = (segs: any[], _style: string, topic?: string) => {
+  const handleScriptGenerated = useCallback((segs: any[], _style: string, topic?: string) => {
     setScriptSegments(segs);
     if (topic) setScriptTopic(topic);
-  };
+    setActiveTab('studio');
+  }, []);
 
-  const handleAudioRefined = (segs: any[], topic?: string) => {
+  // Audio refinement: chỉ cập nhật data, KHÔNG chuyển tab
+  const handleAudioRefined = useCallback((segs: any[], topic?: string) => {
     setScriptSegments(segs);
     if (topic) setScriptTopic(topic);
-  };
+  }, []);
 
-  const handleUseStrategy = (title: string) => {
+  const handleUseStrategy = useCallback((title: string) => {
     setStrategyTopic(title);
-    setScriptSegments([]);
+    setScriptSegments([]); // Đảm bảo xóa sạch dữ liệu cũ ở mức App khi kích hoạt chủ đề mới
     setScriptData(null);
-    localStorage.removeItem('recycle_autosave_script');
+    localStorage.removeItem('dharmaP_autosave_script');
     setActiveTab('script');
-  };
+  }, []);
 
+  const handleToggleLang = useCallback(() => {
+    setUiLang(p => p === 'vi' ? 'en' : 'vi');
+  }, []);
+
+  const handleOpenConfig = useCallback(() => {
+    setShowConfig(true);
+  }, []);
+
+  const handleTabChange = useCallback((tab: TabId) => {
+    setActiveTab(tab);
+  }, []);
+
+  // ⭐ Bước 7.2: Render ALL modules, use display:none to preserve state
   return (
     <div className="min-h-screen flex flex-col">
       <Header
         uiLang={uiLang}
-        onToggleLang={() => setUiLang(p => p === 'vi' ? 'en' : 'vi')}
-        onOpenConfig={() => setShowConfig(true)}
+        onToggleLang={handleToggleLang}
+        onOpenConfig={handleOpenConfig}
         keyCount={keyCount}
         onOpenAdmin={() => {
           if (!isAdmin) {
@@ -158,7 +172,7 @@ const App: React.FC = () => {
       <main className="flex-1 max-w-[1800px] mx-auto w-full p-4 md:p-6 flex flex-col md:flex-row gap-4 md:gap-6 md:h-[calc(100vh-70px)] h-auto">
         <Sidebar
           activeTab={activeTab}
-          onTabChange={setActiveTab}
+          onTabChange={handleTabChange}
           hasScriptData={scriptSegments.length > 0}
           uiLang={uiLang}
         />
@@ -174,21 +188,24 @@ const App: React.FC = () => {
               setScriptData={setScriptData}
               onScriptGenerated={handleScriptGenerated} 
               onAudioRefined={handleAudioRefined} 
-              initialTopic={strategyTopic}
+              initialTopic={strategyTopic} 
+              uiLang={uiLang} 
               onNavigateToStudio={() => setActiveTab('studio')}
-              globalSettings={globalSettings}
-              uiLang={uiLang}
               isAdmin={isAdmin}
+              globalSettings={globalSettings}
             />
           </div>
           <div style={{ display: activeTab === 'studio' ? 'block' : 'none' }}>
             <StudioModule segments={scriptSegments} topic={scriptTopic} uiLang={uiLang} />
           </div>
           <div style={{ display: activeTab === 'seo' ? 'block' : 'none' }}>
-            <SeoModule initialTopic={strategyTopic} scriptSegments={scriptSegments} scriptTopic={scriptTopic} uiLang={uiLang} />
+            <SeoModule initialTopic={strategyTopic} scriptSegments={scriptSegments} uiLang={uiLang} />
           </div>
           <div style={{ display: activeTab === 'admin' ? 'block' : 'none' }}>
-            {activeTab === 'admin' && <AdminModule globalSettings={globalSettings} uiLang={uiLang} />}
+            <AdminModule 
+              uiLang={uiLang} 
+              globalSettings={globalSettings}
+            />
           </div>
         </div>
       </main>
@@ -198,14 +215,14 @@ const App: React.FC = () => {
           <div className="text-slate-500 text-xs font-light tracking-wide">
             Copyright © {new Date().getFullYear()}{' '}
             <span className="text-slate-300 font-bold uppercase ml-1">VKT</span>.
-            <span className="ml-2 text-slate-600">All rights reserved.</span>
+            <span className="ml-2 text-slate-600">{uiLang === 'vi' ? 'Bảo lưu mọi quyền.' : 'All rights reserved.'}</span>
           </div>
         </div>
       </footer>
 
-      <ApiKeyModal isOpen={showConfig} onClose={handleConfigClose} />
+      <ApiKeyModal isOpen={showConfig} onClose={handleConfigClose} uiLang={uiLang} />
       <ToastContainer />
-
+      
       {/* Floating Scroll To Top Button */}
       {showScrollTop && (
         <button 
