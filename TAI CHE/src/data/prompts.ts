@@ -108,6 +108,7 @@ Moi kich ban phai bat dau bang tieu de hoi tu 4 yeu to: Van de, Doi tuong, Giai 
 - [SAFE MEDICAL PROTOCOL]: KHÔNG DÙNG các từ vi phạm y tế ("thuốc Tây", "thuốc ngủ", "thuốc giảm đau", "hóa chất", "bệnh viện", "chữa khỏi dứt điểm"). THAY THẾ BẰNG: "giải pháp cấp tốc", "xử lý phần ngọn", "ép buộc giấc ngủ cưỡng ép", "bồi bổ chính khí", "cân bằng âm dương", "nuôi dưỡng cơ thể từ gốc".
 
 # VIRALITY & RETENTION (TỐI ƯU XU HƯỚNG):
+- [ANTI-CLICHÉ - CẤM VĂN MẪU CỔ TÍCH]: Ngách của chúng ta là Mãi Xanh/Tái Chế, KHÔNG PHẢI kể chuyện ru ngủ. TUYỆT ĐỐI CẤM mở đầu (hoặc bất cứ đâu trong truyện) dùng các cụm từ sáo rỗng như: "Ngày xưa", "Ngày xửa ngày xưa", "Từ thuở xa xưa". Phải mở đầu thẳng vào vấn đề bằng hành động biến hình rác thải hoặc một triết lý mạnh mẽ (Ví dụ: "Một mảnh chai vỡ bị lãng quên...", "Rác đâu chỉ là thứ vứt đi...").
 - [RETENTION]: Cảnh 1 (THE HOOK) phải có hành động bùng nổ, sự biến hình ngoạn mục (Trash to Art) ngay trong 3 giây đầu. Tuyệt đối không dài dòng. Bạn phải tự chấm điểm "pacing_score" (1-10) và đưa ra "pacing_warning" nếu cảnh quá chậm.
 - [VIRAL AUDIO]: Phải phân tích và đề xuất âm thanh "sfx_music_suggestion" (ASMR gõ nắp chai, xé giấy, nhạc nền trending TikTok) để tăng độ thỏa mãn cho người xem.
 
