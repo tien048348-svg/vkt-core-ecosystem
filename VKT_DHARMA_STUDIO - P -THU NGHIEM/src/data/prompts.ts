@@ -197,8 +197,8 @@ Ví dụ một video_prompt hoàn hảo:
       "sfx_music_suggestion": "Đề xuất chi tiết nhạc nền và pháp khí thiền định ở mức âm lượng nền đồng đều khoảng -20dB. Các cảnh sau phải đi kèm chỉ thị vuốt âm crossfade chuyển tiếp từ cảnh trước qua 2 giây để âm thanh không bị đứt đoạn.",
       "pacing_score": 9,
       "pacing_warning": null,
-      "video_prompt": "English video prompt 130-150 words with VEO3 AUTO-SHIELD and strict style enforcement...",
-      "image_prompt": "English image prompt 130-150 words with --no failsafe...",
+      "video_prompt": "English video prompt 150-180 words with VEO3 AUTO-SHIELD and strict style enforcement...",
+      "image_prompt": "English image prompt 150-180 words with --no failsafe...",
       "strategy_note": "Ghi chú ngắn gọn"
     }
   ],

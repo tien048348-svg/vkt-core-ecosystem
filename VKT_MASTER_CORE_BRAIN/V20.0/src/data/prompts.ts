@@ -247,8 +247,8 @@ Các nguyên tắc AUTO-SHIELD bắt buộc nhúng vào cuối mỗi video_promp
       "sfx_music_suggestion": "Đề xuất chi tiết nhạc nền và ASMR/SFX ở mức âm lượng nền đồng đều khoảng -20dB. Các cảnh sau phải đi kèm chỉ thị vuốt âm crossfade chuyển tiếp từ cảnh trước qua 2 giây để âm thanh không bị đứt đoạn.",
       "pacing_score": 9,
       "pacing_warning": null,
-      "video_prompt": "English video prompt 130-150 words with VEO3 AUTO-SHIELD...",
-      "image_prompt": "English image prompt 130-150 words with --no failsafe...",
+      "video_prompt": "English video prompt 150-180 words with VEO3 AUTO-SHIELD...",
+      "image_prompt": "English image prompt 150-180 words with --no failsafe...",
       "strategy_note": "Ghi chú (ngắn gọn, <10 từ)"
     }
   ],

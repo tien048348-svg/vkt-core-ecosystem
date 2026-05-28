@@ -132,7 +132,9 @@ Mỗi phân cảnh (scene) BẮT BUỘC phải có mảng "dialogues" chứa cá
 # [CRITICAL REQUIREMENT 2]: TÍCH HỢP MASTER COMMAND V16.0 (UNIVERSAL AUDIO RE-ENGINEERING)
 NGAY SAU KHI tạo mảng "dialogues" (nhiều người nói), bạn PHẢI TỰ ĐỘNG áp dụng thuật toán thanh âm Thiết Quân Luật để chắt lọc ra MỘT GIỌNG ĐỌC DUY NHẤT (Single Voice) cho video thực tế.
 - Nguyên tắc Độc tôn: Dù "dialogues" có bao nhiêu nhân vật, bạn phải chọn ra 01 chủ thể (người dẫn truyện hoặc nhân vật chính) đại diện cho cảnh đó.
-- Bản đồ Thanh âm: Phải tạo object "voice_profile" định danh đủ: speaker, timbre, tone, pacing, state.
+- Bản đồ Thanh âm: Phải tạo object "voice_profile" định danh đủ: speaker, timbre, tone, pacing, pacing_speed, state.
+- Tính toán Tốc Độ (Speed Matrix): Nếu word_count 30-33 -> 1.12x; Nếu 34-37 -> 1.18x; Nếu 38-40 -> 1.24x.
+- Mốc Kết Thúc (Audio End Time): Thoại PHẢI dứt điểm hoàn toàn cách mốc cuối cùng ít nhất 0.5s.
 - Lời thoại Nội lực: Đưa vào trường "voice_text" một câu thoại đã được chắt lọc tinh túy nhất từ mảng "dialogues" (Tuyệt đối <40 từ).
 # [VEO3 AUTO-SHIELD PROTOCOL — CHỐNG LỖI RENDER VIDEO - GIỮ NGUYÊN]:
 Khi viết "video_prompt", BẮT BUỘC tuân thủ cấu trúc:
@@ -143,6 +145,7 @@ Các nguyên tắc AUTO-SHIELD bắt buộc nhúng vào cuối mỗi video_promp
 
 # [CHARACTER VERBATIM INJECTION LOCK - KHÓA ĐỒNG NHẤT NHÂN VẬT]:
 - Tại trường 'character_lock_prompt': Bạn PHẢI tạo ra mô tả cực kỳ chi tiết cho tất cả các nhân vật chính sẽ xuất hiện (Ví dụ: "Character A: [desc] | Character B: [desc]").
+- NARRATOR LOCK: NGƯỜI KỂ CHUYỆN (NARRATOR) LUÔN LUÔN GIẤU MẶT. TUYỆT ĐỐI KHÔNG BAO GIỜ CHO XUẤT HIỆN HÌNH DÁNG CON NGƯỜI TRONG VIDEO (NO HUMAN FIGURES).
 - GIAO THỨC BƠM NGUYÊN VĂN BẮT BUỘC: Ở mỗi phân cảnh, bất kể nhân vật nào xuất hiện, bạn BẮT BUỘC phải sao chép ĐÚNG NGUYÊN VĂN 100% cụm mô tả tương ứng của nhân vật đó từ 'character_lock_prompt' và đặt vào ngay đầu các trường 'image_prompt' và 'video_prompt' để đảm bảo tính đồng nhất ngoại hình nhân vật từ Cảnh 1 đến Cảnh N.
 
 # OUTPUT FORMAT (JSON STRICT):
@@ -179,9 +182,12 @@ Các nguyên tắc AUTO-SHIELD bắt buộc nhúng vào cuối mỗi video_promp
         "timbre": "Chất giọng",
         "tone": "Giọng điệu",
         "pacing": "Nhịp",
+        "pacing_speed": "Cân chỉnh tốc độ (VD: 1.12x đến 1.24x)",
         "state": "ON/OFF-SCREEN"
       },
       "voice_text": "Lời dẫn truyện <40 từ",
+      "word_count": "Đếm chính xác số từ của voice_text",
+      "audio_end_time": "Tính toán mốc giây kết thúc thoại (vd: 7.5s)",
       "visual_desc_vi": "Mô tả hình ảnh (cực kỳ ngắn gọn, <20 từ)",
       "sfx_music_suggestion": "Đề xuất SFX/Music ngắn gọn",
       "pacing_score": 9,

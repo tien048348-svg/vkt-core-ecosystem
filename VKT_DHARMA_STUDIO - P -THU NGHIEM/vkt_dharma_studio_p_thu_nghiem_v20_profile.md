@@ -36,9 +36,9 @@ Hồ sơ này cung cấp cấu trúc chi tiết về toàn bộ tính năng, sơ
 * **Tính năng**: Ngăn chặn AI tự động trộn lẫn bừa bãi chất liệu (hallucination), ép kịch bản phải tuân thủ tuyệt đối phong cách thiền định đã lựa chọn.
 * **Biến đổi địa lý thông minh**: Cây cỏ bản địa khi áp dụng vào các phong cách điêu khắc hay trừu tượng **phải biến đổi để hòa nhập vào chất liệu chính của phong cách đó**.
   * *Ví dụ*: Nếu chọn phong cách **Thánh Tích Khắc Đá (ancient_stone_relic)**:
-    * 🇻🇳 Chọn VN: AI sẽ mô tả chạm khắc nổi hoa sen hoặc lá bồ đề *trên chính thớ đá cẩm thạch của hang động*. Tuyệt đối không để lá tre tươi/giấy vụn nằm lộn xộn phá hỏng bối cảnh thâm nghiêm.
-    * 🇺🇸 Chọn Mỹ: AI chạm khắc gân lá phong/quả thông tinh xảo *chìm vào bề mặt khối đá cẩm thạch*.
-  * *Ví dụ*: Nếu chọn **Niết Bàn Vàng Ròng (molten_gold_nirvana)**: Các đường vân lá phong/bồ đề được đúc hoàn toàn từ vàng ròng lỏng rực sáng.
+    * 🇻🇳 Chọn VN: AI sẽ mô tả toàn bộ vị Lão Sư, đệ tử từ đầu tóc, thân thể cho đến y phục, quần áo đều được chạm khắc 100% tinh xảo từ khối đá cẩm thạch trắng sáng bóng bẩy, đan xen tinh tế các mạch vàng ròng Kintsugi phát sáng rực rỡ. Tuyệt đối không được trộn lẫn y phục vải màu hay các vật liệu phi tự nhiên nằm lộn xộn phá hỏng bối cảnh thâm nghiêm.
+    * 🇺🇸 Chọn Mỹ: AI chạm khắc Lão sư và gân lá phong/quả thông tinh xảo *chìm hoàn toàn vào bề mặt khối đá cẩm thạch trắng*.
+  * *Ví dụ*: Nếu chọn **Niết Bàn Vàng Ròng (molten_gold_nirvana)**: Toàn bộ Lão sư cẩm thạch trắng có các đường nứt được lấp đầy hoàn toàn bởi dòng vàng ròng lỏng rực sáng.
 
 ### 3. Khóa Cứng Giọng Kể Chuyện Thương Hiệu (Narrator Voice Lock)
 * **Tính năng**: Đảm bảo tất cả các tập video đều dùng duy nhất một giọng kể chuyện đạo đồng bộ, tăng nhận diện thương hiệu.

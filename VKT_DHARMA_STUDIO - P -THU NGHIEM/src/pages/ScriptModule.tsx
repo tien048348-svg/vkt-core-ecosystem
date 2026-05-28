@@ -242,6 +242,8 @@ const ScriptModule: React.FC<Props> = ({ segments, setSegments, scriptData, setS
   const [refiningProgress, setRefiningProgress] = useState(0);
   const [audioRefinedCount, setAudioRefinedCount] = useState(0);
   const [speakerMode, setSpeakerMode] = useState<'multi' | 'single' | 'asmr'>('single');
+  // Công tắc chế độ dẫn: true = Người dẫn chuyện (OFF-SCREEN narrator), false = Thiền sư tự nói (ON-SCREEN monk)
+  const [narratorMode, setNarratorMode] = useState<boolean>(false);
   const [progress, setProgress] = useState({ percent: 0, text: '' });
   const abortRef = useRef(false);
 
@@ -395,11 +397,22 @@ CRITICAL: You MUST write the next scenes continuing this exact storyline seamles
 - OVERRIDE all dialogue/narrator rules in the system prompt.
 - CONCENTRATE 100% of creativity on the 'video_prompt'/'image_prompt' (hypnotic, satisfying, ultra-sharp visuals) and 'sfx_music_suggestion' (extremely rich, multi-layered ASMR sounds and healing frequencies like 432Hz/528Hz).`
           : speakerMode === 'single'
-          ? `\n[SPEAKER MODE - SINGLE SPEAKER MONOLOGUE ACTIVE]:
-- The main and ONLY character/narrator MUST be "Vị Lão Sư 70 Tuổi" (A wise 70-year-old Buddhist Master).
-- The entire video script MUST be written for only ONE single character/narrator from the first scene to the last scene.
-- The 'character' name and 'voice_profile.speaker' MUST be "Vị Lão Sư 70 Tuổi" across all scenes. Do NOT introduce multiple characters.
-- OVERRIDE the rule that says "Tuyệt đối cấm chỉ để 1 narrator nói suốt từ đầu đến cuối" or "ĐA NHÂN VẬT THAY PHIÊN" in the system prompt. Instead, keep a single voice speaking from beginning to end.`
+          ? narratorMode
+            ? `\n[SPEAKER MODE - NARRATOR (OFF-SCREEN) ACTIVE]:
+- The ENTIRE script MUST be narrated by a single OFF-SCREEN narrator voice. The narrator is an unseen storyteller, NOT the monk himself.
+- The 'voice_profile.state' MUST be "OFF-SCREEN" for every scene.
+- The 'voice_profile.speaker' MUST be "Người Dẫn Chuyện" (The Narrator) in all scenes.
+- The on-screen monk (Vị Lão Sư) MUST remain SILENT throughout the video — his mouth NEVER opens to speak. He performs actions only.
+- The narrator describes what the monk does in a poetic, third-person storytelling voice.
+- In 'video_prompt' and 'image_prompt': ALWAYS describe the monk with a COMPLETELY CLOSED MOUTH, performing contemplative gestures. Add "monk sitting in silent meditation, mouth closed, not speaking" to all visual prompts.
+- OVERRIDE all multi-character and on-screen speaking rules. Only ONE narrator voice exists.`
+            : `\n[SPEAKER MODE - MONK ON-SCREEN SPEAKING ACTIVE]:
+- The main and ONLY speaker MUST be the on-screen "Vị Lão Sư 70 Tuổi" (A wise 70-year-old Buddhist Master with completely shaved bald head).
+- The monk SPEAKS DIRECTLY to the viewer. His mouth OPENS and MOVES as he speaks. This is ON-SCREEN speech.
+- The 'voice_profile.state' MUST be "ON-SCREEN" for every scene.
+- The 'voice_profile.speaker' MUST be "Vị Lão Sư" in all scenes.
+- In 'video_prompt' and 'image_prompt': ALWAYS describe the monk with "mouth slightly open, speaking directly to camera, articulating words with natural lip movement". His lips and jaw move realistically with speech.
+- OVERRIDE the rule that says "Tuyệt đối cấm chỉ để 1 narrator nói suốt từ đầu đến cuối" or "ĐA NHÂN VẬT THAY PHIÊN" in the system prompt. Instead, keep a single on-screen speaking voice.`
           : `\n[SPEAKER MODE - MULTI-CHARACTER DIALOGUE ACTIVE]:
 - The main character MUST be "Vị Lão Sư 70 Tuổi" (A wise 70-year-old Buddhist Master).
 - The script MUST feature AT LEAST 3 DIFFERENT CHARACTERS (e.g., The Master, a young disciple, a troubled villager) taking turns speaking across different scenes to create a rich dialogue or alternating storytelling.
@@ -559,6 +572,22 @@ CRITICAL INSTRUCTION:
     const text = segments.map(s => s.chapter_voice_block || s.voice_text).join('\n\n');
     navigator.clipboard.writeText(text);
     showToast(t.common.copied, 'success');
+  };
+
+  const copyAllImagePrompts = () => {
+    const text = segments.map((s, i) =>
+      `--- SCENE ${s.scene_number || i + 1} | ${s.time || ''} | ${s.section || ''} ---\n${s.image_prompt || '(No image prompt)'}\n`
+    ).join('\n');
+    navigator.clipboard.writeText(text);
+    showToast('✅ Đã copy tất cả Image Prompts!', 'success');
+  };
+
+  const copyAllVideoPrompts = () => {
+    const text = segments.map((s, i) =>
+      `--- SCENE ${s.scene_number || i + 1} | ${s.time || ''} | ${s.section || ''} ---\n${s.video_prompt || '(No video prompt)'}\n`
+    ).join('\n');
+    navigator.clipboard.writeText(text);
+    showToast('✅ Đã copy tất cả Video Prompts!', 'success');
   };
 
   const exportMasterJson = () => {
@@ -877,6 +906,65 @@ CRITICAL INSTRUCTION:
                 </div>
               </div>
             </div>
+
+            {/* 🔘 CÔNG TẮC NARRATOR / MONK — chỉ hiện khi mode single */}
+            {speakerMode === 'single' && (
+              <div className="mt-4 p-4 rounded-xl border border-amber-500/30 bg-amber-950/10">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex-1">
+                    <div className="text-xs font-bold text-amber-300 flex items-center gap-2 mb-1">
+                      <i className="fa-solid fa-toggle-on text-amber-400" />
+                      {narratorMode
+                        ? (uiLang === 'vi' ? '🎙️ CHẾ ĐỘ: NGƯỜI DẪN CHUYỆN (OFF-SCREEN)' : '🎙️ MODE: NARRATOR (OFF-SCREEN)')
+                        : (uiLang === 'vi' ? '🧘 CHẾ ĐỘ: THIỀN SƯ TỰ NÓI (ON-SCREEN)' : '🧘 MODE: MONK SPEAKS (ON-SCREEN)')}
+                    </div>
+                    <div className="text-[10px] text-slate-400 leading-tight">
+                      {narratorMode
+                        ? (uiLang === 'vi'
+                          ? 'Một giọng dẫn chuyện ẩn (OFF-SCREEN) kể chuyện. Miệng thiền sư không mở — sư im lặng hành thiền trong từng cảnh.'
+                          : 'An unseen narrator (OFF-SCREEN) tells the story. The monk remains silent — mouth closed in meditation throughout.')
+                        : (uiLang === 'vi'
+                          ? 'Thiền sư trực tiếp nói chuyện với người xem. Miệng sư mở ra — hình ảnh lip-sync ON-SCREEN chân thực.'
+                          : 'The monk speaks directly to the viewer. Mouth opens — realistic ON-SCREEN lip-sync visuals.')}
+                    </div>
+                  </div>
+                  {/* Toggle switch */}
+                  <button
+                    id="narrator-mode-toggle"
+                    onClick={() => setNarratorMode(prev => !prev)}
+                    className={`relative w-16 h-8 rounded-full transition-all duration-300 shrink-0 focus:outline-none border-2 ${
+                      narratorMode
+                        ? 'bg-amber-500 border-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.4)]'
+                        : 'bg-slate-700 border-slate-600'
+                    }`}
+                    title={narratorMode ? 'Đang: Người dẫn chuyện → Bấm để chuyển sang Thiền sư tự nói' : 'Đang: Thiền sư tự nói → Bấm để chuyển sang Người dẫn chuyện'}
+                  >
+                    <span className={`absolute top-0.5 w-6 h-6 rounded-full transition-all duration-300 flex items-center justify-center text-[9px] font-black ${
+                      narratorMode
+                        ? 'right-0.5 bg-white text-amber-600'
+                        : 'left-0.5 bg-white text-slate-500'
+                    }`}>
+                      {narratorMode ? <i className="fa-solid fa-microphone" /> : <i className="fa-solid fa-user" />}
+                    </span>
+                  </button>
+                </div>
+                {/* Hiển thị badge trạng thái */}
+                <div className="mt-2 flex items-center gap-2">
+                  <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase ${
+                    narratorMode
+                      ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                      : 'bg-teal-500/20 text-teal-300 border border-teal-500/40'
+                  }`}>
+                    {narratorMode ? '📢 OFF-SCREEN NARRATOR' : '🎭 ON-SCREEN MONK'}
+                  </span>
+                  <span className="text-[9px] text-slate-500">
+                    {narratorMode
+                      ? (uiLang === 'vi' ? 'voice_profile.state = OFF-SCREEN' : 'voice_profile.state = OFF-SCREEN')
+                      : (uiLang === 'vi' ? 'voice_profile.state = ON-SCREEN' : 'voice_profile.state = ON-SCREEN')}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
           <div className="bg-[#10141c] border border-slate-700/30 rounded-xl p-4">
             <label className="text-xs font-bold text-slate-400 uppercase mb-3 block flex items-center gap-2">
@@ -1001,9 +1089,25 @@ CRITICAL INSTRUCTION:
                 </span>
               )}
             </div>
-            <div className="flex items-center gap-2">
-              <button onClick={exportMasterJson} className="text-[11px] font-bold px-3 py-1.5 rounded flex items-center gap-2 bg-gradient-to-r from-amber-600 to-orange-500 text-white hover:opacity-90 transition-opacity shadow-[0_0_15px_rgba(245,158,11,0.4)] shrink-0"><i className="fa-solid fa-file-zipper" /> {uiLang === 'vi' ? 'Xuất Bản Master JSON' : 'Export Master JSON'}</button>
-              <button onClick={copyAll} className="text-xs font-bold px-3 py-1.5 rounded flex items-center gap-2 bg-white text-black hover:bg-slate-200 transition-colors shrink-0"><i className="fa-solid fa-copy" /> {uiLang === 'vi' ? 'Copy Voice Toàn Bộ' : 'Copy Voice All'}</button>
+            <div className="flex flex-wrap items-center gap-2">
+              <button onClick={exportMasterJson} className="text-[11px] font-bold px-3 py-1.5 rounded flex items-center gap-2 bg-gradient-to-r from-amber-600 to-orange-500 text-white hover:opacity-90 transition-opacity shadow-[0_0_15px_rgba(245,158,11,0.4)] shrink-0"><i className="fa-solid fa-file-zipper" /> {uiLang === 'vi' ? 'Xuất JSON' : 'Export JSON'}</button>
+              <button onClick={copyAll} className="text-[11px] font-bold px-3 py-1.5 rounded flex items-center gap-2 bg-white text-black hover:bg-slate-200 transition-colors shrink-0"><i className="fa-solid fa-copy" /> {uiLang === 'vi' ? 'Copy Lời Thoại' : 'Copy Voice'}</button>
+              <button
+                id="copy-all-image-prompts"
+                onClick={copyAllImagePrompts}
+                className="text-[11px] font-bold px-3 py-1.5 rounded flex items-center gap-2 bg-gradient-to-r from-pink-700 to-rose-600 text-white hover:opacity-90 transition-opacity shadow-[0_0_12px_rgba(236,72,153,0.3)] shrink-0"
+                title={uiLang === 'vi' ? 'Copy toàn bộ Image Prompt của tất cả cảnh để dán vào AI tạo hình ảnh (Imagen/Midjourney...)' : 'Copy all image prompts for AI image generation'}
+              >
+                <i className="fa-solid fa-image" /> {uiLang === 'vi' ? 'Copy All Image Prompts' : 'Copy All Image Prompts'}
+              </button>
+              <button
+                id="copy-all-video-prompts"
+                onClick={copyAllVideoPrompts}
+                className="text-[11px] font-bold px-3 py-1.5 rounded flex items-center gap-2 bg-gradient-to-r from-cyan-700 to-teal-600 text-white hover:opacity-90 transition-opacity shadow-[0_0_12px_rgba(20,184,166,0.3)] shrink-0"
+                title={uiLang === 'vi' ? 'Copy toàn bộ Video Prompt của tất cả cảnh để dán vào AI tạo video (Veo3/Sora...)' : 'Copy all video prompts for AI video generation'}
+              >
+                <i className="fa-solid fa-video" /> {uiLang === 'vi' ? 'Copy All Video Prompts' : 'Copy All Video Prompts'}
+              </button>
             </div>
           </div>
 
