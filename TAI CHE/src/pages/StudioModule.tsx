@@ -125,18 +125,14 @@ const StudioModule: React.FC<Props> = ({ segments, topic = '', uiLang = 'vi' }) 
       return;
     }
     try {
-      const projectData = {
-        version: '1.0',
-        topic: topic || 'Kich Ban',
-        segments
-      };
-      const content = JSON.stringify(projectData, null, 2);
+      const segmentsStr = '[\n    ' + segments.map(s => JSON.stringify(s)).join(',\n    ') + '\n  ]';
+      const content = `{\n  "version": "1.0",\n  "topic": ${JSON.stringify(topic || 'Kich Ban')},\n  "segments": ${segmentsStr}\n}`;
       downloadFile(content, makeFileName(topic, 'project', 'json'), 'application/json;charset=utf-8');
       setShowExport(false);
       showToast('✅ Tải dự án thành công!', 'success');
-    } catch (e: any) {
-      console.error(e);
-      showToast('Lỗi khi tạo file JSON: ' + e.message, 'error');
+    } catch (error: any) {
+      console.error(error);
+      showToast('Lỗi khi tạo file JSON: ' + error.message, 'error');
     }
   };
 
@@ -153,7 +149,8 @@ const StudioModule: React.FC<Props> = ({ segments, topic = '', uiLang = 'vi' }) 
       audio_end_time: s.audio_end_time || '',
       pacing_score: s.pacing_score || null
     }));
-    const content = JSON.stringify(output, null, 2);
+    // Format JSON array with exactly one line per scene object to save space
+    const content = '[\n  ' + output.map(s => JSON.stringify(s)).join(',\n  ') + '\n]';
     downloadFile(content, makeFileName(topic || '', 'video_audio_voice', 'json'), 'application/json;charset=utf-8');
     setShowExport(false);
     showToast('Tải JSON Video & Audio thành công!', 'success');
@@ -171,7 +168,7 @@ const StudioModule: React.FC<Props> = ({ segments, topic = '', uiLang = 'vi' }) 
       image_prompt: s.image_prompt || ''
     }));
 
-    const content = JSON.stringify(proSegments, null, 2);
+    const content = '[\n  ' + proSegments.map(s => JSON.stringify(s)).join(',\n  ') + '\n]';
     downloadFile(content, makeFileName(topic || '', 'project_PRO_ChiPrompt', 'json'), 'application/json;charset=utf-8');
     setShowExport(false);
     showToast('🚀 Tải Dự Án PRO (Chỉ Prompt) thành công!', 'success');
