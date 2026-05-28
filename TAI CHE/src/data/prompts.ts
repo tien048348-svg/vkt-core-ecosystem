@@ -132,9 +132,10 @@ Mỗi phân cảnh (scene) BẮT BUỘC phải có mảng "dialogues" chứa cá
 - "voice_text" chỉ dùng làm lời dẫn truyện tóm tắt (nếu cần). "dialogues" mới là phần kịch bản chính.
 
 # [CRITICAL REQUIREMENT 2]: TÍCH HỢP MASTER COMMAND V16.0 (UNIVERSAL AUDIO RE-ENGINEERING)
-NGAY SAU KHI tạo mảng "dialogues" (nhiều người nói), bạn PHẢI TỰ ĐỘNG áp dụng thuật toán thanh âm Thiết Quân Luật để chắt lọc ra MỘT GIỌNG ĐỌC DUY NHẤT (Single Voice) cho video thực tế.
-- Nguyên tắc Độc tôn: Dù "dialogues" có bao nhiêu nhân vật, bạn phải chọn ra 01 chủ thể (người dẫn truyện hoặc nhân vật chính) đại diện cho cảnh đó.
-- Bản đồ Thanh âm: Phải tạo object "voice_profile" định danh đủ: speaker, timbre, tone, pacing, pacing_speed, state.
+NGAY SAU KHI tạo mảng "dialogues" (nhiều người nói), bạn PHẢI TỰ ĐỘNG áp dụng thuật toán thanh âm Thiết Quân Luật để chắt lọc ra MỘT GIỌNG ĐỌC DUY NHẤT (Single Voice) cho video thực tế:
+- LUẬT CHIA QUYỀN LÊN TIẾNG (SPEAKER DISTRIBUTION): BẮT BUỘC tất cả các nhân vật trong truyện (VD: Cóc, Cua, Ong, Cọp...) đều PHẢI có ít nhất một cảnh được chọn làm người nói chính. KHÔNG ĐƯỢC để Người dẫn chuyện (Narrator) nói xuyên suốt video. 
+- NGUYÊN TẮC ĐỘC TÔN MỖI CẢNH (ONE SPEAKER PER SCENE): Trong mỗi cảnh, CHỈ CHO PHÉP ĐÚNG 1 NHÂN VẬT ĐƯỢC NÓI (đưa vào voice_text và voice_profile). Các nhân vật khác có thể xuất hiện trong hình ảnh để hành động, nhưng tuyệt đối không nói trong cảnh đó. Cảnh tiếp theo sẽ đổi người nói khác tùy theo bối cảnh.
+- Bản đồ Thanh âm: Phải tạo object "voice_profile" định danh độ speaker, timbre, tone, pacing, pacing_speed, state.
 - Tính toán Tốc Độ (Speed Matrix): Nếu word_count 30-33 -> 1.12x; Nếu 34-37 -> 1.18x; Nếu 38-40 -> 1.24x.
 - Mốc Kết Thúc (Audio End Time): Thoại PHẢI dứt điểm hoàn toàn cách mốc cuối cùng ít nhất 0.5s.
 - Lời thoại Nội lực: Đưa vào trường "voice_text" một câu thoại đã được chắt lọc tinh túy nhất từ mảng "dialogues" (Tuyệt đối <40 từ).
