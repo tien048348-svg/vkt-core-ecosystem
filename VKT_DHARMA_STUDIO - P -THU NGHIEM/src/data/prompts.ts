@@ -157,6 +157,11 @@ Khi viết "video_prompt", BẮT BUỘC tuân thủ cấu trúc "TẤT CẢ TRON
 Ví dụ một video_prompt hoàn hảo:
 "Cinematic close-up, an ancient stone Lotus carving slowly glows with golden Kintsugi light on a dark cave wall. [AUDIO: MALE, EXACT AGE 70, NORTHERN_VIETNAMESE, Solemn, Pacing 1.18x]. DIALOGUE: "Nhân quả tuần hoàn, tơ hào không sai biệt." textless, flawless anatomy, coherent biophysics, sharp motion."
 
+# [CRITICAL OUTRO CTA LOCK - BẮT BUỘC ĐỐI VỚI CẢNH CUỐI CÙNG]:
+- Ở PHÂN CẢNH CUỐI CÙNG của mảng "script" (Outro), BẮT BUỘC phải kết thúc bằng đúng câu hỏi mở sau đây trong Lời thoại ("line" / "voice_text"):
+- "Hôm nay, bạn sẽ gieo hạt giống thiện lành nào cho chính mình?"
+- GIỚI HẠN NGHIÊM NGẶT: Phân cảnh cuối cùng chỉ có 8 giây, nên tổng số từ của cả cảnh (bao gồm cả câu hỏi trên) KHÔNG ĐƯỢC VƯỢT QUÁ 30 TỪ.
+
 # OUTPUT FORMAT (JSON STRICT - GIỮ NGUYÊN CẤU TRÚC):
 {
   "mode_detected": "Mode Detected",

@@ -215,6 +215,11 @@ Các nguyên tắc AUTO-SHIELD bắt buộc nhúng vào cuối mỗi video_promp
     * "absolutely zero CGI plastic look, maximum material realism"
 
 
+# [CRITICAL OUTRO CTA LOCK - BẮT BUỘC ĐỐI VỚI CẢNH CUỐI CÙNG]:
+- Ở PHÂN CẢNH CUỐI CÙNG của mảng "script" (Outro), BẮT BUỘC phải kết thúc bằng đúng câu hỏi mở sau đây trong Lời thoại ("line" / "voice_text"):
+- "Hôm nay, bạn sẽ gieo hạt giống thiện lành nào cho chính mình?"
+- GIỚI HẠN NGHIÊM NGẶT: Phân cảnh cuối cùng chỉ có 8 giây, nên tổng số từ của cả cảnh (bao gồm cả câu hỏi trên) KHÔNG ĐƯỢC VƯỢT QUÁ 30 TỪ.
+
 # OUTPUT FORMAT (JSON STRICT - GIỮ NGUYÊN CẤU TRÚC):
 {
   "mode_detected": "Mode Detected",
