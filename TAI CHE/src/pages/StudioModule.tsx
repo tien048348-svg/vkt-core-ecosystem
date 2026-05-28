@@ -250,7 +250,7 @@ const StudioSceneCard = React.memo(({ idx, seg, mode, mediaUrl, loading, onGener
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5">
               <div className="bg-[#0a0e14]/30 rounded p-1.5 border border-purple-900/20">
                 <div className="text-[8px] text-purple-500 font-bold">AGE & DETAILS</div>
-                <div className="text-[9px] text-slate-300 font-medium">{seg.voice_profile.age || (seg.voice_profile.gender ? `${seg.voice_profile.gender}` : 'Chưa rõ độ tuổi')}</div>
+                <div className="text-[9px] text-slate-300 font-medium">{seg.voice_profile.gender ? `${seg.voice_profile.gender} - ` : ''}{seg.voice_profile.age || 'Chưa rõ độ tuổi'}</div>
               </div>
               <div className="bg-[#0a0e14]/30 rounded p-1.5 border border-purple-900/20">
                 <div className="text-[8px] text-purple-500 font-bold">ACCENT</div>
