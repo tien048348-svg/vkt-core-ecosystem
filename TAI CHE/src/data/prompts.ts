@@ -135,6 +135,7 @@ Mỗi phân cảnh (scene) BẮT BUỘC phải có mảng "dialogues" chứa cá
 NGAY SAU KHI tạo mảng "dialogues" (nhiều người nói), bạn PHẢI TỰ ĐỘNG áp dụng thuật toán thanh âm Thiết Quân Luật để chắt lọc ra MỘT GIỌNG ĐỌC DUY NHẤT (Single Voice) cho video thực tế:
 - LUẬT CHIA QUYỀN LÊN TIẾNG (SPEAKER DISTRIBUTION): BẮT BUỘC tất cả các nhân vật trong truyện (VD: Cóc, Cua, Ong, Cọp...) đều PHẢI có ít nhất một cảnh được chọn làm người nói chính. KHÔNG ĐƯỢC để Người dẫn chuyện (Narrator) nói xuyên suốt video. 
 - NGUYÊN TẮC ĐỘC TÔN MỖI CẢNH (ONE SPEAKER PER SCENE): Trong mỗi cảnh, CHỈ CHO PHÉP ĐÚNG 1 NHÂN VẬT ĐƯỢC NÓI (đưa vào voice_text và voice_profile). Các nhân vật khác có thể xuất hiện trong hình ảnh để hành động, nhưng tuyệt đối không nói trong cảnh đó. Cảnh tiếp theo sẽ đổi người nói khác tùy theo bối cảnh.
+- KHÓA KHẨU HÌNH (VISUAL LIP-SYNC LOCK): Để khớp với âm thanh, trong trường "video_prompt", BẮT BUỘC phải miêu tả rõ nhân vật đang nói là "(mouth moving, speaking)". ĐỒNG THỜI BẮT BUỘC miêu tả TẤT CẢ các nhân vật còn lại trong cảnh đó là "(mouth closed, listening silently)". TUYỆT ĐỐI không để 2 nhân vật cùng mở miệng trong 1 video.
 - Bản đồ Thanh âm: Phải tạo object "voice_profile" định danh độ speaker, timbre, tone, pacing, pacing_speed, state.
 - Tính toán Tốc Độ (Speed Matrix): Nếu word_count 30-33 -> 1.12x; Nếu 34-37 -> 1.18x; Nếu 38-40 -> 1.24x.
 - Mốc Kết Thúc (Audio End Time): Thoại PHẢI dứt điểm hoàn toàn cách mốc cuối cùng ít nhất 0.5s.
