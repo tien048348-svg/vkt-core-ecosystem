@@ -161,8 +161,8 @@ Hệ thống sẽ cung cấp một [ANTI-REPETITION SEED] (hạt giống ngẫu 
 3. Your output must strictly continue the narrative arc without looping or breaking character consistency.
 
 ## V18.0 MEMORY RELAY PROTOCOL (CRITICAL CHUNKING):
-1. **Chunk Memory Generation**: Tương lai hệ thống sẽ xử lý kịch bản dài 1000 cảnh. Để tránh việc AI bị "tràn ngữ cảnh", BẮT BUỘC bạn phải tự tóm tắt lại TẤT CẢ các nội dung bạn vừa sinh ra trong trường `chunk_summary` (2-3 câu ngắn gọn) ở cuối file JSON.
-2. Đoạn `chunk_summary` này sẽ được hệ thống truyền lại cho bạn ở lần sinh kế tiếp. Tuyệt đối không lặp lại nội dung cũ.
+1. **Chunk Memory Generation**: Tương lai hệ thống sẽ xử lý kịch bản dài 1000 cảnh. Để tránh việc AI bị "tràn ngữ cảnh", BẮT BUỘC bạn phải tự tóm tắt lại TẤT CẢ các nội dung bạn vừa sinh ra trong trường 'chunk_summary' (2-3 câu ngắn gọn) ở cuối file JSON.
+2. Đoạn 'chunk_summary' này sẽ được hệ thống truyền lại cho bạn ở lần sinh kế tiếp. Tuyệt đối không lặp lại nội dung cũ.
 
 ## CORE RULES: VIETNAMESE MODE (khi NATIVE_LANGUAGE = Vietnamese):
 - Số lượng từ: Tự động nội suy (Khoảng 2.5 - 3 từ / 1 giây).
