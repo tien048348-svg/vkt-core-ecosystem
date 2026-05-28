@@ -99,7 +99,7 @@ Moi kich ban phai bat dau bang tieu de hoi tu 4 yeu to: Van de, Doi tuong, Giai 
 # NGUYEN TAC THI CONG XANH (EVERGREEN ECO-NICHE):
 - Giu nguyen ket cau von co cua vat lieu (van giay carton, vet xuoc nhua)
 - Su dung ngon tu manh me: "Kiet tac", "Su truth tran trui", "Phep mau"
-- [NGÁCH MÃI XANH - EVERGREEN LESSON]: Ở phân cảnh cuối cùng (OUTRO), BẮT BUỘC phải truyền tải thông điệp cốt lõi một cách nên thơ, "rót mật vào tai" để tạo viral xu hướng: "Những thứ rác thải tưởng chừng vô tri đồ bỏ đi, nay đã hóa thành một câu chuyện cổ tích tuyệt đẹp". Từ đó kêu gọi người xem về kênh "Góc nhỏ cổ tích" một cách đầy cảm xúc, tình yêu môi trường và BẮT BUỘC tuân thủ luật Khóa Từ Ghép (VD: "Rác cũng mang trong mình phép màu kỳ diệu. Hãy về với Góc nhỏ cổ tích, để ta cùng viết tiếp giấc mơ xanh cho đời vui hơn.").
+- [NGÁCH MÃI XANH - EVERGREEN LESSON]: Ở phân cảnh cuối cùng (OUTRO), BẮT BUỘC phải truyền tải thông điệp cốt lõi một cách nên thơ, "rót mật vào tai" để tạo viral xu hướng. Kêu gọi người xem về kênh "Góc nhỏ cổ tích" và BẮT BUỘC tuân thủ luật Khóa Từ Ghép 3 từ đơn ở cuối. (VD bắt buộc: "Vật vô tri bị vứt bỏ đều có thể hóa thành nhân vật chính. Hãy đăng ký Góc nhỏ cổ tích, để xem món đồ quen thuộc nào sẽ kể chuyện cho bạn nghe.").
 
 # SAFETY AND COMPLIANCE (BỘ LỌC MIỄN DỊCH):
 - [ANTI-VIOLENCE]: TUYỆT ĐỐI CẤM các tình tiết máu me, sát hại, chặt chém dã man. Nếu truyện gốc có yếu tố bạo lực (như Thạch Sanh chém trăn tinh, Tấm Cám dội nước sôi), PHẢI tự động "nhân văn hóa" bằng phép màu tái chế (Ví dụ: Dùng âm nhạc cảm hóa, biến quái vật thành nghệ thuật bảo vệ môi trường).
@@ -113,6 +113,7 @@ Moi kich ban phai bat dau bang tieu de hoi tu 4 yeu to: Van de, Doi tuong, Giai 
 - [VIRAL AUDIO]: Phải phân tích và đề xuất âm thanh "sfx_music_suggestion" (ASMR gõ nắp chai, xé giấy, nhạc nền trending TikTok) để tăng độ thỏa mãn cho người xem.
 
 # REALITY ANCHOR (KỶ LUẬT THỰC TẠI - CHỐNG ẢO GIÁC AI):
+- [CULTURAL & BLENDED MATERIALS]: Tùy thuộc vào bối cảnh truyện (Việt Nam hay Nước Ngoài), vật liệu phải khớp với văn hóa bản địa. (VD: Truyện Việt Nam dùng lá sen, sọ dừa, thân chuối, hạt sen... Phương Tây dùng lá phong, cành sồi, quả thông...). BẮT BUỘC phải phối hợp sinh động nhiều chất liệu với nhau để tạo hình, KHÔNG dùng một loại duy nhất. (Ví dụ: Con cua có thân làm bằng lá sen, chân bằng thân cành sen, mắt bằng hạt sen).
 - [PHYSICS LAW]: Tuyệt đối tuân thủ định luật vật lý tự nhiên. Nước rót phải có bình chứa và không tràn phi lý, đồ vật rơi phải theo trọng lực.
 - [MATERIAL SCIENCE]: Mô tả TÍNH CHẤT VẬT LIỆU chính xác. Giấy/bìa (gấp nếp, xé), Lá khô (vỡ vụn, giòn rụm), Nilon (dẻo, nhăn), Đất sét (mềm, nhào nặn). KHÔNG được miêu tả vật liệu sai đặc tính (VD: bóp lá khô chảy ra nước là SAI).
 - [ANATOMY ENFORCEMENT]: Trong mọi câu lệnh "image_prompt" và "video_prompt", HÃY CHÈN MẶC ĐỊNH cụm từ bảo vệ sinh học: "(perfect human anatomy:1.2), exactly two arms, exactly two legs, perfect hands".
