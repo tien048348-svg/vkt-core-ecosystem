@@ -140,6 +140,20 @@ const StudioModule: React.FC<Props> = ({ segments, topic = '', uiLang = 'vi' }) 
     }
   };
 
+  const exportVideoAudioJSON = () => {
+    if (!segments || !segments.length) return;
+    const output = segments.map((s, i) => ({
+      scene_number: s.scene_number || (i + 1),
+      video_prompt: s.video_prompt || '',
+      sfx_music_suggestion: s.sfx_music_suggestion || '',
+      voice_text: s.voice_text || (s.dialogues ? s.dialogues.map(d => d.line).join(' ') : '')
+    }));
+    const content = JSON.stringify(output, null, 2);
+    downloadFile(content, makeFileName(topic || '', 'video_audio_voice', 'json'), 'application/json;charset=utf-8');
+    setShowExport(false);
+    showToast('Tải JSON Video & Audio thành công!', 'success');
+  };
+
   const ENABLE_PRO_EXPORT = localStorage.getItem('dharma_enable_pro_export') === 'true';
 
   const exportJSON_PRO = () => {
@@ -194,6 +208,7 @@ const StudioModule: React.FC<Props> = ({ segments, topic = '', uiLang = 'vi' }) 
                     <button onClick={exportCSV_PRO} className="w-full text-left px-4 py-2 text-xs text-emerald-300 hover:bg-slate-800/20 border-b border-slate-700/30 flex items-center gap-2 font-black bg-emerald-900/20"><i className="fa-solid fa-crown text-emerald-400 animate-pulse" /> TẢI CSV PRO</button>
                   </>
                 )}
+                <button onClick={exportVideoAudioJSON} className="w-full text-left px-4 py-2 text-xs text-sky-300 hover:bg-slate-800/20 border-b border-slate-700/30 flex items-center gap-2 font-bold bg-sky-900/10"><i className="fa-solid fa-photo-film text-sky-500" /> Tải JSON (Video + Audio)</button>
                 <button onClick={exportProjectJSON} className="w-full text-left px-4 py-2 text-xs text-amber-300 hover:bg-slate-800/20 border-b border-slate-700/30 flex items-center gap-2 font-bold bg-amber-900/10"><i className="fa-solid fa-file-code text-amber-500" /> Tải Dự Án (.json)</button>
                 <button onClick={exportCSV} className="w-full text-left px-4 py-2 text-xs text-slate-300 hover:bg-slate-800/20 border-b border-slate-700/30 flex items-center gap-2"><i className="fa-solid fa-file-excel text-green-500" /> Excel Kịch Bản</button>
                 <button onClick={exportCSV2} className="w-full text-left px-4 py-2 text-xs text-emerald-300 hover:bg-slate-800/20 border-b border-slate-700/30 flex items-center gap-2 font-bold"><i className="fa-solid fa-file-excel text-emerald-400" /> Excel Kịch Bản V2</button>
