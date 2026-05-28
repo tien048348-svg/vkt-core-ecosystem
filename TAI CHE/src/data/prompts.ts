@@ -178,9 +178,9 @@ Hệ thống sẽ cung cấp một [ANTI-REPETITION SEED] (hạt giống ngẫu 
 - Breath Control: Bắt buộc chèn thẻ [break] hoặc dấu phẩy sau mỗi 12-15 từ.
 
 # [CRITICAL OUTRO CTA LOCK - BẮT BUỘC ĐỐI VỚI CẢNH CUỐI CÙNG]:
-- Ở PHÂN CẢNH CUỐI CÙNG của mảng "script" (Outro), bạn BẮT BUỘC phải đặt 1 CÂU HỎI TƯƠNG TÁC (để khán giả bình luận) VÀ ĐỌC ĐÚNG CÂU THẦN CHÚ KÊU GỌI ĐĂNG KÝ của kênh "Góc Nhỏ Cổ Tích" trong phần Lời thoại ("line" / "voice_text").
-- NẾU THIẾU CÂU HỎI VÀ LỜI KÊU GỌI ĐÚNG CHUẨN NÀY, KỊCH BẢN BỊ COI LÀ LỖI NGHIÊM TRỌNG!
-- (VD BẮT BUỘC: "Bạn nghĩ sao về tác phẩm này? Mọi đồ vật đều xứng đáng có cuộc đời thứ hai. Hãy cùng Góc Nhỏ Cổ Tích hồi sinh rác thải thành những câu chuyện ý nghĩa. Nhấn đăng ký để cùng mình sống xanh mỗi ngày!").
+- Ở PHÂN CẢNH CUỐI CÙNG của mảng "script" (Outro), bạn BẮT BUỘC phải đặt 1 CÂU HỎI TƯƠNG TÁC VÀ ĐỌC ĐÚNG CÂU THẦN CHÚ KÊU GỌI ĐĂNG KÝ.
+- GIỚI HẠN NGHIÊM NGẶT: Phân cảnh này vẫn chỉ có 8 giây, nên TỔNG SỐ TỪ CẢ CÂU HỎI + LỜI KÊU GỌI KHÔNG ĐƯỢC VƯỢT QUÁ 30 TỪ!
+- (VD BẮT BUỘC DƯỚI 30 TỪ: "Mọi đồ vật đều có cuộc đời thứ hai. Bạn nghĩ sao? Cùng Góc Nhỏ Cổ Tích hồi sinh rác nhé! Nhấn đăng ký, sống xanh mỗi ngày!").
 
 # OUTPUT FORMAT (JSON STRICT):
 {
