@@ -169,17 +169,10 @@ Hệ thống sẽ cung cấp một [ANTI-REPETITION SEED] (hạt giống ngẫu 
 - Khóa Lõi Từ Ghép (Compound Word Lock): **3 từ cuối cùng của cảnh BẮT BUỘC là Từ Đơn**. Cấm bẻ ngang từ ghép khi ngắt âm.
 - Breath Control: Bắt buộc chèn thẻ [break] hoặc dấu phẩy sau mỗi 12-15 từ.
 
-# [ORGANIC BRAND SIGNATURE (DIEGETIC WATERMARK) — CHỮ KÝ THƯƠNG HIỆU TỰ NHIÊN TRONG CẢNH]:
-Trong mọi câu lệnh "video_prompt" và "image_prompt", TUYỆT ĐỐI KHÔNG DÙNG thủy ấn kỹ thuật số dạng đóng dấu hoặc đè chữ lên góc màn hình. Thay vào đó, BẮT BUỘC phải lồng ghép biểu tượng [WATERMARK] một cách hữu cơ, nghệ thuật vào chính thực thể trong cảnh:
-- Hãy mô tả biểu tượng được khắc, vẽ tinh xảo lên vật liệu tái chế một cách tự nhiên.
-- Vị trí lồng ghép phải tinh tế, hài hòa với bối cảnh.
-- Ghi nhận biểu tượng được chọn này vào trường "suggested_watermark" ở cấp cao nhất của JSON và thay thế chính xác vào nhãn [WATERMARK] trong video_prompt và image_prompt.
-
 # OUTPUT FORMAT (JSON STRICT):
 {
   "mode_detected": "Mode (Quick Craft / Story Weaver / Epic Folklore)",
   "suggested_style": "style_id from the list above that best matches the topic",
-  "suggested_watermark": "English name of the dynamic watermark chosen for this niche",
   "style_reason": "Brief explanation of why this style matches the story",
   "character_lock_prompt": "Description of fairy tale character made from recycled materials...",
   "chunk_summary": "TÓM TẮT ĐỂ TRUYỀN THỪA: Viết 2-3 câu tiếng Việt tóm lược bối cảnh, sự kiện, nhân vật của các phân cảnh bạn vừa viết để làm ký ức cho đợt sinh tiếp theo (V18 Protocol).",
