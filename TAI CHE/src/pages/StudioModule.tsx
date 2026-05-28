@@ -144,9 +144,14 @@ const StudioModule: React.FC<Props> = ({ segments, topic = '', uiLang = 'vi' }) 
     if (!segments || !segments.length) return;
     const output = segments.map((s, i) => ({
       scene_number: s.scene_number || (i + 1),
+      time: s.time || '',
       video_prompt: s.video_prompt || '',
       sfx_music_suggestion: s.sfx_music_suggestion || '',
-      voice_text: s.voice_text || (s.dialogues ? s.dialogues.map(d => d.line).join(' ') : '')
+      voice_text: s.voice_text || (s.dialogues ? s.dialogues.map(d => d.line).join(' ') : ''),
+      voice_profile: s.voice_profile || null,
+      word_count: s.word_count || '',
+      audio_end_time: s.audio_end_time || '',
+      pacing_score: s.pacing_score || null
     }));
     const content = JSON.stringify(output, null, 2);
     downloadFile(content, makeFileName(topic || '', 'video_audio_voice', 'json'), 'application/json;charset=utf-8');
