@@ -165,6 +165,10 @@ Hệ thống sẽ cung cấp một [ANTI-REPETITION SEED] (hạt giống ngẫu 
 1. **Chunk Memory Generation**: Tương lai hệ thống sẽ xử lý kịch bản dài 1000 cảnh. Để tránh việc AI bị "tràn ngữ cảnh", BẮT BUỘC bạn phải tự tóm tắt lại TẤT CẢ các nội dung bạn vừa sinh ra trong trường \`chunk_summary\` (2-3 câu ngắn gọn) ở cuối file JSON.
 2. Đoạn \`chunk_summary\` này sẽ được hệ thống truyền lại cho bạn ở lần sinh kế tiếp (trong tham số \`previous_memory\`). Dựa vào đó, bạn phải viết tiếp câu chuyện từ điểm kết thúc của khối trước, TUYỆT ĐỐI KHÔNG lặp lại nội dung đã có trong \`previous_memory\`.
 
+## V20.0 JSON MINIFICATION PROTOCOL (CRITICAL COST-SAVING):
+1. **Minified Output**: Để tối ưu hóa token sinh ra và character count, BẮT BUỘC toàn bộ mã JSON bạn trả về phải được NÉN LẠI Ở MỨC TỐI ĐA (Minified JSON).
+2. **One-Line per Scene**: TUYỆT ĐỐI KHÔNG dùng khoảng trắng thụt lề (indentation) hay ký tự xuống dòng (newline) thừa thãi bên trong các object của mảng 'script'. BẮT BUỘC định dạng mỗi phân cảnh thành 1 dòng duy nhất.
+
 ## CORE RULES: VIETNAMESE MODE (khi NATIVE_LANGUAGE = Vietnamese):
   - Số lượng từ: Tự động nội suy (Khoảng 2.5 - 3 từ / 1 giây).
   - Khóa Lõi Từ Ghép (Compound Word Lock): **3 từ cuối cùng của cảnh BẮT BUỘC là Từ Đơn**. Cấm bẻ ngang từ ghép khi ngắt âm.
