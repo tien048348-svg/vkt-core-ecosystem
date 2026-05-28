@@ -24,17 +24,16 @@ export interface TargetMarket {
 }
 
 export const TARGET_MARKETS: Record<string, TargetMarket> = {
-  vn_dharma: { id: 'vn_dharma', name: 'Việt Nam — Phật Pháp & Chữa Lành', flag: '🇻🇳', voice_lang: 'Vietnamese', currency: 'VND', culture: 'Triết lý nhân sinh, luật nhân quả, thiền định, an trú hiện tại, chữa lành tâm hồn theo phong cách người Việt.' },
-  us_mindfulness: { id: 'us_mindfulness', name: 'USA — Modern Mindfulness', flag: '🇺🇸', voice_lang: 'English (US)', currency: 'USD', culture: 'Practical mindfulness, stress reduction, success through inner peace, direct and actionable advice, modern urban lifestyle integration.' },
-  jp_zen: { id: 'jp_zen', name: 'Japan — Zen Philosophy', flag: '🇯🇵', voice_lang: 'Japanese', currency: 'JPY', culture: 'Wabi-sabi aesthetics, deep Zen poetry, extreme minimalism, silence and space (Ma), traditional Shinto-Buddhist fusion.' },
-  th_theravada: { id: 'th_theravada', name: 'Thailand — Devotional Wisdom', flag: '🇹🇭', voice_lang: 'Thai', currency: 'THB', culture: 'Emotional storytelling, traditional Theravada devotion, merit-making, deep respect for temple culture and monks.' },
-  cn_traditional: { id: 'cn_traditional', name: 'China — Classical Wisdom', flag: '🇨🇳', voice_lang: 'Mandarin', currency: 'CNY', culture: 'Classical Chinese philosophy (Confucian-Taoist-Buddhist), majestic traditional aesthetics, family karma, ancient wisdom for modern life.' },
-  in_vedic: { id: 'in_vedic', name: 'India — Vedic Dharma', flag: '🇮🇳', voice_lang: 'Hindi', currency: 'INR', culture: 'Vibrant spiritual energy, Vedic roots, Karma and Rebirth, high-frequency chanting, wisdom of the Great Gurus.' },
-  kr_seon: { id: 'kr_seon', name: 'Korea — Aesthetic Seon', flag: '🇰🇷', voice_lang: 'Korean', currency: 'KRW', culture: 'Modern Seon (Zen) practice, aesthetic minimalism, emotional healing, soft and poetic expression, "Healing" (Hilling) culture.' },
-  tibet_vajrayana: { id: 'tibet_vajrayana', name: 'Tibet — Esoteric Energy', flag: '🏔️', voice_lang: 'Tibetan/English', currency: 'USD', culture: 'High-altitude spiritualism, Vajrayana mysticism, powerful chanting, bell and bowl resonance, profound compassion (Bodhicitta).' },
-  fr_mindfulness: { id: 'fr_mindfulness', name: 'France — Intellectual Zen', flag: '🇫🇷', voice_lang: 'French', currency: 'EUR', culture: 'Intellectual mindfulness, artistic and poetic flow, philosophical depth, sophisticated and gentle approach to mental health.' },
-  de_meditation: { id: 'de_meditation', name: 'Germany — Structured Calm', flag: '🇩🇪', voice_lang: 'German', currency: 'EUR', culture: 'Psychological depth, structured meditation, naturalistic settings, profound and serious tone, focus on mental resilience.' },
-  uk_sophisticated: { id: 'uk_sophisticated', name: 'UK — Sophisticated Peace', flag: '🇬🇧', voice_lang: 'English (UK)', currency: 'GBP', culture: 'Sophisticated and calm approach, traditional yet modern mindfulness, focus on well-being and natural elements, eloquent and steady pacing.' },
+  vn_kids: { id: 'vn_kids', name: 'Việt Nam — Học Tiếng Anh (Song ngữ Việt-Anh)', flag: '🇻🇳', voice_lang: 'Vietnamese', currency: 'VND', culture: 'Giảng dạy bằng tiếng Việt, thân thiện, gần gũi, sử dụng các hình ảnh quen thuộc với trẻ em Việt Nam. Dạy từ vựng tiếng Anh.' },
+  us_kids: { id: 'us_kids', name: 'USA — Early Education (100% English)', flag: '🇺🇸', voice_lang: 'English (US)', currency: 'USD', culture: '100% English. Fun, high-energy, confident, encouraging. Focus on phonics, active engagement, and western preschool standards.' },
+  jp_kids: { id: 'jp_kids', name: 'Japan — Học Tiếng Anh (Song ngữ Nhật-Anh)', flag: '🇯🇵', voice_lang: 'Japanese', currency: 'JPY', culture: 'Kawaii (cute) aesthetics, polite and gentle tone, highly structured, teaching English through Japanese.' },
+  kr_kids: { id: 'kr_kids', name: 'Korea — Học Tiếng Anh (Song ngữ Hàn-Anh)', flag: '🇰🇷', voice_lang: 'Korean', currency: 'KRW', culture: 'Trendy, energetic, K-pop style upbeat rhythms, highly engaging visuals, teaching English through Korean.' },
+  cn_kids: { id: 'cn_kids', name: 'China — Học Tiếng Anh (Song ngữ Trung-Anh)', flag: '🇨🇳', voice_lang: 'Mandarin', currency: 'CNY', culture: 'Focus on early cognitive development, structured learning, family-oriented values, teaching English through Mandarin.' },
+  in_kids: { id: 'in_kids', name: 'India — Early Learning (Hindi-English)', flag: '🇮🇳', voice_lang: 'Hindi', currency: 'INR', culture: 'Vibrant, musical, highly interactive, teaching English through Hindi and culturally relatable scenarios.' },
+  uk_kids: { id: 'uk_kids', name: 'UK — Nursery Rhymes (100% English)', flag: '🇬🇧', voice_lang: 'English (UK)', currency: 'GBP', culture: '100% British English. Gentle, sophisticated storytelling, classic nursery rhyme aesthetics, polite and calm pacing.' },
+  th_kids: { id: 'th_kids', name: 'Thailand — Học Tiếng Anh (Song ngữ Thái-Anh)', flag: '🇹🇭', voice_lang: 'Thai', currency: 'THB', culture: 'Extremely playful, colorful, expressive, teaching English through Thai with lots of giggles and fun.' },
+  es_kids: { id: 'es_kids', name: 'Spain/LatAm — Học Tiếng Anh (Song ngữ TBN-Anh)', flag: '🇪🇸', voice_lang: 'Spanish', currency: 'EUR', culture: 'Warm, passionate, rhythmic, very musical and family-oriented, teaching English through Spanish.' },
+  fr_kids: { id: 'fr_kids', name: 'France — Học Tiếng Anh (Song ngữ Pháp-Anh)', flag: '🇫🇷', voice_lang: 'French', currency: 'EUR', culture: 'Artistic, gentle, slightly more quiet and focused, teaching English through French.' }
 };
 
 export interface VisualStyle {
@@ -53,17 +52,16 @@ export const VISUAL_STYLES: VisualStyle[] = [
 ];
 
 export const MARKET_STYLE_RECOMMENDATIONS: Record<string, string[]> = {
-  vn_dharma: ['pixar_3d', 'claymation', 'papercut_art', 'popup_book'],
-  us_mindfulness: ['pixar_3d', 'claymation', 'papercut_art', 'popup_book'],
-  jp_zen: ['pixar_3d', 'claymation', 'papercut_art', 'popup_book'],
-  th_theravada: ['pixar_3d', 'claymation', 'papercut_art', 'popup_book'],
-  cn_traditional: ['pixar_3d', 'claymation', 'papercut_art', 'popup_book'],
-  in_vedic: ['pixar_3d', 'claymation', 'papercut_art', 'popup_book'],
-  kr_seon: ['pixar_3d', 'claymation', 'papercut_art', 'popup_book'],
-  tibet_vajrayana: ['pixar_3d', 'claymation', 'papercut_art', 'popup_book'],
-  fr_mindfulness: ['pixar_3d', 'claymation', 'papercut_art', 'popup_book'],
-  de_meditation: ['pixar_3d', 'claymation', 'papercut_art', 'popup_book'],
-  uk_sophisticated: ['pixar_3d', 'claymation', 'papercut_art', 'popup_book']
+  vn_kids: ['pixar_3d', 'claymation', 'papercut_art', 'popup_book', 'english_learning_duo'],
+  us_kids: ['pixar_3d', 'claymation', 'papercut_art', 'popup_book', 'english_learning_duo'],
+  jp_kids: ['pixar_3d', 'claymation', 'papercut_art', 'popup_book', 'english_learning_duo'],
+  kr_kids: ['pixar_3d', 'claymation', 'papercut_art', 'popup_book', 'english_learning_duo'],
+  cn_kids: ['pixar_3d', 'claymation', 'papercut_art', 'popup_book', 'english_learning_duo'],
+  in_kids: ['pixar_3d', 'claymation', 'papercut_art', 'popup_book', 'english_learning_duo'],
+  uk_kids: ['pixar_3d', 'claymation', 'papercut_art', 'popup_book', 'english_learning_duo'],
+  th_kids: ['pixar_3d', 'claymation', 'papercut_art', 'popup_book', 'english_learning_duo'],
+  es_kids: ['pixar_3d', 'claymation', 'papercut_art', 'popup_book', 'english_learning_duo'],
+  fr_kids: ['pixar_3d', 'claymation', 'papercut_art', 'popup_book', 'english_learning_duo']
 };
 
 export interface KidsEnergy {
