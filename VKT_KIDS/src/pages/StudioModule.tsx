@@ -130,7 +130,7 @@ const StudioModule: React.FC<Props> = ({ segments, topic = '', uiLang = 'vi' }) 
       image_prompt: s.image_prompt || ''
     }));
 
-    const content = JSON.stringify(proSegments, null, 2);
+    const content = '[\n  ' + proSegments.map(s => JSON.stringify(s)).join(',\n  ') + '\n]';
     downloadFile(content, makeFileName(topic || '', 'project_PRO_ChiPrompt', 'json'), 'application/json;charset=utf-8');
     setShowExport(false);
     showToast('🚀 Tải Dự Án PRO (Chỉ Prompt) thành công!', 'success');

@@ -138,10 +138,14 @@ Hệ thống sẽ cung cấp một [ANTI-REPETITION SEED] (hạt giống ngẫu 
 2. PHONG CÁCH KỂ CHUYỆN (Random Storytelling Style): Tự động chọn 1 cách kể chuyện (VD: Ẩn dụ, Đặt câu hỏi tu từ, Kể chuyện ngụ ngôn, Dẫn chứng lịch sử, So sánh tương phản...).
 3. YẾU TỐ BẤT NGỜ (Random Props/Actions): Lồng ghép 1 đồ vật, biểu cảm hoặc hành động tương tác bất ngờ vào diễn biến hình ảnh hoặc lời thoại để tạo điểm nhấn riêng biệt cho mỗi video.
 
-# [CRITICAL - GIỮ NGUYÊN] KỊCH BẢN KHÓA CHẶT 100% SINGLE SPEAKER TRONG MỖI CẢNH:
-- Trong 8 giây của mỗi cảnh, CHỈ DUY NHẤT 01 CHỦ THỂ được cất tiếng.
+# [V18.0 MEMORY RELAY PROTOCOL (CRITICAL CHUNKING)]:
+1. **Chunk Memory Generation**: BẮT BUỘC bạn phải tự tóm tắt lại những gì đã xảy ra trong các cảnh trước đó để giữ tính liên tục. Không được lặp lại bài học cũ.
+
+# [CRITICAL - ĐA NHÂN VẬT (SPEAKER DISTRIBUTION) NHƯNG ĐỘC THOẠI TRONG 1 CẢNH]:
+- Trong kịch bản có thể có nhiều nhân vật (VD: Gấu, Thỏ, Cô giáo).
+- Tuy nhiên, trong 8 giây của MỖI CẢNH (mỗi object trong mảng "script"), CHỈ DUY NHẤT 01 NHÂN VẬT được cất tiếng nói.
+- Các cảnh có thể luân phiên nhân vật nói (Cảnh 1: Thỏ nói, Cảnh 2: Gấu nói).
 - Mảng "dialogues" BẮT BUỘC chỉ chứa ĐÚNG 01 PHẦN TỬ.
-- TUÂN THỦ CẤU HÌNH SPEAKER MODE từ prompt người dùng.
 
 # [AUDIO TRUNCATION SHIELD — CHỐNG NUỐT CHỮ & TRÀN GIÂY - GIỮ NGUYÊN]:
 - Thoại PHẢI dứt điểm hoàn toàn ở giây **7.2 - 7.5**. Chừa **0.5 giây cuối** im lặng kỹ thuật.
@@ -192,27 +196,16 @@ Các nguyên tắc AUTO-SHIELD bắt buộc nhúng vào cuối mỗi video_promp
   - Character finger articulation must maintain absolute structural integrity during pointing actions, zero finger elongation or cross-hand clipping.
   - ABSOLUTELY ZERO TEXT, letters, watermarks, or graphic overlays.
   - [ASPECT RATIO LOCK]: Strictly FULL FRAME, NO black bars. 8K Ultra-HD, pristine photorealism.
-  - [COLOR CONTRAST SHIELD — BẢO VỆ MÀU SẮc — BẮT BUỘC]: In EVERY image_prompt and video_prompt, STRICTLY ENFORCE the following color rules:
-    * MARBLE: "pristine polished white marble with bright mirror-like surface, pure white (NO grey tint, NO beige, NO brown tint on the marble itself)"
-    * KINTSUGI GOLD: "glowing radiant 24k Kintsugi gold veins with maximum luminosity, warm rich molten gold color, brilliantly lit"
-    * LIGHTING: "warm golden volumetric god rays streaming from above, bright high-contrast studio lighting, crisp sharp shadows"
-    * FORBIDDEN AMBIANCE: grey ambiance, dull stone texture, muddy colours, murky shadows, dim lighting, desaturated colours, washed-out tones, dark grey fog.
-    * NOTE: Sacred cave settings are ALLOWED but must always be LIT WITH WARM GOLDEN LIGHT — never dark, never grey inside.
-  - [LIVING NATURE LOCK — CÂY CỐI THẬT — BẮT BUỘC]: Natural living elements (plants, leaves, flowers, moss, lotus) MUST ALWAYS be rendered as REAL, LIVING, VIBRANT organisms — NOT carved from marble:
-    * Bodhi sprouts / young green shoots: "vibrant fresh emerald green, hyper-realistic natural plant with delicate veins, morning dew droplets, alive and growing"
-    * Lotus flowers / buds: "realistic fresh green or pink lotus bud, covered in glowing morning dew droplets, hyper-realistic natural texture"
-    * Moss / grass / forest floor: "lush vibrant emerald green moss, soft natural texture, fresh and alive"
-    * RULE: The CONTRAST between REAL GREEN NATURE vs WHITE MARBLE SCULPTURE is the KEY VISUAL IDENTITY of this series. Preserve it at all costs.
-    * FORBIDDEN: Do NOT make plants or flowers look carved from stone, bleached white, or desaturated.
-  - [MONK MARBLE SCULPTURE LOCK — THIỀN SƯ CẨM THẠCH — BẮT BUỘC]: In EVERY image_prompt and video_prompt featuring a monk/Buddhist master, ALWAYS include ALL of these phrases verbatim:
-    * "a wise serene monk master ENTIRELY SCULPTED FROM PRISTINE POLISHED WHITE MARBLE, completely shaved bald head, absolutely no hair on head, long white beard carved from marble"
-    * "his Kassaya robe is masterfully carved from the same polished white marble stone, with glowing radiant 24k gold Kintsugi veins seamlessly flowing through his head, beard, and marble robe"
-    * At the END of the prompt, ALWAYS append: "--no hair --no topknot --no hair bun --no brown robe --no orange robe --no fabric clothing --no wig"
-  - [CINEMATIC QUALITY ENHANCER — ĐỈNH CỦA ĐỈNH]: Every image_prompt and video_prompt MUST include these quality boosters:
-    * "8K Ultra-HD, pristine photorealism, Unreal Engine 5 quality render"
-    * "hyper-detailed macro textures, extreme depth of field"
-    * "award-winning cinematic composition, National Geographic quality nature photography"
-    * "absolutely zero CGI plastic look, maximum material realism"
+  - [VISUAL LIP-SYNC LOCK - KHÓA KHẨU HÌNH ĐỘNG]: BẮT BUỘC phải miêu tả chính xác trạng thái miệng của nhân vật. Nhân vật ĐANG NÓI (theo dialogues) phải có "mouth moving, speaking, lip-syncing". TẤT CẢ nhân vật khác trong khung hình BẮT BUỘC phải có "mouth closed, strictly closed lips, silent, listening".
+  - [KIDS CONTENT SHIELD - BẢO VỆ TRẺ EM - BẮT BUỘC]:
+    * COPPA COMPLIANCE: Absolutely ZERO violence, scary monsters, blood, gore, or inappropriate behavior.
+    * POSITIVE VIBES ONLY: Characters must display positive emotions (happy, curious, surprised). Even when teaching "sad", keep it cute and mild.
+    * COLOR CONTRAST SHIELD: Use hyper-vibrant, bright, saturated primary colors. Strictly NO dark ambiance, NO gloomy lighting, NO scary shadows.
+  - [CHARACTER CONSISTENCY LOCK]: Ensure character designs (clothes, colors, fur) remain identical across all scenes.
+  - [CINEMATIC QUALITY ENHANCER]: Every image_prompt and video_prompt MUST include these quality boosters:
+    * "8K Ultra-HD, pristine photorealism, Pixar/Claymation quality render"
+    * "hyper-detailed textures, vibrant joyful colors"
+    * "award-winning composition, cheerful and cute lighting"
 
 
 # OUTPUT FORMAT (JSON STRICT - GIỮ NGUYÊN CẤU TRÚC):
@@ -221,7 +214,7 @@ Các nguyên tắc AUTO-SHIELD bắt buộc nhúng vào cuối mỗi video_promp
   "suggested_style": "style_id that best matches the topic",
   "suggested_watermark": "English name of the dynamic watermark chosen for this niche",
   "style_reason": "Brief explanation of why this style matches the story",
-  "character_lock_prompt": "[MANDATORY - FILL IN WITH EXACT TEXT] 'a wise serene monk master entirely sculpted from pristine polished white marble, completely shaved bald head, absolutely no hair on head, long white beard also carved from marble, his Kassaya robe is masterfully carved from the same polished white marble stone, with glowing radiant 24k gold Kintsugi veins seamlessly flowing through his head, beard, and marble robe. Sitting before a pristine polished white marble pedestal. Background: lush emerald green moss and natural pebbles. Warm golden volumetric god rays streaming from above. --no hair --no topknot --no hair bun --no brown robe --no orange robe --no fabric clothing'",
+  "character_lock_prompt": "[MANDATORY - FILL IN WITH EXACT TEXT] Describe the main characters consistently, detailing their appearance, fur/skin color, signature clothing, and style to lock their physical persistence across all scenes.",
   "script": [
     {
       "scene_number": 1,
@@ -260,7 +253,11 @@ Các nguyên tắc AUTO-SHIELD bắt buộc nhúng vào cuối mỗi video_promp
     }
   ],
   "coppa_disclaimer": "Video tuân thủ tiêu chuẩn cộng đồng."
-}`;
+}
+
+# [V20.0 JSON MINIFICATION PROTOCOL]
+TUYỆT ĐỐI TUÂN THỦ: Bạn phải trả về JSON đã được thu gọn (minified JSON string) không có ký tự xuống dòng (newlines) hoặc khoảng trắng (spaces) thừa. Toàn bộ JSON phải nằm trên 1 dòng duy nhất để tối ưu dung lượng.
+`;
 
 export const SYSTEM_PROMPT_SEO_MASTER = `You are a Content Strategist and YouTube SEO Expert specializing in [NICHE_THEME] content.
 
