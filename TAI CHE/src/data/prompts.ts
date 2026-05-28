@@ -144,7 +144,7 @@ Các nguyên tắc AUTO-SHIELD bắt buộc nhúng vào cuối mỗi video_promp
   - [ASPECT RATIO LOCK]: Strictly FULL FRAME, NO black bars. 8K Ultra-HD, pristine photorealism.
 
 # [CHARACTER VERBATIM INJECTION LOCK - KHÓA ĐỒNG NHẤT NHÂN VẬT]:
-- Tại trường 'character_lock_prompt': Bạn PHẢI tạo ra mô tả cực kỳ chi tiết cho tất cả các nhân vật chính sẽ xuất hiện (Ví dụ: "Character A: [desc] | Character B: [desc]").
+- Tại trường 'character_lock_prompt': Bạn PHẢI tạo ra mô tả cực kỳ chi tiết cho tất cả các nhân vật chính sẽ xuất hiện. BẮT BUỘC ghi rõ GIỚI TÍNH (Nam/Nữ) và ĐỘ TUỔI chính xác của từng nhân vật (Ví dụ: "Character A (Male, 10 years old): [desc] | Character B (Female, 60 years old): [desc]").
 - NARRATOR LOCK: NGƯỜI KỂ CHUYỆN (NARRATOR) LUÔN LUÔN GIẤU MẶT. TUYỆT ĐỐI KHÔNG BAO GIỜ CHO XUẤT HIỆN HÌNH DÁNG CON NGƯỜI TRONG VIDEO (NO HUMAN FIGURES).
 - GIAO THỨC BƠM NGUYÊN VĂN BẮT BUỘC: Ở mỗi phân cảnh, bất kể nhân vật nào xuất hiện, bạn BẮT BUỘC phải sao chép ĐÚNG NGUYÊN VĂN 100% cụm mô tả tương ứng của nhân vật đó từ 'character_lock_prompt' và đặt vào ngay đầu các trường 'image_prompt' và 'video_prompt' để đảm bảo tính đồng nhất ngoại hình nhân vật từ Cảnh 1 đến Cảnh N.
 
