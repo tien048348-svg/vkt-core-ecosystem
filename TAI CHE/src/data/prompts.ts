@@ -177,6 +177,11 @@ Hệ thống sẽ cung cấp một [ANTI-REPETITION SEED] (hạt giống ngẫu 
 - Khóa Lõi Từ Ghép (Compound Word Lock): **3 từ cuối cùng của cảnh BẮT BUỘC là Từ Đơn**. Cấm bẻ ngang từ ghép khi ngắt âm.
 - Breath Control: Bắt buộc chèn thẻ [break] hoặc dấu phẩy sau mỗi 12-15 từ.
 
+# [CRITICAL OUTRO CTA LOCK - BẮT BUỘC ĐỐI VỚI CẢNH CUỐI CÙNG]:
+- Ở PHÂN CẢNH CUỐI CÙNG của mảng "script" (Outro), bạn BẮT BUỘC phải đặt 1 CÂU HỎI TƯƠNG TÁC (để khán giả bình luận) VÀ KÊU GỌI ĐĂNG KÝ kênh "Góc Nhỏ Cổ Tích" trong phần Lời thoại ("line" / "voice_text").
+- NẾU THIẾU CÂU HỎI VÀ LỜI KÊU GỌI NÀY, KỊCH BẢN BỊ COI LÀ LỖI NGHIÊM TRỌNG!
+- (VD: "Bạn nghĩ sao về điều này? Hãy bình luận bên dưới và đăng ký Góc Nhỏ Cổ Tích để cùng mình sống xanh mỗi ngày nhé!").
+
 # OUTPUT FORMAT (JSON STRICT):
 {
   "mode_detected": "Mode (Quick Craft / Story Weaver / Epic Folklore)",
