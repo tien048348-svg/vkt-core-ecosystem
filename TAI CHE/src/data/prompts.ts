@@ -116,7 +116,7 @@ Moi kich ban phai bat dau bang tieu de hoi tu 4 yeu to: Van de, Doi tuong, Giai 
 - [CULTURAL & BLENDED MATERIALS]: Tùy thuộc vào bối cảnh truyện (Việt Nam hay Nước Ngoài), rác tự nhiên phải khớp văn hóa bản địa. ĐẶC BIỆT CHÚ Ý: BẮT BUỘC phải phối hợp sinh động nhiều chất liệu với nhau để tạo hình nhân vật, KHÔNG BAO GIỜ dùng một loại duy nhất. Nguyên tắc BIẾN TẤU ĐA DẠNG này áp dụng cho MỌI STYLE (plastic, fabric, paper, nature_debris...): Nếu là style nhựa thì thân làm từ vỏ chai, mắt là nắp chai, tay từ ống hút. Nếu là đồ vải thì thân từ quần áo rách, tóc là sợi len, mắt là cúc áo. Nếu là rác tự nhiên thì con cua có thân là lá sen, chân là cành sen, mắt là hạt sen... Bắt buộc phải miêu tả sự phối hợp chất liệu này rõ ràng.
 - [PHYSICS LAW]: Tuyệt đối tuân thủ định luật vật lý tự nhiên. Nước rót phải có bình chứa và không tràn phi lý, đồ vật rơi phải theo trọng lực.
 - [MATERIAL SCIENCE]: Mô tả TÍNH CHẤT VẬT LIỆU chính xác. Giấy/bìa (gấp nếp, xé), Lá khô (vỡ vụn, giòn rụm), Nilon (dẻo, nhăn), Đất sét (mềm, nhào nặn). KHÔNG được miêu tả vật liệu sai đặc tính (VD: bóp lá khô chảy ra nước là SAI).
-- [ANATOMY ENFORCEMENT]: Trong mọi câu lệnh "image_prompt" và "video_prompt", HÃY CHÈN MẶC ĐỊNH cụm từ bảo vệ sinh học: "(perfect human anatomy:1.2), exactly two arms, exactly two legs, perfect hands".
+- [ANATOMY ENFORCEMENT]: TUYỆT ĐỐI KHÔNG DÙNG TỪ "human". Nếu nhân vật tái chế được nhân cách hóa có tay chân, HÃY CHÈN cụm từ: "coherent character structure, distinct limbs, perfectly attached parts". Không bao giờ ép hệ thống vẽ người thật.
 
 # IMPORTANT: When suggesting a style, pick from: stop_motion_papercraft, dong_ho_folk, water_puppet, plastic_mosaic, fabric_collage, popup_cardboard, nature_debris
 
@@ -147,7 +147,7 @@ Các nguyên tắc AUTO-SHIELD bắt buộc nhúng vào cuối mỗi video_promp
 
 # [CHARACTER VERBATIM INJECTION LOCK - KHÓA ĐỒNG NHẤT NHÂN VẬT]:
 - Tại trường 'character_lock_prompt': Bạn PHẢI tạo ra mô tả cực kỳ chi tiết cho tất cả các nhân vật chính sẽ xuất hiện. BẮT BUỘC ghi rõ GIỚI TÍNH (Nam/Nữ) và ĐỘ TUỔI chính xác của từng nhân vật (Ví dụ: "Character A (Male, 10 years old): [desc] | Character B (Female, 60 years old): [desc]").
-- NARRATOR LOCK: NGƯỜI KỂ CHUYỆN (NARRATOR) LUÔN LUÔN GIẤU MẶT. TUYỆT ĐỐI KHÔNG BAO GIỜ CHO XUẤT HIỆN HÌNH DÁNG CON NGƯỜI TRONG VIDEO (NO HUMAN FIGURES).
+- NARRATOR LOCK (NGƯỜI DẪN CHUYỆN): Người dẫn chuyện CHỈ LÀ GIỌNG ĐỌC MẶT SAU (Voiceover - VO). BẮT BUỘC KHÔNG BAO GIỜ CHO XUẤT HIỆN HÌNH DÁNG CON NGƯỜI TRONG CÁC LỆNH "image_prompt" VÀ "video_prompt" (NO HUMANS ALLOWED). Chỉ tập trung vào vật liệu tái chế.
 - GIAO THỨC BƠM NGUYÊN VĂN BẮT BUỘC: Ở mỗi phân cảnh, bất kể nhân vật nào xuất hiện, bạn BẮT BUỘC phải sao chép ĐÚNG NGUYÊN VĂN 100% cụm mô tả tương ứng của nhân vật đó từ 'character_lock_prompt' và đặt vào ngay đầu các trường 'image_prompt' và 'video_prompt' để đảm bảo tính đồng nhất ngoại hình nhân vật từ Cảnh 1 đến Cảnh N.
 
 # [UNIVERSAL ANTI-REPETITION ENGINE - CHỐNG LẶP KỊCH BẢN TỰ ĐỘNG V16.0]:
