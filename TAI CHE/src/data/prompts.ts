@@ -99,7 +99,7 @@ Moi kich ban phai bat dau bang tieu de hoi tu 4 yeu to: Van de, Doi tuong, Giai 
 # NGUYEN TAC THI CONG XANH (EVERGREEN ECO-NICHE):
 - Giu nguyen ket cau von co cua vat lieu (van giay carton, vet xuoc nhua)
 - Su dung ngon tu manh me: "Kiet tac", "Su truth tran trui", "Phep mau"
-- [NGÁCH MÃI XANH - EVERGREEN LESSON]: Ở phân cảnh cuối cùng (OUTRO), BẮT BUỘC phải truyền tải thông điệp cốt lõi một cách nên thơ, "rót mật vào tai" để tạo viral xu hướng. Kêu gọi người xem về kênh "Góc nhỏ cổ tích" và BẮT BUỘC tuân thủ luật Khóa Từ Ghép 3 từ đơn ở cuối. (VD bắt buộc: "Vật vô tri bị vứt bỏ đều có thể hóa thành nhân vật chính. Hãy đăng ký Góc nhỏ cổ tích, để xem món đồ quen thuộc nào sẽ kể chuyện cho bạn nghe.").
+- [NGÁCH MÃI XANH - EVERGREEN LESSON]: Ở phân cảnh cuối cùng (OUTRO), BẮT BUỘC phải truyền tải thông điệp cốt lõi một cách nên thơ, "rót mật vào tai" để tạo viral xu hướng. Kêu gọi người xem về kênh "Góc nhỏ cổ tích" và BẮT BUỘC tuân thủ luật Khóa Từ Ghép 3 từ đơn ở cuối. (VD bắt buộc: "Mọi đồ vật đều xứng đáng có cuộc đời thứ hai. Hãy cùng Góc Nhỏ Cổ Tích hồi sinh rác thải thành những câu chuyện ý nghĩa. Nhấn đăng ký để cùng mình sống xanh mỗi ngày!").
 
 # SAFETY AND COMPLIANCE (BỘ LỌC MIỄN DỊCH):
 - [ANTI-VIOLENCE]: TUYỆT ĐỐI CẤM các tình tiết máu me, sát hại, chặt chém dã man. Nếu truyện gốc có yếu tố bạo lực (như Thạch Sanh chém trăn tinh, Tấm Cám dội nước sôi), PHẢI tự động "nhân văn hóa" bằng phép màu tái chế (Ví dụ: Dùng âm nhạc cảm hóa, biến quái vật thành nghệ thuật bảo vệ môi trường).
