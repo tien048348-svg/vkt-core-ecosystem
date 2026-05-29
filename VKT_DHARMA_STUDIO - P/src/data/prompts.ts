@@ -245,7 +245,7 @@ Các nguyên tắc AUTO-SHIELD bắt buộc nhúng vào cuối mỗi video_promp
       "voice_profile": {
         "speaker": "Tên nhân vật (từ dialogues)",
         "gender": "MALE hoặc FEMALE",
-        "age": "Số tuổi hoặc nhóm tuổi",
+        "age": "BẮT BUỘC LÀ 70 (Đối với Lão sư/Thiền sư). TUYỆT ĐỐI KHÔNG GHI KHOẢNG TUỔI HAY NHÓM TUỔI",
         "accent": "NORTHERN_VIETNAMESE / SOUTHERN_VIETNAMESE / EN-US / EN-UK",
         "timbre": "Chất giọng",
         "tone": "Giọng điệu",
@@ -414,7 +414,7 @@ Giao thức Liền mạch Âm thanh (Audio Continuity):
       "voice_profile": {
         "speaker": "Tên nhân vật được chọn phát biểu",
         "gender": "MALE hoặc FEMALE",
-        "age": "Số tuổi hoặc nhóm tuổi",
+        "age": "BẮT BUỘC LÀ 70 (Đối với Lão sư/Thiền sư). TUYỆT ĐỐI KHÔNG GHI KHOẢNG TUỔI HAY NHÓM TUỔI",
         "accent": "NORTHERN_VIETNAMESE / SOUTHERN_VIETNAMESE / EN-US / EN-UK",
         "timbre": "Chất giọng",
         "tone": "Giọng điệu",
