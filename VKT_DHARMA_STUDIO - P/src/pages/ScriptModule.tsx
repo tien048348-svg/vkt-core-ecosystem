@@ -612,6 +612,29 @@ CRITICAL INSTRUCTION:
     showToast(uiLang === 'vi' ? '📦 Đã xuất Master JSON Toàn Tập!' : '📦 Master JSON Exported!', 'success');
   };
 
+  const exportCompactJson = () => {
+    if (!scriptData || !segments) return;
+    const compactScenes = segments.map((scene: any) => ({
+      scene_number: scene.scene_number,
+      voice_text: scene.voice_text || scene.chapter_voice_block || '',
+      video_prompt: scene.video_prompt,
+      image_prompt: scene.image_prompt
+    }));
+    const compactPackage = {
+      project_name: topic,
+      export_type: "COMPACT_V20",
+      scenes: compactScenes
+    };
+    const blob = new Blob([JSON.stringify(compactPackage, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `VKT_SieuNgan_${topic.replace(/\s+/g, '_').substring(0, 20)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast(uiLang === 'vi' ? '📦 Đã tải JSON Siêu Ngắn!' : '📦 Super Short JSON Downloaded!', 'success');
+  };
+
   const handleAudioRefining = async () => {
     if (segments.length === 0) return showToast(uiLang === 'vi' ? 'Chưa có kịch bản để tinh chỉnh!' : 'No script to refine!');
     
@@ -1091,6 +1114,7 @@ CRITICAL INSTRUCTION:
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <button onClick={exportMasterJson} className="text-[11px] font-bold px-3 py-1.5 rounded flex items-center gap-2 bg-gradient-to-r from-amber-600 to-orange-500 text-white hover:opacity-90 transition-opacity shadow-[0_0_15px_rgba(245,158,11,0.4)] shrink-0"><i className="fa-solid fa-file-zipper" /> {uiLang === 'vi' ? 'Xuất JSON' : 'Export JSON'}</button>
+              <button onClick={exportCompactJson} className="text-[11px] font-bold px-3 py-1.5 rounded flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-500 text-white hover:opacity-90 transition-opacity shadow-[0_0_15px_rgba(16,185,129,0.4)] shrink-0"><i className="fa-solid fa-file-code" /> {uiLang === 'vi' ? 'Tải JSON (Siêu ngắn)' : 'Export Short JSON'}</button>
               <button onClick={copyAll} className="text-[11px] font-bold px-3 py-1.5 rounded flex items-center gap-2 bg-white text-black hover:bg-slate-200 transition-colors shrink-0"><i className="fa-solid fa-copy" /> {uiLang === 'vi' ? 'Copy Lời Thoại' : 'Copy Voice'}</button>
               <button
                 id="copy-all-image-prompts"
