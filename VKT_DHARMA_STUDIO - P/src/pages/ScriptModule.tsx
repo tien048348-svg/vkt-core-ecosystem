@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { callAI } from '../services/aiService';
 import { 
-   
   TARGET_MARKETS, 
-  VISUAL_STYLES 
+  VISUAL_STYLES,
+  MARKET_STYLE_RECOMMENDATIONS
 } from '../data/constants';
 import { 
   SYSTEM_PROMPT_SCRIPT_WRITER,
@@ -11,6 +11,7 @@ import {
   getStyleRecPrompt
 } from '../data/prompts';
 import { showToast } from '../components/Toast';
+import ProgressBar from '../components/ProgressBar';
 
 export const DHARMA_TOPICS = [
   { id: 'karma', label: '⚖️ Luật Nhân Quả (Karma Law)' },
@@ -211,6 +212,8 @@ const SceneCard = React.memo(({ seg, idx, uiLang }: { seg: any, idx: number, uiL
   );
 });
 
+import type { GlobalSettings } from '../App';
+
 interface Props {
   segments: any[];
   setSegments: (segs: any[]) => void;
@@ -221,12 +224,14 @@ interface Props {
   initialTopic?: string;
   uiLang: 'vi' | 'en';
   onNavigateToStudio?: () => void;
+  isAdmin: boolean;
+  globalSettings: GlobalSettings;
 }
 
-const ScriptModule: React.FC<Props> = ({ segments, setSegments, scriptData, setScriptData, onScriptGenerated, onAudioRefined, initialTopic = '', uiLang, onNavigateToStudio }) => {
+const ScriptModule: React.FC<Props> = ({ segments, setSegments, scriptData, setScriptData, onScriptGenerated, onAudioRefined, initialTopic = '', uiLang, onNavigateToStudio, isAdmin, globalSettings }) => {
   const [topic, setTopic] = useState(initialTopic);
   const [duration, setDuration] = useState<number | string>(1);
-  const [secondsPerScene, setSecondsPerScene] = useState(8);
+  const [secondsPerScene, setSecondsPerScene] = useState<number | string>(8);
   const [market, setMarket] = useState('vn_dharma');
   const [style, setStyle] = useState('auto');
   const [dharmaTopic, setDharmaTopic] = useState('karma');
@@ -234,8 +239,13 @@ const ScriptModule: React.FC<Props> = ({ segments, setSegments, scriptData, setS
   const [suggestedStyle, setSuggestedStyle] = useState<any>(null);
   const [loadingSuggestion, setLoadingSuggestion] = useState(false);
   const [refiningAudio, setRefiningAudio] = useState(false);
+  const [refiningProgress, setRefiningProgress] = useState(0);
   const [audioRefinedCount, setAudioRefinedCount] = useState(0);
   const [speakerMode, setSpeakerMode] = useState<'multi' | 'single' | 'asmr'>('single');
+  // Công tắc chế độ dẫn: true = Người dẫn chuyện (OFF-SCREEN narrator), false = Thiền sư tự nói (ON-SCREEN monk)
+  const [narratorMode, setNarratorMode] = useState<boolean>(false);
+  const [progress, setProgress] = useState({ percent: 0, text: '' });
+  const abortRef = useRef(false);
 
   const t = translations[uiLang];
   const loadingMessages = uiLang === 'vi' ? 
@@ -262,7 +272,8 @@ const ScriptModule: React.FC<Props> = ({ segments, setSegments, scriptData, setS
   }, [initialTopic]);
 
   const durationNum = parseFloat(duration as string) || 0;
-  const scenes = Math.ceil((Math.max(0.1, durationNum) * 60) / secondsPerScene);
+  const secPerSceneNum = parseFloat(secondsPerScene as string) || 8;
+  const scenes = Math.ceil((Math.max(0.1, durationNum) * 60) / secPerSceneNum);
   const mode = durationNum < 3 ? { name: '🟢 QUICK CRAFT (<3m)', wpm: 130 } : durationNum <= 10 ? { name: '🔵 STORY WEAVER (3-10m)', wpm: 140 } : { name: '🟣 EPIC FOLKLORE (>10m)', wpm: 120 };
   const words = Math.floor(durationNum * mode.wpm);
   const modeColor = durationNum < 3 ? 'text-green-400 border-green-500/50 bg-green-900/10' : durationNum <= 10 ? 'text-teal-400 border-teal-500/50 bg-teal-900/10' : 'text-purple-400 border-purple-500/50 bg-purple-900/10';
@@ -294,20 +305,23 @@ const ScriptModule: React.FC<Props> = ({ segments, setSegments, scriptData, setS
       return;
     }
 
-    // UX Hard Limit: Force maximum 10 minutes (~75 scenes) to guarantee stability
+    // UX Hard Limit: Apply maxDuration from globalSettings
     let targetDuration = duration;
-    if (targetDuration > 10) {
-      targetDuration = 10;
-      setDuration(10);
+    const maxAllowed = globalSettings.maxDuration;
+    
+    if (targetDuration > maxAllowed) {
+      targetDuration = maxAllowed;
+      setDuration(maxAllowed);
       showToast(uiLang === 'vi' 
-        ? '⚠️ Hệ thống giới hạn tối đa 10 phút (~75 cảnh) để bảo toàn chất lượng kịch bản cao nhất!'
-        : '⚠️ System locked to 10 minutes (~75 scenes) maximum to ensure top quality!', 'warning');
+        ? `⚠️ Hệ thống giới hạn tối đa ${maxAllowed} phút cho tài khoản của bạn!`
+        : `⚠️ System locked to ${maxAllowed} minutes maximum for your account!`, 'warning');
     }
 
     setSegments([]);
     setScriptData(null);
     setSuggestedStyle(null);
     setAudioRefinedCount(0);
+    setProgress({ percent: 2, text: uiLang === 'vi' ? 'Đang khởi tạo lõi AI...' : 'Initializing AI core...' });
     setLoading(true);
 
     try {
@@ -320,7 +334,7 @@ const ScriptModule: React.FC<Props> = ({ segments, setSegments, scriptData, setS
       styleContext += ` - DHARMA TOPIC: ${topicObj?.label}. MICRO-CONTEXT (CRITICAL): ${randomContext}.`;
 
       // 1. Calculate the total requested scenes
-      const totalScenes = Math.ceil((Math.max(0.1, targetDuration) * 60) / secondsPerScene);
+      const totalScenes = Math.ceil((Math.max(0.1, targetDuration) * 60) / secPerSceneNum);
       
       // 2. Define safe chunk size: 25 scenes per API call
       const chunkSize = 25;
@@ -332,13 +346,33 @@ const ScriptModule: React.FC<Props> = ({ segments, setSegments, scriptData, setS
       let coppaText = '';
       let suggestedWatermark = '';
 
+      abortRef.current = false;
+
       // 3. Process incrementally in rounds to bypass LLM context and response token limits
       for (let round = 1; round <= totalRounds; round++) {
+        if (abortRef.current) break;
         const startSceneNum = (round - 1) * chunkSize + 1;
         const endSceneNum = Math.min(round * chunkSize, totalScenes);
         const roundSceneCount = endSceneNum - startSceneNum + 1;
+        // Simulate smooth progress for better UX
+        let simulatedScene = startSceneNum;
+        const estimatedMsPerScene = 1500; // Simulate 1.5s per scene
+        
+        setProgress({ 
+          percent: Math.floor((simulatedScene / totalScenes) * 95), 
+          text: uiLang === 'vi' ? `Đang dệt phân cảnh ${simulatedScene}/${totalScenes}...` : `Weaving scene ${simulatedScene}/${totalScenes}...` 
+        });
 
-        // Custom loading messages for each chunk to keep user engaged
+        const simInterval = setInterval(() => {
+          if (simulatedScene < endSceneNum - 1) {
+            simulatedScene++;
+            setProgress({ 
+              percent: Math.floor((simulatedScene / totalScenes) * 95), 
+              text: uiLang === 'vi' ? `Đang dệt phân cảnh ${simulatedScene}/${totalScenes}...` : `Weaving scene ${simulatedScene}/${totalScenes}...` 
+            });
+          }
+        }, estimatedMsPerScene);
+        
         if (uiLang === 'vi') {
           showToast(`⏳ [Đợt ${round}/${totalRounds}] Đang dệt phân cảnh ${startSceneNum} đến ${endSceneNum}...`, 'success');
         } else {
@@ -363,17 +397,31 @@ CRITICAL: You MUST write the next scenes continuing this exact storyline seamles
 - OVERRIDE all dialogue/narrator rules in the system prompt.
 - CONCENTRATE 100% of creativity on the 'video_prompt'/'image_prompt' (hypnotic, satisfying, ultra-sharp visuals) and 'sfx_music_suggestion' (extremely rich, multi-layered ASMR sounds and healing frequencies like 432Hz/528Hz).`
           : speakerMode === 'single'
-          ? `\n[SPEAKER MODE - SINGLE SPEAKER MONOLOGUE ACTIVE]:
-- The entire video script MUST be written for only ONE single character/narrator from the first scene to the last scene (e.g., 'Người dẫn chuyện' or 'Thiền sư' or 'Trưởng lão' or 'Người mẹ'...).
-- The 'character' name and 'voice_profile.speaker' MUST be identical across all scenes (e.g. if Scene 1 is 'Trưởng lão', Scene 2, 3, etc. must also be 'Trưởng lão'). Do NOT introduce multiple characters, do NOT have different characters speaking in different scenes.
-- OVERRIDE the rule that says "Tuyệt đối cấm chỉ để 1 narrator nói suốt từ đầu đến cuối" or "ĐA NHÂN VẬT THAY PHIÊN" in the system prompt. Instead, keep a single voice speaking from beginning to end.`
+          ? narratorMode
+            ? `\n[SPEAKER MODE - NARRATOR (OFF-SCREEN) ACTIVE]:
+- The ENTIRE script MUST be narrated by a single OFF-SCREEN narrator voice. The narrator is an unseen storyteller, NOT the monk himself.
+- The 'voice_profile.state' MUST be "OFF-SCREEN" for every scene.
+- The 'voice_profile.speaker' MUST be "Người Dẫn Chuyện" (The Narrator) in all scenes.
+- The on-screen monk (Vị Lão Sư) MUST remain SILENT throughout the video — his mouth NEVER opens to speak. He performs actions only.
+- The narrator describes what the monk does in a poetic, third-person storytelling voice.
+- In 'video_prompt' and 'image_prompt': ALWAYS describe the monk with a COMPLETELY CLOSED MOUTH, performing contemplative gestures. Add "monk sitting in silent meditation, mouth closed, not speaking" to all visual prompts.
+- OVERRIDE all multi-character and on-screen speaking rules. Only ONE narrator voice exists.`
+            : `\n[SPEAKER MODE - MONK ON-SCREEN SPEAKING ACTIVE]:
+- The main and ONLY speaker MUST be the on-screen "Vị Lão Sư 70 Tuổi" (A wise 70-year-old Buddhist Master with completely shaved bald head).
+- The monk SPEAKS DIRECTLY to the viewer. His mouth OPENS and MOVES as he speaks. This is ON-SCREEN speech.
+- The 'voice_profile.state' MUST be "ON-SCREEN" for every scene.
+- The 'voice_profile.speaker' MUST be "Vị Lão Sư" in all scenes.
+- In 'video_prompt' and 'image_prompt': ALWAYS describe the monk with "mouth slightly open, speaking directly to camera, articulating words with natural lip movement". His lips and jaw move realistically with speech.
+- OVERRIDE the rule that says "Tuyệt đối cấm chỉ để 1 narrator nói suốt từ đầu đến cuối" or "ĐA NHÂN VẬT THAY PHIÊN" in the system prompt. Instead, keep a single on-screen speaking voice.`
           : `\n[SPEAKER MODE - MULTI-CHARACTER DIALOGUE ACTIVE]:
-- The script should feature multiple characters taking turns speaking across different scenes to create a dialogue or alternating storytelling (e.g., scene 1: A speaks, scene 2: B speaks...).
-- Ensure different scenes use appropriate characters from the story.`;
+- The main character MUST be "Vị Lão Sư 70 Tuổi" (A wise 70-year-old Buddhist Master).
+- The script MUST feature AT LEAST 3 DIFFERENT CHARACTERS (e.g., The Master, a young disciple, a troubled villager) taking turns speaking across different scenes to create a rich dialogue or alternating storytelling.
+- Ensure different scenes use appropriate characters from the story. NEVER stick to just 1 or 2 characters. OVERRIDE any tendency to write a monologue.`;
 
         const randomSeed = Math.floor(Math.random() * 1000000);
         const prompt = `TOPIC: "${topic}"
 DURATION: ${targetDuration}m (Total video duration)
+SECONDS_PER_SCENE: ${secPerSceneNum}s
 ROUND_GENERATING: Round ${round} of ${totalRounds} (Generating scenes ${startSceneNum} to ${endSceneNum})
 ROUND_SCENE_COUNT: ${roundSceneCount} (Generate exactly ${roundSceneCount} scenes starting at number ${startSceneNum})
 TARGET_MARKET: ${mk.name}
@@ -386,14 +434,33 @@ ${speakerModeInstructions}
 CRITICAL INSTRUCTION:
 1. Write the VOICE_TEXT and DIALOGUES in "${mk.voice_lang}" using native idioms, cultural nuances, and the specific spiritual style of that region. 
 2. DO NOT just translate from Vietnamese. Think like a native expert in ${mk.name}.
-3. The visual descriptions and technical fields should be in ${uiLang === 'vi' ? 'Vietnamese' : 'English'} for the creator to understand.
-4. Return a JSON object matching the exact structure below. Make sure the 'script' array contains exactly ${roundSceneCount} elements starting with scene_number: ${startSceneNum} and ending with scene_number: ${endSceneNum}.
-5. GENERATE JSON OBJECT.`;
+3. The visual descriptions (visual_desc_vi) and strategy_note should be in ${uiLang === 'vi' ? 'Vietnamese' : 'English'} for the creator to understand.
+4. The AI generator prompts and technical fields (video_prompt, image_prompt, character, character_lock_prompt, sfx_music_suggestion) MUST ALWAYS be 100% in English under all circumstances (with absolutely ZERO words in ${mk.voice_lang} if it's not English. Translate everything to English, e.g. "ông lão" to "old wise monk", "lá bồ đề" to "bodhi leaf", "Cọp" to "Tiger", etc.).
+5. Return a JSON object matching the exact structure below. Make sure the 'script' array contains exactly ${roundSceneCount} elements starting with scene_number: ${startSceneNum} and ending with scene_number: ${endSceneNum}.
+6. GENERATE JSON OBJECT.`;
 
-        const json = await callAI(prompt, SYSTEM_PROMPT_SCRIPT_WRITER);
+        let json: any = null;
+        let retries = 3;
+        while (retries > 0) {
+          try {
+            json = await callAI(prompt, SYSTEM_PROMPT_SCRIPT_WRITER);
+            break;
+          } catch (err: any) {
+            retries--;
+            if (retries === 0) throw err;
+            if (abortRef.current) break;
+            setProgress({ percent: progress.percent, text: uiLang === 'vi' ? `⚠️ Đang thử lại (${3-retries}/3)...` : `⚠️ Retrying (${3-retries}/3)...` });
+            showToast(uiLang === 'vi' ? `⚠️ Đợt ${round} bị nghẽn API. Đang thử lại (${3-retries}/3)...` : `⚠️ Round ${round} API overloaded. Retrying (${3-retries}/3)...`, 'warning');
+            await new Promise(res => setTimeout(res, 10000));
+          }
+        }
         
-        let roundSegs = json.script || (Array.isArray(json) ? json : []);
-        if (round === 1) {
+        clearInterval(simInterval);
+        
+        if (abortRef.current) break;
+
+        let roundSegs = json?.script || (Array.isArray(json) ? json : []);
+        if (round === 1 && json) {
           if (json.suggested_style) finalSuggestedStyle = json.suggested_style;
           if (json.character_lock_prompt) finalCharacterLock = json.character_lock_prompt;
           if (json.coppa_disclaimer) coppaText = json.coppa_disclaimer;
@@ -403,10 +470,10 @@ CRITICAL INSTRUCTION:
         // Standardize output structure
         roundSegs = roundSegs.map((s: any, idx: number) => {
           const calculatedNum = startSceneNum + idx;
-          const min = Math.floor(((calculatedNum - 1) * secondsPerScene) / 60);
-          const secStart = ((calculatedNum - 1) * secondsPerScene) % 60;
-          const secEnd = (calculatedNum * secondsPerScene) % 60;
-          const minEnd = Math.floor((calculatedNum * secondsPerScene) / 60);
+          const min = Math.floor(((calculatedNum - 1) * secPerSceneNum) / 60);
+          const secStart = ((calculatedNum - 1) * secPerSceneNum) % 60;
+          const secEnd = (calculatedNum * secPerSceneNum) % 60;
+          const minEnd = Math.floor((calculatedNum * secPerSceneNum) / 60);
           
           const formatTime = (m: number, s: number) => `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
           
@@ -429,6 +496,36 @@ CRITICAL INSTRUCTION:
         }
 
         allSegments = [...allSegments, ...roundSegs];
+        
+        // Progressive Rendering
+        const completedPercent = Math.floor((round / totalRounds) * 100);
+        setProgress({ percent: completedPercent, text: uiLang === 'vi' ? `Hoàn thành đợt ${round}/${totalRounds}` : `Completed round ${round}/${totalRounds}` });
+        setSegments([...allSegments]);
+        
+        // Auto-save partial progress
+        const partialJson = {
+          mode_detected: targetDuration < 3 ? "Quick Dharma" : targetDuration <= 10 ? "Story Weaver" : "Epic Teaching",
+          suggested_style: finalSuggestedStyle,
+          suggested_watermark: suggestedWatermark,
+          character_lock_prompt: finalCharacterLock,
+          script: allSegments,
+          coppa_disclaimer: coppaText || "Video này chứa triết lý sâu sắc, có thể không phù hợp cho trẻ em tự nhận thức."
+        };
+        localStorage.setItem('dharmaP_autosave_script', JSON.stringify({
+          topic: topic,
+          scriptData: partialJson,
+          segments: allSegments
+        }));
+
+        // Sleep to cooldown API
+        if (round < totalRounds && !abortRef.current) {
+          await new Promise(res => setTimeout(res, 8000));
+        }
+      }
+
+      if (abortRef.current) {
+        setLoading(false);
+        return;
       }
 
       // 4. Merge all segments into a master storyboard
@@ -443,6 +540,9 @@ CRITICAL INSTRUCTION:
 
       setScriptData(finalJson);
       setSegments(allSegments);
+      
+      
+      setProgress({ percent: 100, text: uiLang === 'vi' ? 'Hoàn tất kịch bản!' : 'Script complete!' });
       
       // Auto-save to localStorage
       localStorage.setItem('dharmaP_autosave_script', JSON.stringify({
@@ -461,7 +561,10 @@ CRITICAL INSTRUCTION:
     } catch (e: any) { 
       showToast(e.message, 'error'); 
     } finally { 
-      setLoading(false); 
+      setTimeout(() => {
+        setLoading(false); 
+        setProgress({ percent: 0, text: '' });
+      }, 1000);
     }
   };
 
@@ -469,6 +572,44 @@ CRITICAL INSTRUCTION:
     const text = segments.map(s => s.chapter_voice_block || s.voice_text).join('\n\n');
     navigator.clipboard.writeText(text);
     showToast(t.common.copied, 'success');
+  };
+
+  const copyAllImagePrompts = () => {
+    const text = segments.map((s, i) =>
+      `--- SCENE ${s.scene_number || i + 1} | ${s.time || ''} | ${s.section || ''} ---\n${s.image_prompt || '(No image prompt)'}\n`
+    ).join('\n');
+    navigator.clipboard.writeText(text);
+    showToast('✅ Đã copy tất cả Image Prompts!', 'success');
+  };
+
+  const copyAllVideoPrompts = () => {
+    const text = segments.map((s, i) =>
+      `--- SCENE ${s.scene_number || i + 1} | ${s.time || ''} | ${s.section || ''} ---\n${s.video_prompt || '(No video prompt)'}\n`
+    ).join('\n');
+    navigator.clipboard.writeText(text);
+    showToast('✅ Đã copy tất cả Video Prompts!', 'success');
+  };
+
+  const exportMasterJson = () => {
+    if (!scriptData) return;
+    const masterPackage = {
+      project_name: topic,
+      export_version: 'V16.0',
+      market,
+      duration_minutes: durationNum,
+      seconds_per_scene: secPerSceneNum,
+      timestamp: new Date().toISOString(),
+      scriptData,
+      segments
+    };
+    const blob = new Blob([JSON.stringify(masterPackage, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `VKT_Master_${topic.replace(/\s+/g, '_').substring(0, 20)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast(uiLang === 'vi' ? '📦 Đã xuất Master JSON Toàn Tập!' : '📦 Master JSON Exported!', 'success');
   };
 
   const handleAudioRefining = async () => {
@@ -484,6 +625,11 @@ CRITICAL INSTRUCTION:
     }
 
     setRefiningAudio(true);
+    setRefiningProgress(2);
+    const progressInterval = setInterval(() => {
+      setRefiningProgress(prev => (prev < 90 ? prev + 1 : prev));
+    }, 200);
+
     try {
       const payload = segments.map(s => ({
         scene_number: s.scene_number,
@@ -493,6 +639,7 @@ CRITICAL INSTRUCTION:
         character: s.character || '',
         time: s.time || ''
       }));
+      
       const refinedInstructions = speakerMode === 'asmr'
         ? `\n[SPEAKER MODE: PURE ASMR ACTIVE]
 - This script is in PURE ASMR mode. There must be NO voice_text or dialogues.
@@ -507,13 +654,48 @@ CRITICAL INSTRUCTION:
 - This script is in MULTI-CHARACTER mode.
 - Maintain the alternating characters as specified in the original input.`;
 
-      const prompt = `KỊCH BẢN GỐC (${payload.length} scenes):\n${JSON.stringify(payload, null, 2)}\n\nTINH CHỈNH THANH ÂM CHO TẤT CẢ ${payload.length} SCENES.${refinedInstructions}\nRESPOND IN ${uiLang === 'vi' ? 'VIETNAMESE' : 'ENGLISH'}.`;
-      const res = await callAI(prompt, SYSTEM_PROMPT_AUDIO_REENGINEERING);
-      if (res?.refined_scenes) {
+      const chunkSize = 25;
+      const totalRounds = Math.ceil(payload.length / chunkSize);
+      let allRefinedSegments: any[] = [];
+      
+      for (let round = 1; round <= totalRounds; round++) {
+        const startIdx = (round - 1) * chunkSize;
+        const endIdx = Math.min(round * chunkSize, payload.length);
+        const chunkPayload = payload.slice(startIdx, endIdx);
+        
+        const prompt = `KỊCH BẢN GỐC (Đợt ${round}/${totalRounds} - ${chunkPayload.length} scenes):\n${JSON.stringify(chunkPayload, null, 2)}\n\nTINH CHỈNH THANH ÂM CHO ĐỢT ${round} CỦA KỊCH BẢN NÀY.${refinedInstructions}\nRESPOND IN ${uiLang === 'vi' ? 'VIETNAMESE' : 'ENGLISH'}.`;
+        
+        let res: any = null;
+        let retries = 3;
+        while (retries > 0) {
+          try {
+            res = await callAI(prompt, SYSTEM_PROMPT_AUDIO_REENGINEERING);
+            break;
+          } catch (err: any) {
+            retries--;
+            if (retries === 0) throw err;
+            await new Promise(r => setTimeout(r, 5000));
+          }
+        }
+
+        if (res?.refined_scenes) {
+          allRefinedSegments = [...allRefinedSegments, ...res.refined_scenes];
+        } else if (Array.isArray(res)) {
+          allRefinedSegments = [...allRefinedSegments, ...res];
+        } else {
+          throw new Error('Invalid AI Response Structure');
+        }
+        
+        if (round < totalRounds) {
+          await new Promise(r => setTimeout(r, 5000));
+        }
+      }
+
+      if (allRefinedSegments.length > 0) {
         const newSegments = segments.map((original, idx) => {
-          const refined = res.refined_scenes.find((r: any) => r.scene_number === original.scene_number) || res.refined_scenes[idx];
+          const refined = allRefinedSegments.find((r: any) => r.scene_number === original.scene_number) || allRefinedSegments[idx];
           if (!refined) return original;
-          return { ...original, voice_text: refined.voice_text || original.voice_text, voice_profile: refined.voice_profile || null };
+          return { ...original, voice_text: refined.voice_text || original.voice_text, voice_profile: refined.voice_profile || null, dialogues: refined.dialogues || original.dialogues, sfx_music_suggestion: refined.sfx_music_suggestion || original.sfx_music_suggestion };
         });
         setSegments(newSegments);
         
@@ -530,8 +712,12 @@ CRITICAL INSTRUCTION:
         setAudioRefinedCount(prev => prev + 1);
         showToast(uiLang === 'vi' ? '🎙️ Thanh âm đã được tinh chỉnh thành công!' : '🎙️ Audio refined successfully!', 'success');
       }
-    } catch (e: any) { showToast(`Audio Error: ${e.message}`); }
-    finally { setRefiningAudio(false); }
+    } catch (e: any) { showToast(`Audio Error: ${e.message}`, 'error'); }
+    finally { 
+      clearInterval(progressInterval);
+      setRefiningProgress(100);
+      setTimeout(() => setRefiningAudio(false), 500);
+    }
   };
 
   const handleImportProject = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -542,10 +728,15 @@ CRITICAL INSTRUCTION:
       try {
         const data = JSON.parse(event.target?.result as string);
         if (data.segments) {
-          setTopic(data.topic || '');
+          setTopic(data.project_name || data.topic || '');
           setSegments(data.segments);
-          onScriptGenerated(data.segments, 'auto', data.topic || '');
-          showToast(t.common.copied, 'success');
+          if (data.duration_minutes) setDuration(data.duration_minutes);
+          if (data.seconds_per_scene) setSecondsPerScene(data.seconds_per_scene);
+          if (data.market) setMarket(data.market);
+          if (data.scriptData) setScriptData(data.scriptData);
+          
+          onScriptGenerated(data.segments, 'auto', data.project_name || data.topic || '');
+          showToast(uiLang === 'vi' ? 'Đã khôi phục Kịch bản!' : 'Script Restored!', 'success');
         }
       } catch (err) { showToast('Error reading file'); }
     };
@@ -590,7 +781,7 @@ CRITICAL INSTRUCTION:
             <div className="bg-[#10141c] border border-slate-700/30 rounded-xl p-4 relative overflow-hidden">
               <div className="absolute top-0 left-0 w-1 h-full bg-teal-500/50" />
               <label className="text-xs font-bold text-slate-400 uppercase mb-3 block flex items-center gap-2"><i className="fa-solid fa-clock text-teal-400" /> {uiLang === 'vi' ? 'THỜI LƯỢNG (PHÚT)' : 'DURATION (MINS)'}</label>
-              <div className="flex items-center gap-5">
+              <div className="flex flex-wrap sm:flex-nowrap items-center gap-4 sm:gap-5">
                 <input 
                   type="number" 
                   value={duration} 
@@ -602,21 +793,24 @@ CRITICAL INSTRUCTION:
                       return;
                     }
                     const num = parseFloat(val);
-                    if (num > 10) {
+                    const maxAllowed = globalSettings.maxDuration;
+                    
+                    if (num > maxAllowed) {
                       showToast(uiLang === 'vi' 
-                        ? '⚠️ Giới hạn thời lượng tối đa là 10 phút!' 
-                        : '⚠️ Maximum duration limit is 10 minutes!', 'warning');
-                      setDuration(10);
+                        ? `⚠️ Giới hạn thời lượng cho tài khoản này là ${maxAllowed} phút!` 
+                        : `⚠️ Maximum duration for this account is ${maxAllowed} minutes!`, 'warning');
+                      setDuration(maxAllowed);
                     } else {
                       setDuration(num);
                     }
                   }}
                   onBlur={e => {
                     const num = parseFloat(e.target.value);
+                    const maxAllowed = globalSettings.maxDuration;
                     if (isNaN(num) || num < 0.5) {
                       setDuration(1);
-                    } else if (num > 10) {
-                      setDuration(10);
+                    } else if (num > maxAllowed) {
+                      setDuration(maxAllowed);
                     }
                   }}
                   className="w-20 bg-[#0a0e14] border border-slate-700/50 rounded-lg p-3 text-2xl font-black text-white text-center outline-none" 
@@ -626,8 +820,13 @@ CRITICAL INSTRUCTION:
                   <label className="text-[10px] text-slate-400 font-bold">GIÂY/CẢNH:</label>
                   <input 
                     type="number" 
+                    step={0.5}
                     value={secondsPerScene} 
-                    onChange={e => setSecondsPerScene(Math.max(1, parseInt(e.target.value) || 8))}
+                    onChange={e => {
+                      const val = e.target.value;
+                      if (val === '') setSecondsPerScene('');
+                      else setSecondsPerScene(Math.max(0.5, parseFloat(val)));
+                    }}
                     className="w-full bg-[#0a0e14] border border-slate-700/50 rounded p-1.5 text-sm font-bold text-teal-300 text-center outline-none" 
                   />
                 </div>
@@ -707,41 +906,167 @@ CRITICAL INSTRUCTION:
                 </div>
               </div>
             </div>
+
+            {/* 🔘 CÔNG TẮC NARRATOR / MONK — chỉ hiện khi mode single */}
+            {speakerMode === 'single' && (
+              <div className="mt-4 p-4 rounded-xl border border-amber-500/30 bg-amber-950/10">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex-1">
+                    <div className="text-xs font-bold text-amber-300 flex items-center gap-2 mb-1">
+                      <i className="fa-solid fa-toggle-on text-amber-400" />
+                      {narratorMode
+                        ? (uiLang === 'vi' ? '🎙️ CHẾ ĐỘ: NGƯỜI DẪN CHUYỆN (OFF-SCREEN)' : '🎙️ MODE: NARRATOR (OFF-SCREEN)')
+                        : (uiLang === 'vi' ? '🧘 CHẾ ĐỘ: THIỀN SƯ TỰ NÓI (ON-SCREEN)' : '🧘 MODE: MONK SPEAKS (ON-SCREEN)')}
+                    </div>
+                    <div className="text-[10px] text-slate-400 leading-tight">
+                      {narratorMode
+                        ? (uiLang === 'vi'
+                          ? 'Một giọng dẫn chuyện ẩn (OFF-SCREEN) kể chuyện. Miệng thiền sư không mở — sư im lặng hành thiền trong từng cảnh.'
+                          : 'An unseen narrator (OFF-SCREEN) tells the story. The monk remains silent — mouth closed in meditation throughout.')
+                        : (uiLang === 'vi'
+                          ? 'Thiền sư trực tiếp nói chuyện với người xem. Miệng sư mở ra — hình ảnh lip-sync ON-SCREEN chân thực.'
+                          : 'The monk speaks directly to the viewer. Mouth opens — realistic ON-SCREEN lip-sync visuals.')}
+                    </div>
+                  </div>
+                  {/* Toggle switch */}
+                  <button
+                    id="narrator-mode-toggle"
+                    onClick={() => setNarratorMode(prev => !prev)}
+                    className={`relative w-16 h-8 rounded-full transition-all duration-300 shrink-0 focus:outline-none border-2 ${
+                      narratorMode
+                        ? 'bg-amber-500 border-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.4)]'
+                        : 'bg-slate-700 border-slate-600'
+                    }`}
+                    title={narratorMode ? 'Đang: Người dẫn chuyện → Bấm để chuyển sang Thiền sư tự nói' : 'Đang: Thiền sư tự nói → Bấm để chuyển sang Người dẫn chuyện'}
+                  >
+                    <span className={`absolute top-0.5 w-6 h-6 rounded-full transition-all duration-300 flex items-center justify-center text-[9px] font-black ${
+                      narratorMode
+                        ? 'right-0.5 bg-white text-amber-600'
+                        : 'left-0.5 bg-white text-slate-500'
+                    }`}>
+                      {narratorMode ? <i className="fa-solid fa-microphone" /> : <i className="fa-solid fa-user" />}
+                    </span>
+                  </button>
+                </div>
+                {/* Hiển thị badge trạng thái */}
+                <div className="mt-2 flex items-center gap-2">
+                  <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase ${
+                    narratorMode
+                      ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                      : 'bg-teal-500/20 text-teal-300 border border-teal-500/40'
+                  }`}>
+                    {narratorMode ? '📢 OFF-SCREEN NARRATOR' : '🎭 ON-SCREEN MONK'}
+                  </span>
+                  <span className="text-[9px] text-slate-500">
+                    {narratorMode
+                      ? (uiLang === 'vi' ? 'voice_profile.state = OFF-SCREEN' : 'voice_profile.state = OFF-SCREEN')
+                      : (uiLang === 'vi' ? 'voice_profile.state = ON-SCREEN' : 'voice_profile.state = ON-SCREEN')}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
           <div className="bg-[#10141c] border border-slate-700/30 rounded-xl p-4">
             <label className="text-xs font-bold text-slate-400 uppercase mb-3 block flex items-center gap-2">
               <i className="fa-solid fa-palette text-pink-400" /> {uiLang === 'vi' ? 'PHONG CÁCH NGHỆ THUẬT (VISUAL STYLE)' : 'VISUAL STYLE'}
             </label>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
-              <div 
-                onClick={() => setStyle('auto')}
-                className={`cursor-pointer p-3 rounded-xl border flex items-center justify-center text-center transition-all ${style === 'auto' ? 'bg-pink-900/40 border-pink-500 shadow-[0_0_15px_rgba(236,72,153,0.3)] text-white' : 'bg-[#0a0e14] border-slate-700/50 hover:border-slate-500 text-slate-400'}`}
-              >
-                <div className="text-sm font-bold"><i className="fa-solid fa-wand-magic-sparkles mb-1 block text-lg"></i> Auto AI</div>
-              </div>
-              {VISUAL_STYLES.map(s => (
-                <div 
-                  key={s.id} 
-                  onClick={() => setStyle(s.id)}
-                  className={`cursor-pointer p-3 rounded-xl border flex flex-col items-center justify-center text-center transition-all ${style === s.id ? 'bg-pink-900/40 border-pink-500 shadow-[0_0_15px_rgba(236,72,153,0.3)] text-white' : 'bg-[#0a0e14] border-slate-700/50 hover:border-slate-500 text-slate-400'}`}
-                  title={s.desc}
-                >
-                  <div className="text-xs font-bold leading-tight">{s.name}</div>
-                </div>
-              ))}
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 max-h-72 overflow-y-auto pr-2 custom-scrollbar pt-2">
+              {VISUAL_STYLES.filter(s => s.id === 'auto' || !globalSettings.allowedStyles || globalSettings.allowedStyles.includes(s.id)).map(s => {
+                const recommendedStyles = MARKET_STYLE_RECOMMENDATIONS[market] || [];
+                const isRec = recommendedStyles.includes(s.id);
+                const isSelected = style === s.id;
+                
+                let btnClasses = "cursor-pointer p-3 rounded-xl border flex flex-col items-center justify-center text-center transition-all relative h-[80px] ";
+                
+                if (s.id === 'auto') {
+                  btnClasses += isSelected 
+                    ? 'bg-amber-950/40 border-amber-500 text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.3)] font-black' 
+                    : 'bg-[#0a0e14] border-slate-700/50 hover:border-slate-500 text-slate-400';
+                } else if (isSelected) {
+                  if (market === 'vn_dharma') {
+                    btnClasses += 'bg-emerald-950/40 border-emerald-500 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.3)] font-black';
+                  } else if (market === 'us_mindfulness') {
+                    btnClasses += 'bg-blue-950/40 border-blue-500 text-blue-300 shadow-[0_0_15px_rgba(59,130,246,0.3)] font-black';
+                  } else if (market === 'jp_zen') {
+                    btnClasses += 'bg-rose-950/40 border-rose-500 text-rose-300 shadow-[0_0_15px_rgba(244,63,94,0.3)] font-black';
+                  } else if (market === 'kr_seon') {
+                    btnClasses += 'bg-purple-950/40 border-purple-500 text-purple-300 shadow-[0_0_15px_rgba(168,85,247,0.3)] font-black';
+                  } else {
+                    btnClasses += 'bg-cyan-950/40 border-cyan-500 text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.3)] font-black';
+                  }
+                } else if (isRec) {
+                  btnClasses += 'bg-[#0a0e14]/80 border-slate-700 hover:border-slate-500 text-slate-300';
+                } else {
+                  btnClasses += 'bg-[#0a0e14]/30 border-slate-800/50 hover:border-slate-700 text-slate-500 opacity-50';
+                }
+
+                const isSpecial = ['molten_gold_nirvana', 'galactic_dharma_wheel', 'sand_mandala'].includes(s.id);
+                const isVietnamese = ['royal_hue_lacquer', 'shadow_puppet_karma', 'ancient_stone_relic'].includes(s.id);
+
+                return (
+                  <div 
+                    key={s.id} 
+                    onClick={() => setStyle(s.id)}
+                    className={btnClasses}
+                    title={s.desc}
+                  >
+                    {isSpecial && (
+                      <span className="absolute -top-2.5 px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider bg-gradient-to-r from-purple-500 via-pink-500 to-yellow-500 text-white shadow-[0_0_10px_rgba(236,72,153,0.3)] animate-pulse">👑 Đặc Biệt</span>
+                    )}
+                    {isVietnamese && (
+                      <span className="absolute -top-2.5 px-1.5 py-0.5 rounded text-[8px] font-black bg-emerald-950/80 border border-emerald-500/40 text-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.1)]">🇻🇳 Bản Địa</span>
+                    )}
+                    <div className="text-xs font-bold leading-tight mt-1">{s.name}</div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
-          <button onClick={handleGenerate} disabled={loading || refiningAudio}
-            className="w-full py-4 bg-teal-900/50 hover:bg-teal-800/50 border border-teal-500/30 text-teal-100 font-bold rounded-xl shadow-[0_0_20px_rgba(20,184,166,0.15)] flex items-center justify-center gap-2 transition-all disabled:opacity-50">
-            {loading ? <><i className="fa-solid fa-sync animate-spin" /> {loadingMessages[loadingMsgIdx]}</> : <><i className="fa-solid fa-paper-plane" /> {uiLang === 'vi' ? 'KIẾN TẠO KỊCH BẢN CHỮA LÀNH' : 'GENERATE HEALING SCRIPT'}</>}
-          </button>
+          <div className="flex gap-4">
+            {loading ? (
+              <ProgressBar 
+                percent={progress.percent} 
+                text={progress.text || loadingMessages[loadingMsgIdx]} 
+                subText={uiLang === 'vi' ? 'Tiến trình kiến tạo Kịch Bản AI' : 'AI Script Generation Progress'}
+                colorTheme="teal"
+              />
+            ) : (
+              <button onClick={handleGenerate} disabled={refiningAudio}
+                className="flex-1 py-4 bg-teal-900/50 hover:bg-teal-800/50 border border-teal-500/30 text-teal-100 font-bold rounded-xl shadow-[0_0_20px_rgba(20,184,166,0.15)] flex items-center justify-center gap-2 transition-all disabled:opacity-50">
+                <i className="fa-solid fa-paper-plane" /> {uiLang === 'vi' ? 'KIẾN TẠO KỊCH BẢN CHỮA LÀNH' : 'GENERATE HEALING SCRIPT'}
+              </button>
+            )}
+            
+            {loading && (
+              <button onClick={() => { 
+                abortRef.current = true; 
+                setLoading(false); 
+                setSegments([]); 
+                setScriptData(null); 
+                setProgress({ percent: 0, text: '' });
+                showToast(uiLang === 'vi' ? '🛑 Đã hủy dệt kịch bản.' : '🛑 Aborted.', 'warning'); 
+              }} 
+                className="px-6 py-4 bg-red-900/50 hover:bg-red-800/50 border border-red-500/50 text-red-100 font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-[0_0_20px_rgba(239,68,68,0.15)]">
+                <i className="fa-solid fa-stop" /> {uiLang === 'vi' ? 'HỦY' : 'ABORT'}
+              </button>
+            )}
+          </div>
 
-          {segments.length > 0 && (
-            <button onClick={handleAudioRefining} disabled={loading || refiningAudio}
-              className="w-full py-3.5 bg-purple-900/30 hover:bg-purple-800/40 border border-purple-500/30 text-purple-200 font-bold rounded-xl flex items-center justify-center gap-2 transition-all disabled:opacity-50">
-              {refiningAudio ? <><i className="fa-solid fa-sync animate-spin" /> {uiLang === 'vi' ? 'Đang tinh chỉnh âm thanh...' : 'Refining audio...'}</> : <><i className="fa-solid fa-headphones-simple" /> <span>{uiLang === 'vi' ? '🎙️ TINH CHỈNH THANH ÂM (V16.0)' : '🎙️ AUDIO RE-ENGINEERING (V16.0)'}</span><span className="text-[10px] bg-purple-500 text-white px-1.5 py-0.5 rounded font-black">+{audioRefinedCount}</span></>}
-            </button>
+          {segments.length > 0 && globalSettings.enableAudioRefinement !== false && (
+            refiningAudio ? (
+              <ProgressBar 
+                percent={refiningProgress} 
+                text={uiLang === 'vi' ? 'Đang tinh chỉnh âm thanh...' : 'Refining audio...'} 
+                subText={uiLang === 'vi' ? 'Sóng âm thanh học V16.0' : 'V16.0 Audio Frequencies'}
+                colorTheme="purple"
+              />
+            ) : (
+              <button onClick={handleAudioRefining} disabled={loading || refiningAudio}
+                className="w-full py-3.5 bg-purple-900/30 hover:bg-purple-800/40 border border-purple-500/30 text-purple-200 font-bold rounded-xl flex items-center justify-center gap-2 transition-all disabled:opacity-50">
+                <i className="fa-solid fa-headphones-simple" /> <span>{uiLang === 'vi' ? '🎙️ TINH CHỈNH THANH ÂM (V16.0)' : '🎙️ AUDIO RE-ENGINEERING (V16.0)'}</span><span className="text-[10px] bg-purple-500 text-white px-1.5 py-0.5 rounded font-black">+{audioRefinedCount}</span>
+              </button>
+            )
           )}
         </div>
       </div>
@@ -764,8 +1089,39 @@ CRITICAL INSTRUCTION:
                 </span>
               )}
             </div>
-            <button onClick={copyAll} className="text-xs font-bold px-3 py-1.5 rounded flex items-center gap-2 bg-white text-black hover:bg-slate-200 transition-colors shrink-0"><i className="fa-solid fa-copy" /> {uiLang === 'vi' ? 'Copy Voice Toàn Bộ' : 'Copy Voice All'}</button>
+            <div className="flex flex-wrap items-center gap-2">
+              <button onClick={exportMasterJson} className="text-[11px] font-bold px-3 py-1.5 rounded flex items-center gap-2 bg-gradient-to-r from-amber-600 to-orange-500 text-white hover:opacity-90 transition-opacity shadow-[0_0_15px_rgba(245,158,11,0.4)] shrink-0"><i className="fa-solid fa-file-zipper" /> {uiLang === 'vi' ? 'Xuất JSON' : 'Export JSON'}</button>
+              <button onClick={copyAll} className="text-[11px] font-bold px-3 py-1.5 rounded flex items-center gap-2 bg-white text-black hover:bg-slate-200 transition-colors shrink-0"><i className="fa-solid fa-copy" /> {uiLang === 'vi' ? 'Copy Lời Thoại' : 'Copy Voice'}</button>
+              <button
+                id="copy-all-image-prompts"
+                onClick={copyAllImagePrompts}
+                className="text-[11px] font-bold px-3 py-1.5 rounded flex items-center gap-2 bg-gradient-to-r from-pink-700 to-rose-600 text-white hover:opacity-90 transition-opacity shadow-[0_0_12px_rgba(236,72,153,0.3)] shrink-0"
+                title={uiLang === 'vi' ? 'Copy toàn bộ Image Prompt của tất cả cảnh để dán vào AI tạo hình ảnh (Imagen/Midjourney...)' : 'Copy all image prompts for AI image generation'}
+              >
+                <i className="fa-solid fa-image" /> {uiLang === 'vi' ? 'Copy All Image Prompts' : 'Copy All Image Prompts'}
+              </button>
+              <button
+                id="copy-all-video-prompts"
+                onClick={copyAllVideoPrompts}
+                className="text-[11px] font-bold px-3 py-1.5 rounded flex items-center gap-2 bg-gradient-to-r from-cyan-700 to-teal-600 text-white hover:opacity-90 transition-opacity shadow-[0_0_12px_rgba(20,184,166,0.3)] shrink-0"
+                title={uiLang === 'vi' ? 'Copy toàn bộ Video Prompt của tất cả cảnh để dán vào AI tạo video (Veo3/Sora...)' : 'Copy all video prompts for AI video generation'}
+              >
+                <i className="fa-solid fa-video" /> {uiLang === 'vi' ? 'Copy All Video Prompts' : 'Copy All Video Prompts'}
+              </button>
+            </div>
           </div>
+
+          {/* Premium Amber Compliance Shield Block */}
+          {scriptData?.coppa_disclaimer && (
+            <div className="bg-amber-950/20 border border-amber-500/20 text-amber-300 p-4 rounded-xl flex items-start gap-3 shadow-[0_0_15px_rgba(245,158,11,0.05)] animate-[fadeIn_0.3s_ease-out]">
+              <i className="fa-solid fa-circle-info text-amber-400 text-base mt-0.5 animate-pulse shrink-0" />
+              <div className="text-xs leading-relaxed font-medium">
+                <span className="font-bold text-amber-200 block mb-0.5">⚠️ {uiLang === 'vi' ? 'Khuyến nghị An toàn & Tuân thủ Nền tảng:' : 'Platform Safety & Compliance Advisory:'}</span>
+                {scriptData.coppa_disclaimer}
+              </div>
+            </div>
+          )}
+
           {segments.map((seg, idx) => (
             <SceneCard key={idx} seg={seg} idx={idx} uiLang={uiLang} />
           ))}
