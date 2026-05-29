@@ -199,7 +199,7 @@ Ví dụ một video_prompt hoàn hảo:
       "word_count": "Đếm chính xác số từ của voice_text",
       "audio_end_time": "Tính toán mốc giây kết thúc thoại tối đa là 7.3s",
       "visual_desc_vi": "Mô tả hình ảnh bằng tiếng Việt (<20 từ)",
-      "sfx_music_suggestion": "Đề xuất chi tiết nhạc nền và pháp khí thiền định ở mức âm lượng nền đồng đều khoảng -20dB. Các cảnh sau phải đi kèm chỉ thị vuốt âm crossfade chuyển tiếp từ cảnh trước qua 2 giây để âm thanh không bị đứt đoạn.",
+      "sfx_music_suggestion": "Voice FX: Áp dụng hiệu ứng Temple Reverb (độ vang chánh điện) nhẹ cho giọng đọc. Đề xuất chi tiết nhạc nền và ASMR/SFX ở mức âm lượng nền đồng đều khoảng -20dB. Các cảnh sau phải đi kèm chỉ thị vuốt âm crossfade chuyển tiếp từ cảnh trước qua 2 giây để âm thanh không bị đứt đoạn.",
       "pacing_score": 9,
       "pacing_warning": null,
       "video_prompt": "English video prompt 150-180 words with VEO3 AUTO-SHIELD and strict style enforcement...",
@@ -364,7 +364,7 @@ Giao thức Liền mạch Âm thanh (Audio Continuity):
         "pacing_speed": "BẮT BUỘC ĐỐI CHIẾU MATRIX: Nếu word_count 30-33 -> 1.12x; Nếu 34-37 -> 1.18x; Nếu 38-40 -> 1.24x. CẤM copy y chang 1.18x nếu số từ là 39!",
         "state": "ON-SCREEN hoặc OFF-SCREEN"
       },
-      "sfx_music_suggestion": "Đề xuất chi tiết nhạc nền và ASMR/SFX ở mức âm lượng nền đồng đều khoảng -20dB.",
+      "sfx_music_suggestion": "Voice FX: Áp dụng hiệu ứng Temple Reverb (độ vang chánh điện) nhẹ cho giọng đọc. Đề xuất chi tiết nhạc nền và ASMR/SFX ở mức âm lượng nền đồng đều khoảng -20dB.",
       "voice_text": "Lời thoại duy nhất cho scene này. (Hãy thay đổi độ dài ngẫu nhiên từ 30 đến 40 từ để tạo nhịp điệu tự nhiên, tránh cảnh nào cũng max 40 từ)",
       "word_count": "Đếm chính xác số từ của voice_text (VD: 31, 35, 39)",
       "audio_end_time": "7.3s"

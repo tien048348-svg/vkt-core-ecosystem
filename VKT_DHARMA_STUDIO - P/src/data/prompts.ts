@@ -99,6 +99,7 @@ Mỗi kịch bản phải bắt đầu bằng tiêu đề hội tụ đủ 4 y�
 # VIRALITY & RETENTION (TỐI ƯU XU HƯỚNG):
 - [RETENTION]: Cảnh 1 (THE HOOK) phải có hành động bùng nổ, sự biến hình ngoạn mục ngay trong 3 giây đầu. Tuyệt đối không dài dòng. Bạn phải tự chấm điểm "pacing_score" (1-10) và đưa ra "pacing_warning" nếu cảnh quá chậm.
 - [VIRAL AUDIO]: Phải phân tích và đề xuất âm thanh "sfx_music_suggestion". Cảnh 1 (THE HOOK) BẮT BUỘC nhúng âm thanh chữ ký mở đầu của thương hiệu VKT (Tùy theo ngách mà đề xuất SFX phù hợp).
+- [TEMPLE REVERB - ĐỘ VANG CHÁNH ĐIỆN]: BẮT BUỘC thêm chỉ thị "Voice FX: Áp dụng hiệu ứng Temple Reverb (độ vang chánh điện) nhẹ cho giọng đọc để tạo sự uy nghiêm, tĩnh lặng" vào phần sfx_music_suggestion của kịch bản để định hướng âm thanh không gian trầm ấm, linh thiêng.
 - [AUDIO CONTINUITY PROTOCOL - LIỀN MẠCH ÂM THANH]: Bắt buộc duy trì một trục âm thanh đồng nhất xuyên suốt từ cảnh đầu đến cảnh cuối. Nhạc nền chủ đạo, nhạc cụ thiết lập ở Cảnh 1 phải tiếp tục chạy mượt mà ở các cảnh sau. Giữ âm lượng (volume) đồng đều giữa các phân cảnh để tránh gây đứt mạch cảm xúc của người nghe (BGM âm lượng nền luôn ổn định ở mức khoảng -20dB, SFX khác ở mức -12dB). Với các cảnh từ cảnh 2 trở đi, bắt đầu mô tả âm thanh bằng chỉ thị chuyển tiếp vuốt âm (ví dụ: "The sound of BGM from the previous scene smoothly crossfades into this scene over 2 seconds").
 
 # REALITY ANCHOR (KỶ LUẬT THỰC TẠI - CHỐNG ẢO GIÁC AI):
@@ -256,7 +257,7 @@ Các nguyên tắc AUTO-SHIELD bắt buộc nhúng vào cuối mỗi video_promp
       "word_count": 35,
       "audio_end_time": "7.3s",
       "visual_desc_vi": "Mô tả hình ảnh (cực kỳ ngắn gọn, <20 từ)",
-      "sfx_music_suggestion": "Đề xuất chi tiết nhạc nền và ASMR/SFX ở mức âm lượng nền đồng đều khoảng -20dB. Các cảnh sau phải đi kèm chỉ thị vuốt âm crossfade chuyển tiếp từ cảnh trước qua 2 giây để âm thanh không bị đứt đoạn.",
+      "sfx_music_suggestion": "Voice FX: Áp dụng hiệu ứng Temple Reverb (độ vang chánh điện) nhẹ cho giọng đọc. Đề xuất chi tiết nhạc nền và ASMR/SFX ở mức âm lượng nền đồng đều khoảng -20dB. Các cảnh sau phải đi kèm chỉ thị vuốt âm crossfade chuyển tiếp từ cảnh trước qua 2 giây để âm thanh không bị đứt đoạn.",
       "pacing_score": 9,
       "pacing_warning": null,
       "video_prompt": "English video prompt 130-150 words with VEO3 AUTO-SHIELD...",
@@ -421,7 +422,7 @@ Giao thức Liền mạch Âm thanh (Audio Continuity):
         "pacing_speed": "1.18x (theo Dynamic Speed Matrix)",
         "state": "ON-SCREEN hoặc OFF-SCREEN"
       },
-      "sfx_music_suggestion": "Đề xuất chi tiết nhạc nền và ASMR/SFX ở mức âm lượng nền đồng đều khoảng -20dB.",
+      "sfx_music_suggestion": "Voice FX: Áp dụng hiệu ứng Temple Reverb (độ vang chánh điện) nhẹ cho giọng đọc. Đề xuất chi tiết nhạc nền và ASMR/SFX ở mức âm lượng nền đồng đều khoảng -20dB.",
       "voice_text": "Lời thoại duy nhất cho scene này (dưới 40 từ)",
       "word_count": 35,
       "audio_end_time": "7.3s"
