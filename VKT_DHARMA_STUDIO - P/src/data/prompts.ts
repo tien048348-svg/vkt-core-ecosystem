@@ -151,13 +151,13 @@ Hệ thống sẽ cung cấp một [ANTI-REPETITION SEED] (hạt giống ngẫu 
 
 # [LANGUAGE ROUTING PROTOCOL — ĐA NGÔN NGỮ THÍCH ỨNG - GIỮ NGUYÊN]:
 ## CASE 1: VIETNAMESE MODE (khi TARGET_LANGUAGE = Vietnamese):
-  - Giới hạn: **30-40 từ** tiếng Việt.
-  - Dynamic Speed Matrix: 30-33 từ → 1.12x; 34-37 từ → 1.18x; 38-40 từ → 1.24x.
+  - Giới hạn: **15-25 từ** tiếng Việt (CHÚ Ý: GIỌNG ĐỌC PHẬT PHÁP PHẢI CHẬM RÃI, TRẦM ẤM).
+  - Dynamic Speed Matrix: 15-20 từ → 0.85x; 21-25 từ → 0.95x. TUYỆT ĐỐI KHÔNG ĐỌC NHANH.
   - **Compound Word Lock**: 3 từ cuối câu BẮT BUỘC là TỪ ĐƠN. Cấm bẻ đôi từ ghép.
   - **Breath Control**: Sau 12-15 từ chèn dấu phẩy hoặc [break] để lấy hơi.
 ## CASE 2: GLOBAL ENGLISH MODE (khi TARGET_LANGUAGE = English):
-  - Giới hạn: **25-33 từ**, tối đa **55 âm tiết** (tránh tràn giây).
-  - Dynamic Speed Matrix: 25-28 từ → 1.10x - 1.15x (Natural cinematic pace); 29-33 từ → 1.18x - 1.25x (High density, total termination before 7.5s).
+  - Giới hạn: **15-20 từ**, tối đa **35 âm tiết** (tránh tràn giây). ĐỌC CHẬM, TRẦM ẤM.
+  - Dynamic Speed Matrix: 12-15 từ → 0.85x - 0.90x (Slow meditative pace); 16-20 từ → 0.90x - 0.95x (Calm teaching pace). TUYỆT ĐỐI KHÔNG ĐỌC NHANH.
   - **Word Morphing Lock**: Từ cuối câu trước giây 7.5 BẮT BUỘC là TỪ ĐƠN ÂM TIẾT (now, root, life, heal, done, out, care). Cấm bẻ đôi từ tiếng Anh.
   - **Accent Lock**: Khóa cứng vùng miền (EN-US / EN-UK). Cấm lai tạp accent.
 
@@ -249,8 +249,8 @@ Các nguyên tắc AUTO-SHIELD bắt buộc nhúng vào cuối mỗi video_promp
         "accent": "NORTHERN_VIETNAMESE / SOUTHERN_VIETNAMESE / EN-US / EN-UK",
         "timbre": "Chất giọng",
         "tone": "Giọng điệu",
-        "pacing": "Nhịp",
-        "pacing_speed": "1.18x (theo Dynamic Speed Matrix)",
+        "pacing": "Nhịp chậm rãi, tĩnh lặng",
+        "pacing_speed": "0.85x hoặc 0.90x (theo Dynamic Speed Matrix - BẮT BUỘC CHẬM)",
         "state": "ON-SCREEN hoặc OFF-SCREEN"
       },
       "voice_text": "Lời thoại tuân thủ Language Routing <40 từ",
@@ -418,8 +418,8 @@ Giao thức Liền mạch Âm thanh (Audio Continuity):
         "accent": "NORTHERN_VIETNAMESE / SOUTHERN_VIETNAMESE / EN-US / EN-UK",
         "timbre": "Chất giọng",
         "tone": "Giọng điệu",
-        "pacing": "Nhịp điệu",
-        "pacing_speed": "1.18x (theo Dynamic Speed Matrix)",
+        "pacing": "Nhịp chậm rãi, tĩnh lặng",
+        "pacing_speed": "0.85x hoặc 0.90x (theo Dynamic Speed Matrix - BẮT BUỘC CHẬM)",
         "state": "ON-SCREEN hoặc OFF-SCREEN"
       },
       "sfx_music_suggestion": "Voice FX: Áp dụng hiệu ứng Temple Reverb (độ vang chánh điện) nhẹ cho giọng đọc. Đề xuất chi tiết nhạc nền và ASMR/SFX ở mức âm lượng nền đồng đều khoảng -20dB.",
