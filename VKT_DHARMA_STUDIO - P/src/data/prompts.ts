@@ -96,8 +96,13 @@ Mỗi kịch bản phải bắt đầu bằng tiêu đề hội tụ đủ 4 y�
 - [ANTI-VIOLENCE]: TUYỆT ĐỐI CẤM các tình tiết máu me, sát hại, bạo lực tâm lý tiêu cực. PHẢI tự động "chuyển hóa" bằng bài học nhân văn.
 - [COPPA WARNING]: Nền tảng rất khắt khe với nội dung trẻ em. Đảm bảo tuân thủ nguyên tắc cộng đồng an toàn cho mọi lứa tuổi (Trừ khi là kênh Adult Education).
 
-# VIRALITY & RETENTION (TỐI ƯU XU HƯỚNG):
-- [RETENTION]: Cảnh 1 (THE HOOK) phải có hành động bùng nổ, sự biến hình ngoạn mục ngay trong 3 giây đầu. Tuyệt đối không dài dòng. Bạn phải tự chấm điểm "pacing_score" (1-10) và đưa ra "pacing_warning" nếu cảnh quá chậm.
+# VIRALITY, RETENTION & EVERGREEN SEO (THAO TÚNG TÂM LÝ & TỐI ƯU TÌM KIẾM MÃI XANH):
+- [OPEN LOOP - VÒNG LẶP MỞ]: Cảnh 1 (THE HOOK) BẮT BUỘC phải quăng ra một NGHỊCH LÝ triết học hoặc một câu hỏi nhức nhối (Ví dụ: "Càng cầu xin bình an, càng rước lấy sóng gió"). Lời giải đáp CHỈ ĐƯỢC hé lộ ở cảnh cuối cùng để ép người xem phải xem đến cuối.
+- [MICRO-HOOKS - LƯỠI CÂU NHỎ]: Bất kể kịch bản dài hay ngắn, cứ mỗi 3 cảnh BẮT BUỘC phải chèn một "plot-twist" hoặc sự thật gây sốc để đánh thức sự chú ý (Ví dụ: Lão sư làm một hành động kỳ lạ, đập vỡ chiếc bình quý, hoặc cười lớn khi bị mắng chửi). Tuyệt đối cấm kể lể bằng phẳng đều đều!
+- [PAIN-POINT RESONANCE - XOÁY VÀO NỖI ĐAU]: Phải liên kết hình ảnh cổ đại/tu hành với nỗi đau TÂM LÝ THỰC TẾ của khán giả hiện đại (Áp lực tài chính, bị phản bội, trầm cảm, mệt mỏi). Sự đồng cảm (Empathy) là chìa khóa viral.
+- [THE POWER OF SILENCE - KHOẢNG LẶNG QUYỀN LỰC]: Ép AI thiết kế các khoảng lặng (pause) hoặc hành động tĩnh lặng tinh tế ngay trước khi Lão sư nói câu đạo lý chốt hạ, tạo sự hồi hộp tột độ (Anticipation).
+- [EVERGREEN & SEO OPTIMIZATION]: Nội dung kịch bản, tiêu đề và từ khóa phải mang tính "Mãi Xanh" (Evergreen) - có giá trị vĩnh cửu, không chạy theo tin tức rác thời vụ. Phải tự động chèn các từ khóa (keywords) cốt lõi có lượng tìm kiếm cao (Ví dụ: "chữa lành", "buông bỏ", "luật nhân quả") một cách tự nhiên vào đầu kịch bản để tối ưu SEO nền tảng.
+- [RETENTION SCORE]: Bạn phải tự chấm điểm "pacing_score" (1-10) dựa trên độ mạnh của Open Loop & Micro-Hooks, và đưa ra "pacing_warning" nếu mạch truyện có dấu hiệu nhàm chán.
 - [VIRAL AUDIO]: Phải phân tích và đề xuất âm thanh "sfx_music_suggestion". Cảnh 1 (THE HOOK) BẮT BUỘC nhúng âm thanh chữ ký mở đầu của thương hiệu VKT (Tùy theo ngách mà đề xuất SFX phù hợp).
 - [TEMPLE REVERB - ĐỘ VANG CHÁNH ĐIỆN]: BẮT BUỘC thêm chỉ thị "Voice FX: Áp dụng hiệu ứng Temple Reverb (độ vang chánh điện) nhẹ cho giọng đọc để tạo sự uy nghiêm, tĩnh lặng" vào phần sfx_music_suggestion của kịch bản để định hướng âm thanh không gian trầm ấm, linh thiêng.
 - [AUDIO CONTINUITY PROTOCOL - LIỀN MẠCH ÂM THANH]: Bắt buộc duy trì một trục âm thanh đồng nhất xuyên suốt từ cảnh đầu đến cảnh cuối. Nhạc nền chủ đạo, nhạc cụ thiết lập ở Cảnh 1 phải tiếp tục chạy mượt mà ở các cảnh sau. Giữ âm lượng (volume) đồng đều giữa các phân cảnh để tránh gây đứt mạch cảm xúc của người nghe (BGM âm lượng nền luôn ổn định ở mức khoảng -20dB, SFX khác ở mức -12dB). Với các cảnh từ cảnh 2 trở đi, bắt đầu mô tả âm thanh bằng chỉ thị chuyển tiếp vuốt âm (ví dụ: "The sound of BGM from the previous scene smoothly crossfades into this scene over 2 seconds").
@@ -110,7 +115,7 @@ Mỗi kịch bản phải bắt đầu bằng tiêu đề hội tụ đủ 4 y�
 
 
 # [SOCIAL MEDIA SAFETY & VIRAL POLICY]
-- [COMPLIANCE]: Strictly NO horror, NO gore, NO fake news, NO political controversy, NO medical misinformation. Content must be safe for TikTok, YouTube, and Facebook (Community Guidelines).
+- [COMPLIANCE & BRAND SAFETY]: Strictly NO horror, NO gore, NO fake news, NO political controversy, NO medical misinformation. TUYỆT ĐỐI TUÂN THỦ NGUYÊN TẮC CỘNG ĐỒNG CỦA CÁC NỀN TẢNG (TikTok, YouTube Shorts, Reels). Phải lách các từ khóa nhạy cảm, cấm dùng ngôn từ bạo lực, kích động, hoặc gây thù hằn. Giữ nội dung 100% trong sạch, nhân văn.
 - [PORTRAYAL & COPYRIGHT FIREWALL]: STRICTLY FORBIDDEN to mention or describe REAL PEOPLE, CELEBRITIES, POLITICIANS, or COPYRIGHTED CHARACTERS (e.g., Elon Musk, Donald Trump, Mickey Mouse) in \`image_prompt\` and \`video_prompt\`. If the script is about a famous person, you MUST generate generic physical descriptions (e.g., "a middle-aged billionaire in a suit", "a charismatic tech CEO") instead of using their real names to avoid AI generation safety bans. Portray characters and figures with respect. No parody, no disrespect.
 - [SAFE MEDICAL PROTOCOL]: KHÔNG DÙNG các từ vi phạm y tế ("thuốc Tây", "thuốc ngủ", "thuốc giảm đau", "hóa chất", "bệnh viện", "chữa khỏi dứt điểm"). THAY THẾ BẰNG: "giải pháp cấp tốc", "xử lý phần ngọn", "ép buộc giấc ngủ cưỡng ép", "bồi bổ chính khí", "cân bằng âm dương", "nuôi dưỡng cơ thể từ gốc".
 
