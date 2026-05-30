@@ -750,6 +750,13 @@ CRITICAL INSTRUCTION:
     reader.onload = (event) => {
       try {
         const data = JSON.parse(event.target?.result as string);
+        
+        // Cảnh báo nếu up nhầm file Rút Gọn
+        if (data.export_type === "COMPACT_V20" || data.scenes) {
+          showToast(uiLang === 'vi' ? '❌ File JSON Siêu Ngắn chỉ để nạp AI Video. Vui lòng chọn file Master JSON để khôi phục dự án!' : '❌ Compact JSON is for AI Video rendering only. Please select a Master JSON to restore project!', 'error');
+          return;
+        }
+
         if (data.segments) {
           setTopic(data.project_name || data.topic || '');
           setSegments(data.segments);
@@ -759,9 +766,11 @@ CRITICAL INSTRUCTION:
           if (data.scriptData) setScriptData(data.scriptData);
           
           onScriptGenerated(data.segments, 'auto', data.project_name || data.topic || '');
-          showToast(uiLang === 'vi' ? 'Đã khôi phục Kịch bản!' : 'Script Restored!', 'success');
+          showToast(uiLang === 'vi' ? '✅ Đã khôi phục Master Kịch bản!' : '✅ Master Script Restored!', 'success');
+        } else {
+          showToast(uiLang === 'vi' ? '❌ File JSON không hợp lệ hoặc đã hỏng!' : '❌ Invalid or corrupted JSON file!', 'error');
         }
-      } catch (err) { showToast('Error reading file'); }
+      } catch (err) { showToast(uiLang === 'vi' ? '❌ Lỗi đọc file JSON!' : '❌ Error reading JSON file!', 'error'); }
     };
     reader.readAsText(file);
     e.target.value = '';
