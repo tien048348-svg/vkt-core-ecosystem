@@ -626,11 +626,28 @@ CRITICAL INSTRUCTION:
 
   const exportCompactJson = () => {
     if (!scriptData || !segments) return;
-    const renderData = segments.map((scene: any) => ({
-      scene_number: scene.scene_number,
-      video_prompt: scene.video_prompt || '',
-      image_prompt: scene.image_prompt || ''
-    }));
+    const renderData = segments.map((scene: any) => {
+      const voiceText = scene.voice_text || scene.chapter_voice_block || '';
+      const pacingSpeed = scene.voice_profile?.pacing_speed || scene.voice_profile?.pacing || '';
+      const sfx = scene.sfx_music_suggestion || scene.sfx_suggestion || '';
+      const speaker = scene.voice_profile?.speaker || scene.character || '';
+      const age = scene.voice_profile?.age || '';
+      
+      let audioInjection = '';
+      if (voiceText) {
+        audioInjection += ` - [VOICE_TEXT]: "${voiceText}"`;
+        if (speaker) audioInjection += ` - [CHARACTER]: ${speaker}`;
+        if (age) audioInjection += ` - [AGE]: ${age}`;
+        if (pacingSpeed) audioInjection += ` - [VOICE_SPEED]: ${pacingSpeed}`;
+        if (sfx) audioInjection += ` - [VOICE_FX]: ${sfx}`;
+      }
+
+      return {
+        scene_number: scene.scene_number,
+        video_prompt: (scene.video_prompt || '') + audioInjection,
+        image_prompt: (scene.image_prompt || '') + audioInjection
+      };
+    });
     const compactPackage = {
       project_name: topic,
       export_version: "V20.0_PRO_RENDER_ONLY",
