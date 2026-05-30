@@ -614,16 +614,16 @@ CRITICAL INSTRUCTION:
 
   const exportCompactJson = () => {
     if (!scriptData || !segments) return;
-    const compactScenes = segments.map((scene: any) => ({
+    const renderData = segments.map((scene: any) => ({
       scene_number: scene.scene_number,
-      voice_text: scene.voice_text || scene.chapter_voice_block || '',
-      video_prompt: scene.video_prompt,
-      image_prompt: scene.image_prompt
+      video_prompt: scene.video_prompt || '',
+      image_prompt: scene.image_prompt || ''
     }));
     const compactPackage = {
       project_name: topic,
-      export_type: "COMPACT_V20",
-      scenes: compactScenes
+      export_version: "V20.0_PRO_RENDER_ONLY",
+      total_scenes: segments.length,
+      render_data: renderData
     };
     const blob = new Blob([JSON.stringify(compactPackage, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -752,7 +752,7 @@ CRITICAL INSTRUCTION:
         const data = JSON.parse(event.target?.result as string);
         
         // Cảnh báo nếu up nhầm file Rút Gọn
-        if (data.export_type === "COMPACT_V20" || data.scenes) {
+        if (data.export_version === "V20.0_PRO_RENDER_ONLY" || data.export_type === "COMPACT_V20" || data.render_data || data.scenes) {
           showToast(uiLang === 'vi' ? '❌ File JSON Siêu Ngắn chỉ để nạp AI Video. Vui lòng chọn file Master JSON để khôi phục dự án!' : '❌ Compact JSON is for AI Video rendering only. Please select a Master JSON to restore project!', 'error');
           return;
         }
