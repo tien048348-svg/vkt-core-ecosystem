@@ -252,6 +252,32 @@ const StudioModule: React.FC<Props> = ({ segments, topic = '' }) => {
     }
   };
 
+  const exportCompactJSON = () => {
+    if (!segments || !segments.length) return;
+    try {
+      const formatFileName = (str: string) => {
+        return (str || 'kich_ban').normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D").toLowerCase().replace(/[^a-z0-9\s-]/g, "").trim().replace(/\s+/g, "_").substring(0, 30);
+      };
+      const renderData = segments.map((scene: any) => ({
+        scene_number: scene.scene_number,
+        video_prompt: scene.video_prompt || '',
+        image_prompt: scene.image_prompt || ''
+      }));
+      const compactPackage = {
+        project_name: topic,
+        export_version: "V20.0_PRO_RENDER_ONLY",
+        total_scenes: segments.length,
+        render_data: renderData
+      };
+      const content = JSON.stringify(compactPackage, null, 2);
+      downloadFile(content, `${formatFileName(topic)}.json`, 'application/json;charset=utf-8');
+      setShowExport(false);
+      showToast('📦 Đã tải JSON Siêu Ngắn (AI Render)!', 'success');
+    } catch (e: any) {
+      showToast('Lỗi khi xuất JSON: ' + e.message, 'error');
+    }
+  };
+
   if (!segments.length) return (
     <div className="h-full flex flex-col items-center justify-center animate-[slideIn_0.4s_ease-out]">
       <div className="text-center text-slate-500 py-10 italic">Chưa có dữ liệu kịch bản. Hãy tạo kịch bản trước.</div>
@@ -272,6 +298,7 @@ const StudioModule: React.FC<Props> = ({ segments, topic = '' }) => {
             {showExport && (
               <div className="absolute right-0 top-full mt-2 w-48 bg-[#12161e] border border-slate-700/30 rounded-xl shadow-xl z-50 overflow-hidden">
                 <button onClick={exportProjectJSON} className="w-full text-left px-4 py-2 text-xs text-amber-300 hover:bg-slate-800/20 border-b border-slate-700/30 flex items-center gap-2 font-bold bg-amber-900/10"><i className="fa-solid fa-file-code text-amber-500" /> Tải Dự Án (.json)</button>
+                <button onClick={exportCompactJSON} className="w-full text-left px-4 py-2 text-xs text-cyan-300 hover:bg-slate-800/20 border-b border-slate-700/30 flex items-center gap-2 font-bold bg-cyan-900/10"><i className="fa-solid fa-microchip text-cyan-500" /> Tải JSON Siêu Ngắn (AI Render)</button>
                 <button onClick={exportCSV} className="w-full text-left px-4 py-2 text-xs text-slate-300 hover:bg-slate-800/20 border-b border-slate-700/30 flex items-center gap-2"><i className="fa-solid fa-file-excel text-green-500" /> Excel Kịch Bản</button>
                 <button onClick={exportCSV2} className="w-full text-left px-4 py-2 text-xs text-emerald-300 hover:bg-slate-800/20 border-b border-slate-700/30 flex items-center gap-2 font-bold"><i className="fa-solid fa-file-excel text-emerald-400" /> Excel Kịch Bản V2</button>
                 <button onClick={() => exportPrompts('video', 'csv')} className="w-full text-left px-4 py-2 text-xs text-slate-300 hover:bg-slate-800/20 border-b border-slate-700/30 flex items-center gap-2"><i className="fa-solid fa-file-video text-cyan-500" /> Excel Prompt Video</button>
