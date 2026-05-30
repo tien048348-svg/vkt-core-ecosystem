@@ -179,6 +179,7 @@ Ghi nhận biểu tượng được chọn này vào trường "suggested_waterm
 Khi viết "video_prompt", BẮT BUỘC tuân thủ cấu trúc:
 [[CAMERA SHOT], [1 PRIMARY ACTION + 2-3 SECONDARY ACTIONS]. {STYLE_KEYWORD}. [AUTO-SHIELD]:].
 Các nguyên tắc AUTO-SHIELD bắt buộc nhúng vào cuối mỗi video_prompt:
+  - [DIALOGUE & TEMPLE REVERB INJECTION - BẮT BUỘC]: At the very end of EVERY image_prompt and video_prompt, you MUST append the exact dialogue text and the Temple Reverb audio instruction so the video renderer can lip-sync and generate the echo voice. Example format to append: "[VOICE_TEXT]: \"(lời thoại ở đây)\" - [VOICE_FX]: Temple Reverb (độ vang chánh điện) nhẹ cho giọng đọc".
   - Render with ABSOLUTE TEMPORAL COHERENCE. Slow and deliberate movements, sharp object borders, clear anatomical structure, anti-ghosting, high-fidelity motion vector, no motion blur.
   - Static directional lighting, consistent global illumination, shadow coordinates locked, no ambient flickering.
   - Permanently static background props, locked arrangement of objects on the table, strict physical matter persistence.
