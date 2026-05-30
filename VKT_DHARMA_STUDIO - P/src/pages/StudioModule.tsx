@@ -34,7 +34,13 @@ function makeFileName(topic: string, suffix: string, ext: string): string {
     .trim()
     .replace(/\s+/g, "_")
     .substring(0, 30);
-  return suffix ? `${slug}_${suffix}.${ext}` : `${slug}.${ext}`;
+  const now = new Date();
+  const d = String(now.getDate()).padStart(2, '0');
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const y = now.getFullYear();
+  const h = String(now.getHours()).padStart(2, '0');
+  const min = String(now.getMinutes()).padStart(2, '0');
+  return suffix ? `${slug}_${suffix}_${d}-${m}-${y}_${h}${min}.${ext}` : `${slug}_${d}-${m}-${y}_${h}${min}.${ext}`;
 }
 
 // 🌟 StudioSceneCard: Memoized sub-component to prevent unnecessary card re-renders
