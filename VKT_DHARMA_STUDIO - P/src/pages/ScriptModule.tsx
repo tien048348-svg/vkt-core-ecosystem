@@ -568,6 +568,18 @@ CRITICAL INSTRUCTION:
     }
   };
 
+  const formatFileName = (str: string) => {
+    return (str || 'kich_ban')
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/đ/g, "d").replace(/Đ/g, "D")
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, "")
+      .trim()
+      .replace(/\s+/g, "_")
+      .substring(0, 30);
+  };
+
   const copyAll = () => {
     const text = segments.map(s => s.chapter_voice_block || s.voice_text).join('\n\n');
     navigator.clipboard.writeText(text);
@@ -606,7 +618,7 @@ CRITICAL INSTRUCTION:
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `VKT_Master_${topic.replace(/\s+/g, '_').substring(0, 20)}.json`;
+    a.download = `master_${formatFileName(topic)}.json`;
     a.click();
     URL.revokeObjectURL(url);
     showToast(uiLang === 'vi' ? '📦 Đã xuất Master JSON Toàn Tập!' : '📦 Master JSON Exported!', 'success');
@@ -629,7 +641,7 @@ CRITICAL INSTRUCTION:
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `VKT_SieuNgan_${topic.replace(/\s+/g, '_').substring(0, 20)}.json`;
+    a.download = `${formatFileName(topic)}.json`;
     a.click();
     URL.revokeObjectURL(url);
     showToast(uiLang === 'vi' ? '📦 Đã tải JSON Siêu Ngắn!' : '📦 Super Short JSON Downloaded!', 'success');
