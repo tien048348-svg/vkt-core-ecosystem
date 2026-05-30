@@ -25,17 +25,16 @@ function downloadFile(content: string, fileName: string, mimeType: string) {
 }
 
 function makeFileName(topic: string, suffix: string, ext: string): string {
-  const slug = (topic || 'kich_ban').trim().toLowerCase()
-    .replace(/[^a-z0-9\u00C0-\u024F\u1E00-\u1EFF\s-]/gi, '')
-    .replace(/\s+/g, '_')
-    .substring(0, 50);
-  const now = new Date();
-  const d = String(now.getDate()).padStart(2, '0');
-  const m = String(now.getMonth() + 1).padStart(2, '0');
-  const y = now.getFullYear();
-  const h = String(now.getHours()).padStart(2, '0');
-  const min = String(now.getMinutes()).padStart(2, '0');
-  return `${slug}_${suffix}_${d}-${m}-${y}_${h}${min}.${ext}`;
+  const slug = (topic || 'kich_ban')
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d").replace(/Đ/g, "D")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "_")
+    .substring(0, 30);
+  return suffix ? `${slug}_${suffix}.${ext}` : `${slug}.${ext}`;
 }
 
 // 🌟 StudioSceneCard: Memoized sub-component to prevent unnecessary card re-renders
