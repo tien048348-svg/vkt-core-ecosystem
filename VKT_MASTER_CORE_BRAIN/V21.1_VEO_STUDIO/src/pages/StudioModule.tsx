@@ -340,20 +340,20 @@ const StudioModule: React.FC<Props> = ({ segments: initialSegments, topic = '' }
           {
             "character_id": "char_001",
             "display_name": "Zen Master",
-            "identity_lock": "A 70-year-old living white marble monk with radiant 24k Kintsugi gold veins",
-            "face_design": "sculpted solid stone beard, wise old carved face, deep marble wrinkles, pure white marble skin with glowing 24k Kintsugi gold veins, 100% completely bald shaved head",
+            "identity_lock": "SOLO 1 character ONLY, A 70-year-old living sentient white marble monk standing on two feet with radiant 24k Kintsugi gold veins",
+            "face_design": "pure pristine white marble skin with glowing 24k Kintsugi gold veins, deep marble wrinkles, realistic facial hair but made of marble, 100% completely bald shaved head, NO CARVED STATUE LOOK",
             "hair_design": "100% completely bald shaved head, zero hair on top of head",
-            "body_design": "structured entirely from pristine white marble with glowing radiant 24k Kintsugi gold veins",
+            "body_design": "full body standing on two feet, structured entirely from pristine white marble with glowing radiant 24k Kintsugi gold veins, NOT a bust, NOT a statue",
             "wardrobe": "pristine white marble monk robes with glowing Kintsugi gold veins, seamless with body",
             "color_palette": "pure white, 24k amber gold",
             "voice_profile": "Temple Reverb, Awakening, engaging, profound, 70-year-old male",
             "regional_accent": "NORTHERN_VIETNAMESE",
-            "style_expression": "hyper-realistic pristine white marble living monk with solid sculpted beard and glowing kintsugi veins",
+            "style_expression": "hyper-realistic pristine white marble living monk with solid marble beard and glowing kintsugi veins",
             "personality": "wise, compassionate, enlightened",
             "props": "none",
             "sheet_layout": "single 16:9 character reference sheet with one large close-up portrait area on the left side and three full-body orthographic views on the right side: front, side, back",
-            "negative_prompt": "text labels, watermark, logo, UI, extra people, cropped limbs, duplicate limbs, soft human skin, loose portrait",
-            "character_render_prompt": "Create one final 16:9 character reference sheet image showing one large close-up portrait area on the left side and three full-body orthographic views of the same character on the right side in a single image: front, side, back, consistent identity, clean layout, pure white studio background, soft diffused lighting, no text labels, 8K Resolution, 3D Unreal Engine 5 hyper-realistic cinematography. A highly polished pristine white marble living monk character with a sculpted stone beard, deep wrinkles, and glowing 24k Kintsugi gold veins."
+            "negative_prompt": "multiple characters, 2 boys, 2 men, extra people, statue, sculpture, bust, cropped limbs, duplicate limbs, cut off, half body, text labels, watermark, logo, UI, soft human skin, loose portrait",
+            "character_render_prompt": "Create one final 16:9 character reference sheet image showing one large close-up portrait area on the left side and three full-body orthographic views of the same character on the right side in a single image: front, side, back, consistent identity, clean layout, pure white studio background, soft diffused lighting, no text labels, 8K Resolution, 3D Unreal Engine 5 hyper-realistic cinematography. SOLO 1 character ONLY, A highly polished living sentient monk character with pristine white marble skin, realistic facial hair but made of marble, deep wrinkles, and glowing 24k Kintsugi gold veins. Standing fully on two feet. NOT a statue, NOT a bust."
           }
         ],
         segments
@@ -465,20 +465,20 @@ const StudioModule: React.FC<Props> = ({ segments: initialSegments, topic = '' }
         cast_lock: [
           {
             "character_id": "char_001", "display_name": "Zen Master",
-            "identity_lock": "A 70-year-old living white marble monk with radiant 24k Kintsugi gold veins",
-            "face_design": "sculpted solid stone beard, wise old carved face, deep marble wrinkles, pure white marble skin with glowing 24k Kintsugi gold veins, 100% completely bald shaved head",
+            "identity_lock": "SOLO 1 character ONLY, A 70-year-old living sentient white marble monk standing on two feet with radiant 24k Kintsugi gold veins",
+            "face_design": "pure pristine white marble skin with glowing 24k Kintsugi gold veins, deep marble wrinkles, realistic facial hair but made of marble, 100% completely bald shaved head, NO CARVED STATUE LOOK",
             "hair_design": "100% completely bald shaved head, zero hair on top of head",
-            "body_design": "structured entirely from pristine white marble with glowing radiant 24k Kintsugi gold veins",
+            "body_design": "full body standing on two feet, structured entirely from pristine white marble with glowing radiant 24k Kintsugi gold veins, NOT a bust, NOT a statue",
             "wardrobe": "pristine white marble monk robes with glowing Kintsugi gold veins, seamless with body",
             "color_palette": "pure white, 24k amber gold",
             "voice_profile": "Temple Reverb, Awakening, engaging, profound, 70-year-old male",
             "regional_accent": "NORTHERN_VIETNAMESE",
-            "style_expression": "hyper-realistic pristine white marble living monk with solid sculpted beard and glowing kintsugi veins",
+            "style_expression": "hyper-realistic pristine white marble living monk with solid marble beard and glowing kintsugi veins",
             "personality": "wise, compassionate, enlightened",
             "props": "none",
             "sheet_layout": "single 16:9 character reference sheet with one large close-up portrait area on the left side and three full-body orthographic views on the right side: front, side, back",
-            "negative_prompt": "text labels, watermark, logo, UI, extra people, cropped limbs, duplicate limbs, soft human skin, loose portrait",
-            "character_render_prompt": "Create one final 16:9 character reference sheet image showing one large close-up portrait area on the left side and three full-body orthographic views of the same character on the right side in a single image: front, side, back, consistent identity, clean layout, pure white studio background, soft diffused lighting, no text labels, 8K Resolution, 3D Unreal Engine 5 hyper-realistic cinematography. A highly polished pristine white marble living monk character with a sculpted stone beard, deep wrinkles, and glowing 24k Kintsugi gold veins."
+            "negative_prompt": "multiple characters, 2 boys, 2 men, extra people, statue, sculpture, bust, cropped limbs, duplicate limbs, cut off, half body, text labels, watermark, logo, UI, soft human skin, loose portrait",
+            "character_render_prompt": "Create one final 16:9 character reference sheet image showing one large close-up portrait area on the left side and three full-body orthographic views of the same character on the right side in a single image: front, side, back, consistent identity, clean layout, pure white studio background, soft diffused lighting, no text labels, 8K Resolution, 3D Unreal Engine 5 hyper-realistic cinematography. SOLO 1 character ONLY, A highly polished living sentient monk character with pristine white marble skin, realistic facial hair but made of marble, deep wrinkles, and glowing 24k Kintsugi gold veins. Standing fully on two feet. NOT a statue, NOT a bust."
           }
         ]
       };
