@@ -37,12 +37,12 @@ const Header: React.FC<HeaderProps> = ({ uiLang, onToggleLang, onOpenConfig, key
               <h1 
                 className="text-lg md:text-xl font-black tracking-tighter text-slate-100 cursor-default select-none uppercase"
               >
-                BẢN TEST CHUẨN <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-emerald-300">V21.8.2</span>
+                BẢN TEST CHUẨN <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-emerald-300">V21.8.3</span>
               </h1>
             </div>
             <div className="flex items-center gap-2 mt-0.5">
               <div className="text-[9px] text-slate-500 font-medium tracking-widest uppercase mt-0.5 opacity-80 flex items-center">
-                CORE BRAIN TESTING ENVIRONMENT <span className="ml-1.5 px-1.5 py-0.5 bg-slate-800 rounded text-slate-400">V21.8.2 - PEAK EDITION</span>
+                CORE BRAIN TESTING ENVIRONMENT <span className="ml-1.5 px-1.5 py-0.5 bg-slate-800 rounded text-slate-400">V21.8.3 - PEAK EDITION</span>
               </div>
             </div>
           </div>
