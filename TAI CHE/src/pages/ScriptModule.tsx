@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { callAI } from '../services/aiService';
-import { SYSTEM_PROMPT_SCRIPT_WRITER, SYSTEM_PROMPT_AUDIO_REENGINEERING } from '../data/prompts';
+import { buildScriptWriterPrompt, SYSTEM_PROMPT_AUDIO_REENGINEERING } from '../data/prompts';
 import { TARGET_MARKETS, VISUAL_STYLES, } from '../data/constants';
 import { showToast } from '../components/Toast';
 import ProgressBar from '../components/ProgressBar';
@@ -71,7 +71,7 @@ OUTPUT JSON:
 }
 `;
 
-const SceneCard = React.memo(({ seg, idx }: { seg: any, idx: number }) => {
+const SceneCard = React.memo(({ seg, idx, videoState, onGenerateVideo }: { seg: any, idx: number, videoState?: { status: string, url?: string, error?: string }, onGenerateVideo?: (idx: number, prompt: string) => void }) => {
   return (
     <div className="bg-[#12161e] border border-slate-700/30 p-4 rounded-xl flex flex-col sm:flex-row gap-4 hover:border-teal-500/30 transition-colors relative">
       <div className="w-full sm:w-24 shrink-0 text-center pt-1 border-r border-slate-700/30 pr-2">
@@ -99,6 +99,36 @@ const SceneCard = React.memo(({ seg, idx }: { seg: any, idx: number }) => {
           )}
 
           {seg.strategy_note && <div className="mt-2 p-2 rounded bg-amber-900/10 border border-amber-500/20 text-[10px] text-amber-200/80 italic">💡 {seg.strategy_note}</div>}
+
+          <div className="mt-4 pt-3 border-t border-slate-700/50 flex flex-col gap-2">
+            {videoState?.status === 'done' && videoState.url ? (
+              <div className="relative rounded-lg overflow-hidden border border-teal-500/30 group">
+                <video src={videoState.url} controls className="w-full h-auto aspect-video bg-black object-cover" />
+                <div className="absolute top-2 right-2 bg-teal-900/80 text-teal-300 text-[9px] font-bold px-2 py-1 rounded">VEO 3 GENERATED</div>
+                <button 
+                  onClick={() => onGenerateVideo && onGenerateVideo(idx, seg.video_prompt || seg.visual_desc)}
+                  className="absolute bottom-2 right-2 bg-black/60 hover:bg-black text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                  <i className="fa-solid fa-rotate-right" /> Render Lại
+                </button>
+              </div>
+            ) : videoState?.status === 'error' ? (
+              <div className="bg-red-900/20 border border-red-500/30 p-2 rounded flex flex-col gap-2">
+                <div className="text-red-400 text-[10px] font-bold flex items-center gap-1"><i className="fa-solid fa-triangle-exclamation" /> {videoState.error || 'Lỗi API'}</div>
+                <button 
+                  onClick={() => onGenerateVideo && onGenerateVideo(idx, seg.video_prompt || seg.visual_desc)}
+                  className="w-full py-1.5 bg-red-900/50 hover:bg-red-800 border border-red-500/50 text-red-200 font-bold rounded text-[10px] flex items-center justify-center gap-2 transition-all">
+                  <i className="fa-solid fa-rotate-right" /> Thử Lại (Retry)
+                </button>
+              </div>
+            ) : (
+              <button 
+                onClick={() => onGenerateVideo && onGenerateVideo(idx, seg.video_prompt || seg.visual_desc)}
+                disabled={videoState?.status === 'loading'}
+                className="w-full py-2 bg-teal-900/30 hover:bg-teal-800/40 border border-teal-500/40 text-teal-300 font-bold rounded-lg text-[11px] flex items-center justify-center gap-2 transition-all disabled:opacity-50">
+                {videoState?.status === 'loading' ? <><i className="fa-solid fa-spinner animate-spin" /> Đang render (Veo 3)...</> : <><i className="fa-solid fa-film" /> Tạo Video Cảnh Này</>}
+              </button>
+            )}
+          </div>
         </div>
         <div className="bg-[#10141c]/50 p-3 rounded border border-slate-700/30">
           <div className="flex justify-between items-center mb-1">
@@ -231,6 +261,13 @@ const ScriptModule: React.FC<ScriptModuleProps> = ({
   const [progress, setProgress] = useState({ percent: 0, text: '' });
   const [loadingMsgIdx, setLoadingMsgIdx] = useState(0);
   const abortRef = React.useRef(false);
+
+  // Veo 3 Video Automation State
+  const [videoStatus, setVideoStatus] = useState<Record<number, { status: string, url?: string, error?: string }>>({});
+  const [videoAspectRatio, setVideoAspectRatio] = useState('16:9');
+  const [videoDuration, setVideoDuration] = useState('x2');
+  const [videoModel, setVideoModel] = useState('Veo 3.1 - Quality');
+  const [isAutoPilotActive, setIsAutoPilotActive] = useState(false);
   
   const loadingMessages = [
     "Đang phân tích cấu trúc kịch bản...",
@@ -325,7 +362,7 @@ CRITICAL: You MUST write the next scenes continuing this exact storyline seamles
         let retries = 3;
         while (retries > 0) {
           try {
-            json = await callAI(prompt, SYSTEM_PROMPT_SCRIPT_WRITER);
+            json = await callAI(prompt, buildScriptWriterPrompt(1.70));
             break;
           } catch (err: any) {
             retries--;
@@ -536,6 +573,77 @@ CRITICAL: You MUST write the next scenes continuing this exact storyline seamles
     };
     reader.readAsText(file);
     e.target.value = '';
+  };
+
+  const handleGenerateVideo = async (idx: number, prompt: string) => {
+    try {
+      setVideoStatus(prev => ({ ...prev, [idx]: { status: 'loading' } }));
+      
+      const { generateVideo } = await import('../services/aiService');
+      const url = await generateVideo(prompt, videoAspectRatio, videoDuration, videoModel, idx);
+      
+      setVideoStatus(prev => ({ ...prev, [idx]: { status: 'done', url } }));
+      showToast(`Đã tạo xong Video cho Cảnh ${idx + 1}`, 'success');
+    } catch (e: any) {
+      setVideoStatus(prev => ({ ...prev, [idx]: { status: 'error', error: e.message } }));
+      showToast(`Lỗi tạo Video cảnh ${idx + 1}: ${e.message}`, 'error');
+    }
+  };
+
+  const handleAutoPilot = async () => {
+    if (segments.length === 0) return;
+    setIsAutoPilotActive(true);
+    showToast('🚀 Đang đóng gói kịch bản gửi sang VKT Extension...', 'success');
+    
+    // Set all pending to loading
+    const newStatus: any = { ...videoStatus };
+    segments.forEach((_, i) => {
+      if (newStatus[i]?.status !== 'done') {
+        newStatus[i] = { status: 'loading' };
+      }
+    });
+    setVideoStatus(newStatus);
+
+    const prompts = segments.filter((_, i) => newStatus[i]?.status !== 'done')
+                            .map(seg => seg.video_prompt || seg.visual_desc || 'Buddhist story scene');
+    
+    window.postMessage({
+      source: 'VKT_STUDIO',
+      action: 'SEND_PROMPTS',
+      payload: {
+        prompts,
+        config: {
+          mode: 'text-to-video',
+          concurrentRuns: '1 prompt',
+          minDelay: 10,
+          maxDelay: 20,
+          outputsPerPrompt: '1',
+          autoRename: true,
+          aspectRatio: videoAspectRatio,
+          duration: videoDuration,
+          model: videoModel
+        }
+      }
+    }, '*');
+    
+    const confirmHandler = (event: MessageEvent) => {
+      if (event.source !== window) return;
+      if (event.data?.source === 'VKT_EXTENSION' && event.data?.action === 'PROMPTS_RECEIVED') {
+        if (event.data.status === 'success') {
+          showToast('✅ Đã gửi kịch bản thành công! Extension đang chạy ngầm.', 'success');
+        } else {
+          showToast('❌ Gửi kịch bản thất bại.', 'error');
+          setIsAutoPilotActive(false);
+        }
+        window.removeEventListener('message', confirmHandler);
+      }
+    };
+    window.addEventListener('message', confirmHandler);
+    
+    setTimeout(() => {
+      window.removeEventListener('message', confirmHandler);
+      setIsAutoPilotActive(false);
+    }, 5000);
   };
 
   return (

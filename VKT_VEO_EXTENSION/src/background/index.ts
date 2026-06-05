@@ -11,6 +11,7 @@ interface PromptTask {
   status: 'pending' | 'running' | 'done' | 'error';
   retries: number; config: PromptConfig;
   logs: string[];
+  sourceTabId?: number;
 }
 
 let queue: PromptTask[] = [];
@@ -106,8 +107,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.type === 'ADD_PROMPTS') {
     const prompts: string[] = msg.prompts;
     const config: PromptConfig = msg.config;
+    const sourceTabId = sender.tab?.id;
     prompts.forEach(p => {
-      queue.push({ id: crypto.randomUUID(), prompt: p, status: 'pending', retries: 0, config, logs: [] });
+      queue.push({ id: crypto.randomUUID(), prompt: p, status: 'pending', retries: 0, config, logs: [], sourceTabId });
     });
     sendResponse({ ok: true });
     notifyQueueUpdate();
@@ -177,6 +179,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           : `${task.config.folderName}/video_${Date.now()}.mp4`;
         chrome.downloads.download({ url: msg.videoUrl, filename }).catch(() => {});
       }
+      if (task.sourceTabId) {
+        chrome.tabs.sendMessage(task.sourceTabId, { type: 'TASK_DONE', id: task.id, videoUrl: msg.videoUrl }).catch(() => {});
+      }
     }
     notifyQueueUpdate();
     // Delay trước khi xử lý task tiếp theo
@@ -201,6 +206,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         task.status = 'error';
         task.logs.push('❌ Đã hết số lần thử lại');
         setTimeout(processQueue, 2000);
+        if (task.sourceTabId) {
+          chrome.tabs.sendMessage(task.sourceTabId, { type: 'TASK_ERROR', id: task.id, error: msg.error }).catch(() => {});
+        }
       }
     }
     notifyQueueUpdate();

@@ -4,7 +4,7 @@ import { SYSTEM_PROMPT_IQ160_SPY } from '../data/prompts';
 import { showToast } from '../components/Toast';
 
 interface SpyModuleProps {
-  onUseStrategy?: (title: string) => void;
+  onUseStrategy: (title: string, url: string) => void;
 }
 
 const SpyModule: React.FC<SpyModuleProps> = ({ onUseStrategy }) => {
@@ -258,7 +258,7 @@ const SpyModule: React.FC<SpyModuleProps> = ({ onUseStrategy }) => {
                       </div>
                       <div className="text-xs text-slate-400 pl-1 border-l-2 border-slate-700">💡 {idea.outline_idea}</div>
                     </div>
-                    <button onClick={() => onUseStrategy?.(idea.hook_title)} className="shrink-0 bg-amber-900/30 hover:bg-amber-800/40 text-amber-300 border border-amber-500/30 px-4 py-2.5 rounded-lg font-bold text-xs flex items-center gap-2 transition-all hover:scale-105">
+                    <button onClick={() => onUseStrategy(idea.hook_title, url)} className="shrink-0 bg-amber-900/30 hover:bg-amber-800/40 text-amber-300 border border-amber-500/30 px-4 py-2.5 rounded-lg font-bold text-xs flex items-center gap-2 transition-all hover:scale-105">
                       <i className="fa-solid fa-bolt" /> KÍCH HOẠT
                     </button>
                   </div>

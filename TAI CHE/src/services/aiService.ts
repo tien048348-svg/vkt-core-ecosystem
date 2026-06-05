@@ -306,3 +306,45 @@ export async function generateImage(prompt: string, aspectRatio: string = "16:9"
   }
   return null;
 }
+
+export async function generateVideo(prompt: string, aspectRatio: string = '16:9', duration: string = 'x2', model: string = 'Veo 3.1 - Quality', sceneId?: number): Promise<string> {
+  console.log(`Sending task to VKT Chrome Extension (Format: ${aspectRatio}, Duration: ${duration}, Model: ${model})`);
+  
+  return new Promise((resolve, reject) => {
+    // Generate a unique ID if sceneId is not provided
+    const id = sceneId !== undefined ? sceneId : Math.floor(Math.random() * 1000000);
+
+    // Setup listener for the response from Extension
+    const messageListener = (event: MessageEvent) => {
+      if (event.source !== window) return;
+      if (event.data && event.data.type === 'VKT_AUTOMATION_RESULT') {
+        const { sceneId: returnedSceneId, videoUrl, error } = event.data.payload;
+        
+        // Match the result with our request
+        if (returnedSceneId === id) {
+          window.removeEventListener('message', messageListener);
+          if (error) {
+            reject(new Error(error));
+          } else {
+            resolve(videoUrl);
+          }
+        }
+      }
+    };
+
+    window.addEventListener('message', messageListener);
+
+    // Send the task to the Extension
+    window.postMessage({
+      type: 'VKT_AUTOMATION_START',
+      payload: {
+        prompt,
+        aspectRatio,
+        duration,
+        model,
+        sceneId: id,
+        toolchain: 'veo'
+      }
+    }, '*');
+  });
+}

@@ -34,6 +34,7 @@ const App: React.FC = () => {
   const [scriptSegments, setScriptSegments] = useState<any[]>([]);
   const [scriptTopic, setScriptTopic] = useState('');
   const [strategyTopic, setStrategyTopic] = useState('');
+  const [referenceLink, setReferenceLink] = useState('');
   const [scriptData, setScriptData] = useState<any>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -124,8 +125,9 @@ const App: React.FC = () => {
     if (topic) setScriptTopic(topic);
   }, []);
 
-  const handleUseStrategy = useCallback((title: string) => {
+  const handleUseStrategy = useCallback((title: string, url: string = '') => {
     setStrategyTopic(title);
+    setReferenceLink(url);
     setScriptSegments([]); // Đảm bảo xóa sạch dữ liệu cũ ở mức App khi kích hoạt chủ đề mới
     setScriptData(null);
     localStorage.removeItem('dharmaP_autosave_script');
@@ -189,6 +191,7 @@ const App: React.FC = () => {
               onScriptGenerated={handleScriptGenerated} 
               onAudioRefined={handleAudioRefined} 
               initialTopic={strategyTopic} 
+              referenceLink={referenceLink}
               uiLang={uiLang} 
               onNavigateToStudio={() => setActiveTab('studio')}
               isAdmin={isAdmin}

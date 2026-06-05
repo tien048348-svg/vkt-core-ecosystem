@@ -222,14 +222,18 @@ interface Props {
   onScriptGenerated: (segments: any[], style: string, topic?: string) => void;
   onAudioRefined?: (segments: any[], topic?: string) => void;
   initialTopic?: string;
+  referenceLink?: string;
   uiLang: 'vi' | 'en';
   onNavigateToStudio?: () => void;
   isAdmin: boolean;
   globalSettings: GlobalSettings;
 }
 
-const ScriptModule: React.FC<Props> = ({ segments, setSegments, scriptData, setScriptData, onScriptGenerated, onAudioRefined, initialTopic = '', uiLang, onNavigateToStudio, isAdmin, globalSettings }) => {
+const ScriptModule: React.FC<Props> = ({ segments, setSegments, scriptData, setScriptData, onScriptGenerated, onAudioRefined, initialTopic = '', referenceLink = '', uiLang, onNavigateToStudio, isAdmin, globalSettings }) => {
   const [topic, setTopic] = useState(initialTopic);
+  const [draftOutline, setDraftOutline] = useState('');
+  const [isDrafting, setIsDrafting] = useState(false);
+  const [showDraftSection, setShowDraftSection] = useState(true);
   const [duration, setDuration] = useState<number | string>(1);
   const [secondsPerScene, setSecondsPerScene] = useState<number | string>(8);
   const [market, setMarket] = useState('vn_dharma');
@@ -289,6 +293,38 @@ const ScriptModule: React.FC<Props> = ({ segments, setSegments, scriptData, setS
       }
     } catch (e: any) { showToast(e.message); }
     finally { setLoadingSuggestion(false); }
+  };
+
+  
+  const handleGenerateDraft = async () => {
+    if (!topic) return showToast(uiLang === 'vi' ? 'Vui lòng nhập chủ đề!' : 'Please enter a topic!');
+    const { hasAnyApiKey } = await import('../services/aiService');
+    if (!hasAnyApiKey()) {
+      showToast(uiLang === 'vi' ? 'Chưa cấu hình API Key!' : 'No API Key configured!', 'error');
+      return;
+    }
+    setIsDrafting(true);
+    try {
+      const { SYSTEM_PROMPT_DRAFT_WRITER } = await import('../data/prompts');
+      const mk = TARGET_MARKETS[market] || TARGET_MARKETS['vn_dharma'];
+      const randomSeed = Math.floor(Math.random() * 100000);
+      let prompt = `TOPIC: "${topic}"\nDURATION: ${duration} minutes\nSCENES: ${Math.ceil((Math.max(0.1, durationNum) * 60) / secPerSceneNum)} scenes\nTARGET_MARKET: ${mk.name} (${mk.voice_lang})\nRANDOM_SEED: ${randomSeed} (Ensure this output is completely unique)\n`;
+      if (referenceLink) {
+        prompt += `\nREFERENCE_LINK: ${referenceLink} (Adapt the core concepts/hooks of this link into our niche)`;
+      }
+      const draftResult = await callAI(prompt, SYSTEM_PROMPT_DRAFT_WRITER);
+      setDraftOutline(draftResult.draft || draftResult.text || (typeof draftResult === 'string' ? draftResult : JSON.stringify(draftResult, null, 2)));
+      showToast(uiLang === 'vi' ? 'Đã tạo xong kịch bản thô!' : 'Rough draft generated!', 'success');
+    } catch (e: any) {
+      if (e.rawText) {
+        setDraftOutline(e.rawText);
+        showToast(uiLang === 'vi' ? 'Đã tạo xong kịch bản thô!' : 'Rough draft generated!', 'success');
+      } else {
+        showToast(`Lỗi: ${e.message}`, 'error');
+      }
+    } finally {
+      setIsDrafting(false);
+    }
   };
 
   const handleGenerate = async () => {
@@ -416,7 +452,7 @@ NATIVE_LANGUAGE: ${mk.voice_lang}
 CULTURAL_CONTEXT: ${mk.culture}
 VISUAL_STYLE: ${styleContext}
 VISUAL_STYLE_MATERIAL_GUIDELINES: ${styleObj?.desc || ''}. ${styleObj?.prompt_enforce || ''}
-[ANTI-REPETITION SEED]: ${randomSeed}${continuityContext}
+[ANTI-REPETITION SEED]: ${randomSeed}${continuityContext}\n${draftOutline ? `\n[CRITICAL APPROVED DRAFT OUTLINE]:\nYou MUST follow this outline strictly for the storyline:\n${draftOutline}\n` : ''}
 ${speakerModeInstructions}
 
 CRITICAL MATERIAL CONSISTENCY LOCK:
@@ -920,6 +956,85 @@ CRITICAL INSTRUCTION:
                 </div>
               ))}
             </div>
+          </div>
+
+          {showDraftSection && (
+            <div className="bg-[#0a0e14]/50 rounded-xl p-5 border border-amber-500/30 mb-6">
+              <h3 className="text-sm font-bold text-amber-400 mb-3 flex items-center gap-2 uppercase">
+                <i className="fa-solid fa-wand-magic-sparkles" /> BƯỚC 1: Dàn Ý Thô (Slot Machine)
+              </h3>
+              
+              {referenceLink && (
+                <div className="mb-4 bg-teal-900/20 p-3 rounded-lg border border-teal-500/30 text-xs text-teal-300">
+                  <i className="fa-solid fa-link" /> <span className="font-bold">Đã nhận Link đối thủ:</span> Sườn thô sẽ được xào nấu lại từ nội dung gốc.
+                </div>
+              )}
+
+              <button 
+                onClick={handleGenerateDraft} 
+                disabled={isDrafting}
+                className="w-full py-4 mb-4 bg-gradient-to-r from-amber-600 to-orange-500 hover:from-amber-500 hover:to-orange-400 text-white font-bold rounded-xl flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(245,158,11,0.3)] transition-all disabled:opacity-50"
+              >
+                {isDrafting ? <><i className="fa-solid fa-sync animate-spin" /> ĐANG QUAY LÔ TÔ...</> : <><i className="fa-solid fa-dice" /> QUAY LÔ TÔ (GỢI Ý KỊCH BẢN MỚI)</>}
+              </button>
+
+              {draftOutline && (
+                <div className="space-y-3 animate-[fadeIn_0.3s_ease-out]">
+                  <label className="text-xs font-bold text-slate-300">Bạn có thể sửa sườn thô dưới đây trước khi Xuất Kịch Bản:</label>
+                  <textarea 
+                    value={draftOutline}
+                    onChange={e => setDraftOutline(e.target.value)}
+                    className="w-full h-48 bg-[#12161e] border border-amber-500/30 rounded-xl p-4 text-sm text-slate-200 outline-none focus:border-amber-500/60 leading-relaxed"
+                  />
+                  <div className="flex flex-wrap items-center gap-2 mt-2">
+                    <button 
+                      onClick={() => {
+                        navigator.clipboard.writeText(draftOutline);
+                        showToast(uiLang === 'vi' ? 'Đã copy sườn thô!' : 'Draft copied!', 'success');
+                      }}
+                      className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-lg border border-slate-600 transition-colors flex items-center gap-1"
+                    >
+                      <i className="fa-regular fa-copy" /> COPY
+                    </button>
+                    <button 
+                      onClick={() => {
+                        const blob = new Blob([draftOutline], { type: 'text/plain;charset=utf-8' });
+                        saveAs(blob, `VKT_Draft_${topic.replace(/\s+/g, '_').substring(0, 20)}.txt`);
+                        showToast(uiLang === 'vi' ? 'Đã tải sườn thô (.txt)' : 'Draft downloaded!', 'success');
+                      }}
+                      className="px-3 py-1.5 bg-blue-900/40 hover:bg-blue-800/60 text-blue-300 text-xs font-bold rounded-lg border border-blue-500/30 transition-colors flex items-center gap-1"
+                    >
+                      <i className="fa-solid fa-download" /> TẢI XUỐNG
+                    </button>
+                    <label className="px-3 py-1.5 bg-amber-900/40 hover:bg-amber-800/60 text-amber-300 text-xs font-bold rounded-lg border border-amber-500/30 transition-colors cursor-pointer flex items-center gap-1">
+                      <i className="fa-solid fa-upload" /> TẢI LÊN LẠI (.TXT)
+                      <input 
+                        type="file" 
+                        accept=".txt" 
+                        className="hidden" 
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          const reader = new FileReader();
+                          reader.onload = (event) => {
+                            setDraftOutline(event.target?.result as string);
+                            showToast(uiLang === 'vi' ? 'Đã khôi phục sườn thô!' : 'Draft restored!', 'success');
+                          };
+                          reader.readAsText(file);
+                          e.target.value = '';
+                        }} 
+                      />
+                    </label>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="flex justify-between items-center mt-6 pt-4 border-t border-slate-700/50 mb-4">
+            <h3 className="text-sm font-bold text-teal-400 uppercase">
+              <i className="fa-solid fa-film" /> BƯỚC 2: SẢN XUẤT CHI TIẾT
+            </h3>
           </div>
 
           <div className="flex gap-4">

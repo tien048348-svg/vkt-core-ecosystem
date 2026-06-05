@@ -9,6 +9,8 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ uiLang, onToggleLang, onOpenConfig, keyCount, onOpenAdmin }) => {
+  const clickTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
   return (
     <header className="bg-[#0a0e14]/95 backdrop-blur-md border-b border-amber-900/30 sticky top-0 z-50 shadow-[0_1px_3px_rgba(0,0,0,0.5)]">
       <div className="max-w-[1800px] mx-auto px-4 md:px-6 py-3 flex justify-between items-center">
@@ -32,7 +34,7 @@ const Header: React.FC<HeaderProps> = ({ uiLang, onToggleLang, onOpenConfig, key
               VKT <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-300">RECYCLE STYLES MASTER</span>
             </h1>
             <div className="flex items-center gap-2 mt-0.5">
-              <p className="text-[9px] text-amber-600/80 tracking-widest font-mono font-bold">RECYCLED FOLKLORE & ECO-ART STUDIO <span className="text-amber-500 ml-1">🌻 V20.0</span></p>
+              <p className="text-[9px] text-amber-600/80 tracking-widest font-mono font-bold">RECYCLED FOLKLORE & ECO-ART STUDIO <span className="text-amber-500 ml-1">🌻 V21.55-TC</span></p>
             </div>
           </div>
         </div>
@@ -40,11 +42,22 @@ const Header: React.FC<HeaderProps> = ({ uiLang, onToggleLang, onOpenConfig, key
         {/* Right Actions */}
         <div className="flex items-center gap-2 md:gap-4">
           {/* Home Button */}
-          <a href="https://vkt-ecosystem-hub.vercel.app/" 
-            className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold bg-[#161a22] text-slate-300 border border-slate-700/50 hover:bg-[#1e2230] hover:text-white transition-all group shadow-[0_0_10px_rgba(0,0,0,0.3)]">
+          <button 
+            onClick={(e) => {
+              const count = e.detail;
+              if (count === 3 && onOpenAdmin) {
+                if (clickTimeoutRef.current) clearTimeout(clickTimeoutRef.current);
+                onOpenAdmin();
+              } else if (count === 1) {
+                clickTimeoutRef.current = setTimeout(() => {
+                  window.location.href = "https://kiemtienvu.com";
+                }, 400);
+              }
+            }}
+            className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold bg-[#161a22] text-slate-300 border border-slate-700/50 hover:bg-[#1e2230] hover:text-white transition-all group shadow-[0_0_10px_rgba(0,0,0,0.3)] cursor-pointer">
             <i className="fa-solid fa-house group-hover:scale-110 transition-transform text-amber-400"></i>
             <span className="hidden md:inline">{uiLang === 'vi' ? 'Trang Chủ' : 'Home'}</span>
-          </a>
+          </button>
 
           <a href="https://zalo.me/0559793678" target="_blank" rel="noopener noreferrer"
             className="hidden md:flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/15 transition-all group">
