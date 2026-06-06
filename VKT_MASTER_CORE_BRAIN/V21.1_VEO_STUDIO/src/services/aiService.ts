@@ -123,11 +123,15 @@ function safeJSONParse(str: string): any {
 // === Google Gemini with Round-Robin ===
 async function callGoogleWithRetry(prompt: string, systemPrompt: string, retries = 6): Promise<any> {
   let lastError: any;
+  const fallbackModels = [MODELS.text, "gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-1.5-flash-8b", "gemini-pro"];
+  let currentModelIdx = 0;
+
   for (let i = 0; i < retries; i++) {
     const apiKey = getNextKey();
     if (!apiKey) continue;
     try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODELS.text}:generateContent?key=${apiKey}`;
+      const currentModel = fallbackModels[currentModelIdx];
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent?key=${apiKey}`;
       const body = {
         contents: [{ role: "user", parts: [{ text: prompt }] }],
         systemInstruction: { parts: [{ text: systemPrompt }] },
@@ -144,6 +148,14 @@ async function callGoogleWithRetry(prompt: string, systemPrompt: string, retries
       
       if (!res.ok) {
         const errText = await res.text();
+        if (res.status === 404 && errText.includes("not found")) {
+           // Model not found -> switch to the next fallback model and retry immediately
+           if (currentModelIdx < fallbackModels.length - 1) {
+             currentModelIdx++;
+             i--; // Don't count this as a retry limit failure
+             continue;
+           }
+        }
         if (res.status === 400 && (errText.includes("API_KEY_INVALID") || errText.includes("invalid"))) {
           throw new Error("API_KEY_INVALID: API Key Gemini này không hợp lệ hoặc đã bị Google khóa! Vui lòng mở Config (chìa khóa) để thay thế Key hoạt động.");
         }
