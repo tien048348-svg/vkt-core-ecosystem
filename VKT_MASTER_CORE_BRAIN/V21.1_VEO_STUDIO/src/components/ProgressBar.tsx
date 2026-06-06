@@ -5,9 +5,10 @@ interface ProgressBarProps {
   text: string;
   subText?: string;
   colorTheme?: 'teal' | 'purple' | 'amber' | 'blue' | 'pink';
+  elapsedTime?: number;
 }
 
-const ProgressBar: React.FC<ProgressBarProps> = ({ percent, text, subText, colorTheme = 'teal' }) => {
+const ProgressBar: React.FC<ProgressBarProps> = ({ percent, text, subText, colorTheme = 'teal', elapsedTime }) => {
   const themeClasses = {
     teal: {
       border: 'border-teal-500/50',
@@ -89,8 +90,18 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ percent, text, subText, color
             {subText && <div className={`${theme.subTextColor} text-[10px] mt-0.5 uppercase tracking-wider font-bold`}>{subText}</div>}
           </div>
         </div>
-        <div className={`text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r ${theme.gradientText} ${theme.shadowText}`}>
-          {Math.round(percent)}%
+        <div className="flex items-center gap-4">
+          {elapsedTime !== undefined && (
+            <div className={`px-3 py-1 rounded-md border ${theme.border} bg-[#0a0e14] flex items-center gap-2 shadow-inner`}>
+              <i className={`fa-solid fa-stopwatch ${theme.iconColor} animate-pulse`} />
+              <span className={`text-sm font-bold ${theme.textColor} tracking-widest`}>
+                {Math.floor(elapsedTime / 60).toString().padStart(2, '0')}:{(elapsedTime % 60).toString().padStart(2, '0')}
+              </span>
+            </div>
+          )}
+          <div className={`text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r ${theme.gradientText} ${theme.shadowText}`}>
+            {Math.round(percent)}%
+          </div>
         </div>
       </div>
     </div>

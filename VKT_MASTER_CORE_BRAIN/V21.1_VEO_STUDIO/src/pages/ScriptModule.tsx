@@ -1456,6 +1456,7 @@ CRITICAL INSTRUCTION:
                 text={progress.text || loadingMessages[loadingMsgIdx]} 
                 subText={uiLang === 'vi' ? 'Tiến trình kiến tạo Kịch Bản AI' : 'AI Script Generation Progress'}
                 colorTheme="teal"
+                elapsedTime={elapsedTime}
               />
             ) : (
               <button onClick={handleGenerate} disabled={refiningAudio}
