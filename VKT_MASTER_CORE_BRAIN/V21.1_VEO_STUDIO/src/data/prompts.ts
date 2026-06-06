@@ -157,8 +157,9 @@ AI must select one appropriate Energy State for the script based on the Niche:
 
 # [MARKET ADAPTATION - NATIVE EXPERT MODE]:
 - [THINKING]: AI must act as a native expert of the TARGET_MARKET. 
-- [100% ENGLISH JSON LOCK]: TẤT CẢ các trường dữ liệu trả về trong JSON (character_name, emotion, direction, chunk_summary, visual_desc, video_prompt, image_prompt, v.v.) BẮT BUỘC viết 100% bằng Tiếng Anh.
+- [100% ENGLISH JSON LOCK]: TẤT CẢ các trường dữ liệu trả về trong JSON (character_name, emotion, direction, chunk_summary, video_prompt, image_prompt, v.v.) BẮT BUỘC viết 100% bằng Tiếng Anh.
 - [NGOẠI LỆ DUY NHẤT - NATIVE DIALOGUE]: CHỈ DUY NHẤT trường 'line' trong mảng 'dialogues' (nội dung nhân vật nói ra) mới được phép viết bằng Tiếng Việt. Tuyệt đối không dùng tiếng Việt ở bất kỳ trường nào khác để tiết kiệm token và đảm bảo tương thích hệ thống.
+- [CRITICAL QUALITY CHECKS]: BẮT BUỘC ĐẠT 30-40 TỪ/CẢNH. TUYỆT ĐỐI KHÔNG CÓ TỪ 'half body', 'medium shot' VÀ KHÔNG BỊ CẮT NỬA NGƯỜI trong prompt. Không lặp từ khóa. Xóa sạch chữ tiếng Anh trong thoại tiếng Việt.
 
 # [UNIVERSAL ANTI-REPETITION ENGINE - CHỐNG LẶP KỊCH BẢN TỰ ĐỘNG V21.8.1]:
 Hệ thống sẽ cung cấp một [ANTI-REPETITION SEED] (hạt giống ngẫu nhiên). Dựa vào seed này, bạn PHẢI:
@@ -257,13 +258,6 @@ CRITICAL RULE: You MUST return the JSON in a purely minified format (no spaces, 
     {
       "scene_number": 1,
       "beat": "setup | progression | escalation | climax | resolution",
-      "ai_self_correction_scratchpad": {
-        "1_character_count_check": "(Tự đếm chính xác số TỪ (WORD COUNT). BẮT BUỘC ĐẠT TỪ 30 ĐẾN 40 TỪ/CẢNH đễ giữ tốc độ nhanh mà không bị Dead Air hay Overload. Nếu nằm ngoài khoảng này -> Sửa lại ngay.)",
-        "2_camera_angle_check": "(Tự soi bản nháp hình ảnh. ĐÃ ĐẢM BẢO TUYỆT ĐỐI KHÔNG CÓ TỪ 'half body', 'medium shot' VÀ KHÔNG BỊ CẮT NỬA NGƯỜI CHƯA? Phải dùng 'Close-up', 'Full body' hoặc 'Wide shot'. KHÔNG dùng nước 'rain, splash'.)",
-        "3_repetition_check": "(Tự soi xem có lặp từ khóa hoặc lặp tên nhân vật với các cảnh trước không? Có dùng tên 'An' không? Nếu có -> Sửa ngay.)",
-        "4_outro_lock_check": "${targetDuration && targetDuration <= 1 ? "(CẢNH BÁO VIDEO NGẮN: Nếu là cảnh cuối, ĐÃ CHẮC CHẮN CẤM SLOGAN VÀ ĐỂ LỜI THOẠI DANG DỞ KHỚP VỚI CẢNH 1 ĐỂ TẠO LOOP CHƯA?)" : "(CẢNH BÁO VIDEO DÀI: Nếu là cảnh cuối, đã chèn đúng 100% câu Slogan thương hiệu chưa? Bắt buộc phải có Slogan!)"}",
-        "5_english_leak_check": "(Trong đoạn thoại tiếng Việt có dính chữ tiếng Anh nào không? Xóa sạch.)"
-      },
       "time": "00:00 - 00:${secPerSceneNum}",
       "section": "THE HOOK",
       "character": "${niche.characterVoiceProfile.speaker}",
@@ -290,13 +284,10 @@ CRITICAL RULE: You MUST return the JSON in a purely minified format (no spaces, 
       "voice_text": "Vietnamese dialogue line goes here... (MUST BE EXACTLY WHAT PASSED THE SCRATCHPAD, <= ${maxWords} WORDS)",
       "word_count": "Exact word count of the dialogue",
       "audio_end_time": "Calculated end time in seconds",
-      "visual_desc_vi": "English visual description (Do NOT use Vietnamese)",
       "sfx_music_suggestion": "English SFX and music suggestion",
       "pacing_score": 9,
-      "pacing_warning": null,
       "video_prompt": "English video prompt with FOREGROUND LOCK (Close-up ONLY) and VEO3 AUTO-SHIELD physics law...",
-      "image_prompt": "English image prompt...",
-      "strategy_note": "English strategy note"
+      "image_prompt": "English image prompt..."
     }
   ],
   "coppa_disclaimer": "English COPPA disclaimer"

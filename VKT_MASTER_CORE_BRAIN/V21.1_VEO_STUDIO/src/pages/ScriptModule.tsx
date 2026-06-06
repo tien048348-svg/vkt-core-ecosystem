@@ -539,8 +539,8 @@ const ScriptModule: React.FC<Props> = ({ referenceLink = '', segments, setSegmen
       // 1. Calculate the total requested scenes
       const totalScenes = Math.ceil((Math.max(0.1, targetDuration) * 60) / secPerSceneNum);
       
-      // 2. Define safe chunk size: 25 scenes per API call
-      const chunkSize = 10;
+      // 2. Define safe chunk size: 20 scenes per API call
+      const chunkSize = 20;
       const totalRounds = Math.ceil(totalScenes / chunkSize);
       
       let allSegments: any[] = [];
@@ -638,6 +638,13 @@ CRITICAL INSTRUCTION:
             break;
           } catch (err: any) {
             retries--;
+            const errMsg = err?.message?.toLowerCase() || '';
+            if (errMsg.includes('429') || errMsg.includes('quota') || errMsg.includes('exhausted')) {
+              showToast(uiLang === 'vi' ? '❌ Hết Quota API! Vui lòng thay API Key mới trong Cài Đặt.' : '❌ API Quota Exceeded! Please change API Key in Settings.', 'error');
+              setLoading(false);
+              setProgress({ percent: 0, text: '' });
+              return; // Stop completely, don't retry!
+            }
             if (retries === 0) throw err;
             if (abortRef.current) break;
             setProgress({ percent: progress.percent, text: uiLang === 'vi' ? `⚠️ Đang thử lại (${3-retries}/3)...` : `⚠️ Retrying (${3-retries}/3)...` });
@@ -885,7 +892,7 @@ CRITICAL INSTRUCTION:
 - This script is in MULTI-CHARACTER mode.
 - Maintain the alternating characters as specified in the original input.`;
 
-      const chunkSize = 10;
+      const chunkSize = 20;
       const totalRounds = Math.ceil(payload.length / chunkSize);
       let allRefinedSegments: any[] = [];
       
