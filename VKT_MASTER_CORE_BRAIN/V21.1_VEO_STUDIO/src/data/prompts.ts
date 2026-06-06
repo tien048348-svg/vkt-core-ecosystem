@@ -261,6 +261,7 @@ CRITICAL RULE: You MUST return the JSON in a purely minified format (no spaces, 
       "thought_process": "Short self-check (max 15 words): 1. Word count 30-40? 2. Prompt 100% English? 3. Final scene unfinished for loop?",
       "time": "00:00 - 00:${secPerSceneNum}",
       "character": "${niche.characterVoiceProfile.speaker}",
+      "draft_and_trim": "DRAFT the dialogue here. If it exceeds 40 words, TRIM it down ruthlessly. For the final scene, ensure the last 3 words flow perfectly into the first 3 words of scene 1.",
       "dialogues": [
         {
           "character_name": "${niche.characterVoiceProfile.speaker}",
