@@ -335,6 +335,7 @@ const ScriptModule: React.FC<Props> = ({ referenceLink = '', segments, setSegmen
   const [progress, setProgress] = useState({ percent: 0, text: '' });
   const [elapsedTime, setElapsedTime] = useState(0);
   const timerRef = useRef<any>(null);
+  const [lastGenState, setLastGenState] = useState<{ time: number, status: 'success' | 'error' | 'abort' } | null>(null);
   
   // Video Generation States
   const [videoStatus, setVideoStatus] = useState<Record<number, { status: 'idle'|'loading'|'done'|'error', url?: string, error?: string }>>({});
@@ -524,6 +525,7 @@ const ScriptModule: React.FC<Props> = ({ referenceLink = '', segments, setSegmen
     setProgress({ percent: 2, text: uiLang === 'vi' ? 'Đang khởi tạo lõi AI...' : 'Initializing AI core...' });
     setLoading(true);
     setElapsedTime(0);
+    setLastGenState(null);
 
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
@@ -769,6 +771,7 @@ CRITICAL INSTRUCTION:
       }
 
       if (abortRef.current) {
+        setLastGenState({ time: elapsedTime, status: 'abort' });
         setLoading(false);
         return;
       }
@@ -803,12 +806,14 @@ CRITICAL INSTRUCTION:
       } else {
         showToast(`🎉 Successfully woven full script with ${allSegments.length} scenes!`, 'success');
       }
+      setLastGenState({ time: elapsedTime, status: 'success' });
     } catch (e: any) { 
       if (e.message?.includes('Fail to fetch') || e.message?.includes('NetworkError')) {
         showToast(uiLang === 'vi' ? '❌ Mất kết nối mạng! Vui lòng kiểm tra lại Internet.' : '❌ Network Error! Please check your connection.', 'error');
       } else {
         showToast(`❌ Error: ${e.message}`, 'error');
       }
+      setLastGenState({ time: elapsedTime, status: 'error' });
     } finally { 
       if (timerRef.current) clearInterval(timerRef.current);
       setLoading(false); 
@@ -1449,20 +1454,43 @@ CRITICAL INSTRUCTION:
               <i className="fa-solid fa-film" /> BƯỚC 2: SẢN XUẤT CHI TIẾT
             </h3>
           </div>
-          <div className="flex gap-4">
+          <div className="flex gap-4 items-center">
             {loading ? (
-              <ProgressBar 
-                percent={progress.percent} 
-                text={progress.text || loadingMessages[loadingMsgIdx]} 
-                subText={uiLang === 'vi' ? 'Tiến trình kiến tạo Kịch Bản AI' : 'AI Script Generation Progress'}
-                colorTheme="teal"
-                elapsedTime={elapsedTime}
-              />
+              <div className="flex-1">
+                <ProgressBar 
+                  percent={progress.percent} 
+                  text={progress.text || loadingMessages[loadingMsgIdx]} 
+                  subText={uiLang === 'vi' ? 'Tiến trình kiến tạo Kịch Bản AI' : 'AI Script Generation Progress'}
+                  colorTheme="teal"
+                  elapsedTime={elapsedTime}
+                />
+              </div>
             ) : (
-              <button onClick={handleGenerate} disabled={refiningAudio}
-                className="flex-1 py-4 bg-teal-900/50 hover:bg-teal-800/50 border border-teal-500/30 text-teal-100 font-bold rounded-xl shadow-[0_0_20px_rgba(20,184,166,0.15)] flex items-center justify-center gap-2 transition-all disabled:opacity-50">
-                <i className="fa-solid fa-paper-plane" /> {uiLang === 'vi' ? 'KIẾN TẠO KỊCH BẢN CHỮA LÀNH' : 'GENERATE HEALING SCRIPT'}
-              </button>
+              <div className="flex-1 flex flex-col gap-2">
+                <button onClick={handleGenerate} disabled={refiningAudio}
+                  className="w-full py-4 bg-teal-900/50 hover:bg-teal-800/50 border border-teal-500/30 text-teal-100 font-bold rounded-xl shadow-[0_0_20px_rgba(20,184,166,0.15)] flex items-center justify-center gap-2 transition-all disabled:opacity-50">
+                  <i className="fa-solid fa-paper-plane" /> {uiLang === 'vi' ? 'KIẾN TẠO KỊCH BẢN CHỮA LÀNH' : 'GENERATE HEALING SCRIPT'}
+                </button>
+                {lastGenState && (
+                  <div className={`text-xs font-bold px-3 py-1.5 rounded-lg flex items-center justify-center gap-2 border ${
+                    lastGenState.status === 'success' ? 'bg-emerald-900/30 text-emerald-400 border-emerald-500/30' : 
+                    lastGenState.status === 'error' ? 'bg-red-900/30 text-red-400 border-red-500/30' : 
+                    'bg-slate-800/50 text-slate-400 border-slate-600/30'
+                  }`}>
+                    <i className={`fa-solid ${
+                      lastGenState.status === 'success' ? 'fa-check-circle' : 
+                      lastGenState.status === 'error' ? 'fa-triangle-exclamation' : 
+                      'fa-ban'
+                    }`} />
+                    {uiLang === 'vi' ? 'Thời gian dệt kịch bản lần trước:' : 'Last generation time:'} 
+                    <span className="font-mono text-sm tracking-wider">
+                      {Math.floor(lastGenState.time / 60).toString().padStart(2, '0')}:{(lastGenState.time % 60).toString().padStart(2, '0')}
+                    </span>
+                    {lastGenState.status === 'error' && <span className="ml-2 uppercase bg-red-500 text-white px-1.5 py-0.5 rounded text-[10px]">Failed</span>}
+                    {lastGenState.status === 'success' && <span className="ml-2 uppercase bg-emerald-500 text-white px-1.5 py-0.5 rounded text-[10px]">Success</span>}
+                  </div>
+                )}
+              </div>
             )}
             
             {loading && (
