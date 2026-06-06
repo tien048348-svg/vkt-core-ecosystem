@@ -587,7 +587,7 @@ const ScriptModule: React.FC<Props> = ({ referenceLink = '', segments, setSegmen
         if (allSegments.length > 0) {
           const lastFew = allSegments.slice(-3);
           continuityContext = `\n[CONTINUITY CONTEXT]: The story has already progressed through the first ${allSegments.length} scenes. Here are the last 3 scenes for context:
-${JSON.stringify(lastFew.map(s => ({ scene_number: s.scene_number, voice_text: s.voice_text, visual_desc_vi: s.visual_desc_vi })))}
+${JSON.stringify(lastFew.map(s => ({ scene_number: s.scene_number, dialogue: s.dialogues && s.dialogues[0] ? s.dialogues[0].line : (s.voice_text || ''), visual_desc: s.visual_desc_vi || '' })))}
 CRITICAL: You MUST write the next scenes continuing this exact storyline seamlessly starting at Scene ${startSceneNum}. Do NOT repeat these scene contents, move the story forward.`;
         }
 

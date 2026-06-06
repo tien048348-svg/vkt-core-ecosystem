@@ -113,7 +113,7 @@ Giáo dục và truyền tải thông điệp về ${niche.nicheName}, tạo ra 
 Mỗi kịch bản phải bắt đầu bằng tiêu đề hội tụ đủ 4 yếu tố: Vấn đề, Đối tượng, Giải pháp, Ngòi nổ gây tò mò.
 
 # BỐ CỤC LỜI THOẠI (ANTI-CUTOFF RULE):
-Hãy viết nội dung cho trường \`voice_text\` và \`line\` thành một đoạn văn liền mạch duy nhất. (Không dùng dấu xuống dòng bên trong nội dung lời thoại để hệ thống phát âm không bị ngắt quãng).
+Hãy viết nội dung cho trường \`line\` thành một đoạn văn liền mạch duy nhất. (Không dùng dấu xuống dòng bên trong nội dung lời thoại để hệ thống phát âm không bị ngắt quãng).
 
 # CÔNG THỨC TIÊU ĐỀ TRIỆU VIEW:
 - Danh sách: "05 điều giúp bạn [GIẢI QUYẾT VẤN ĐỀ] ngay lập tức"
@@ -188,7 +188,7 @@ ${targetDuration && targetDuration >= 3 ? "- TẠO NHÂN VẬT & BIẾN CỐ: Ph
 - [END-SCENE PUNCHLINE]: Tại cuối MỖI CẢNH (ngoại trừ Cảnh Cuối của Video Ngắn vì Cảnh Cuối Video Ngắn phải là nửa câu dang dở), câu thoại cuối cùng BẮT BUỘC phải là một 'Câu Chốt Triết Lý' cực mạnh (Punchline/Hook). Câu này phải mang tính đúc kết, tạo sự ám ảnh nhẹ hoặc thức tỉnh người xem ngay trước khi chuyển sang cảnh tiếp theo.
   - KHÓA NHÂN VẬT CHÍNH: Nhân vật trung tâm BẮT BUỘC phải là: ${niche.characterVoiceProfile.speaker} (Tuổi: ${niche.characterVoiceProfile.age}, Giới tính: ${niche.characterVoiceProfile.gender}).
   - Nếu kịch bản có nhiều nhân vật, họ phải tương tác với nhân vật trung tâm này.
-  ${niche.signatureOutro && (!targetDuration || targetDuration > 1) ? `- [ABSOLUTE OVERRIDE RULE - LỜI KẾT 38 TỪ]: TẠI CẢNH CUỐI CÙNG (VÀ CHỈ DUY NHẤT CẢNH CUỐI CÙNG MÀ THÔI) của toàn bộ kịch bản, TRƯỜNG \`voice_text\` VÀ \`dialogues[0].line\` BẮT BUỘC PHẢI CHỨA CHÍNH XÁC 100% NGUYÊN VĂN CÂU KHẨU HIỆU SAU (GỒM ĐÚNG 38 TỪ, KHÔNG ĐƯỢC CẮT XÉN, KHÔNG ĐƯỢC SAI LỆCH DÙ CHỈ MỘT DẤU CHẤM PHẨY): "${niche.signatureOutro}". ĐÂY LÀ ĐIỀU KIỆN TIÊN QUYẾT. TUYỆT ĐỐI CẤM CHÈN CÂU NÀY VÀO CÁC CẢNH GIỮA CHỪNG!\n${niche.signatureOutroInstructions ? `  Kèm theo HƯỚNG DẪN ĐỌC cho Voice như sau vào phần strategy_note:\n  ${niche.signatureOutroInstructions}\n` : ""}` : (targetDuration && targetDuration <= 1 ? `- [SEAMLESS LOOP STRICT LOCK]: VÌ LÀ VIDEO NGẮN, TẠI CẢNH CUỐI CÙNG TUYỆT ĐỐI CẤM SỬ DỤNG CÂU KHẨU HIỆU THƯƠNG HIỆU. BẮT BUỘC PHẢI KẾT THÚC BẰNG MỘT CÂU DANG DỞ, KHÔNG CÓ CHỦ NGỮ HOẶC DẤU CHẤM HẾT CÂU, ĐỂ CÓ THỂ NỐI MƯỢT MÀ VÀO CÂU ĐẦU TIÊN CỦA CẢNH 1.\n` : "")}
+  ${niche.signatureOutro && (!targetDuration || targetDuration > 1) ? `- [ABSOLUTE OVERRIDE RULE - LỜI KẾT 38 TỪ]: TẠI CẢNH CUỐI CÙNG (VÀ CHỈ DUY NHẤT CẢNH CUỐI CÙNG MÀ THÔI) của toàn bộ kịch bản, TRƯỜNG \`dialogues[0].line\` BẮT BUỘC PHẢI CHỨA CHÍNH XÁC 100% NGUYÊN VĂN CÂU KHẨU HIỆU SAU (GỒM ĐÚNG 38 TỪ, KHÔNG ĐƯỢC CẮT XÉN, KHÔNG ĐƯỢC SAI LỆCH DÙ CHỈ MỘT DẤU CHẤM PHẨY): "${niche.signatureOutro}". ĐÂY LÀ ĐIỀU KIỆN TIÊN QUYẾT. TUYỆT ĐỐI CẤM CHÈN CÂU NÀY VÀO CÁC CẢNH GIỮA CHỪNG!\n${niche.signatureOutroInstructions ? `  Kèm theo HƯỚNG DẪN ĐỌC cho Voice như sau vào phần strategy_note:\n  ${niche.signatureOutroInstructions}\n` : ""}` : (targetDuration && targetDuration <= 1 ? `- [SEAMLESS LOOP STRICT LOCK]: VÌ LÀ VIDEO NGẮN, TẠI CẢNH CUỐI CÙNG TUYỆT ĐỐI CẤM SỬ DỤNG CÂU KHẨU HIỆU THƯƠNG HIỆU. BẮT BUỘC PHẢI KẾT THÚC BẰNG MỘT CÂU DANG DỞ, KHÔNG CÓ CHỦ NGỮ HOẶC DẤU CHẤM HẾT CÂU, ĐỂ CÓ THỂ NỐI MƯỢT MÀ VÀO CÂU ĐẦU TIÊN CỦA CẢNH 1.\n` : "")}
 
 # [HOLLYWOOD DIALOGUE & PACING PROTOCOL - KỶ LUẬT THOẠI]:
 - CÂU THOẠI MẬT ĐỘ CAO (30-40 TỪ/CẢNH): Bắt buộc mỗi cảnh 8 giây phải chứa từ 30 đến 40 từ tiếng Việt để khớp với tốc độ đọc nhanh (1.7x, 1.85x, 2.5x). Nếu dưới 30 từ, video sẽ bị khoảng không chết (Dead air).
@@ -260,9 +260,7 @@ CRITICAL RULE: You MUST return the JSON in a purely minified format (no spaces, 
       "beat": "setup | progression | escalation | climax | resolution",
       "thought_process": "Short self-check (max 15 words): 1. Word count 30-40? 2. Prompt 100% English? 3. Final scene unfinished for loop?",
       "time": "00:00 - 00:${secPerSceneNum}",
-      "section": "THE HOOK",
       "character": "${niche.characterVoiceProfile.speaker}",
-      "dialogue_intent": "medium",
       "dialogues": [
         {
           "character_name": "${niche.characterVoiceProfile.speaker}",
@@ -282,7 +280,6 @@ CRITICAL RULE: You MUST return the JSON in a purely minified format (no spaces, 
         "pacing_speed": "${targetDuration && targetDuration <= 1 ? "1.85x" : niche.characterVoiceProfile.pacing_speed}",
         "state": "ON-SCREEN or OFF-SCREEN"
       },
-      "voice_text": "Vietnamese dialogue line goes here... (MUST BE EXACTLY WHAT PASSED THE SCRATCHPAD, <= ${maxWords} WORDS)",
       "word_count": "Exact word count of the dialogue",
       "audio_end_time": "Calculated end time in seconds",
       "sfx_music_suggestion": "English SFX and music suggestion",
