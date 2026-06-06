@@ -123,15 +123,11 @@ function safeJSONParse(str: string): any {
 // === Google Gemini with Round-Robin ===
 async function callGoogleWithRetry(prompt: string, systemPrompt: string, retries = 6): Promise<any> {
   let lastError: any;
-  const fallbackModels = [MODELS.text, "gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-1.5-flash-8b", "gemini-1.5-pro", "gemini-1.5-pro-latest", "gemini-pro"];
-  let currentModelIdx = 0;
-
   for (let i = 0; i < retries; i++) {
-    const apiKey = getNextKey()?.trim();
+    const apiKey = getNextKey();
     if (!apiKey) continue;
     try {
-      const currentModel = fallbackModels[currentModelIdx].trim();
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent?key=${encodeURIComponent(apiKey)}`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODELS.text}:generateContent?key=${apiKey}`;
       const body = {
         contents: [{ role: "user", parts: [{ text: prompt }] }],
         systemInstruction: { parts: [{ text: systemPrompt }] },
@@ -145,14 +141,6 @@ async function callGoogleWithRetry(prompt: string, systemPrompt: string, retries
       
       if (!res.ok) {
         const errText = await res.text();
-        if (res.status === 404 && errText.includes("not found")) {
-           // Model not found -> switch to the next fallback model and retry immediately
-           if (currentModelIdx < fallbackModels.length - 1) {
-             currentModelIdx++;
-             i--; // Don't count this as a retry limit failure
-             continue;
-           }
-        }
         if (res.status === 400 && (errText.includes("API_KEY_INVALID") || errText.includes("invalid"))) {
           throw new Error("API_KEY_INVALID: API Key Gemini này không hợp lệ hoặc đã bị Google khóa! Vui lòng mở Config (chìa khóa) để thay thế Key hoạt động.");
         }
@@ -318,57 +306,3 @@ export async function generateImage(prompt: string, aspectRatio: string = "16:9"
   }
   return null;
 }
-
-// === Video Generation (VKT Chrome Extension Automation) ===
-export async function generateVideo(prompt: string, aspectRatio: string = '16:9', quality: string = '1080p', billingMode: string = 'premium', sceneId?: number): Promise<string> {
-  console.log(`Sending task to VKT Chrome Extension (Format: ${aspectRatio}, Quality: ${quality}, Mode: ${billingMode})`);
-  
-  return new Promise((resolve, reject) => {
-    // Generate a unique ID if sceneId is not provided
-    const id = sceneId !== undefined ? sceneId : Math.floor(Math.random() * 1000000);
-
-    // Setup listener for the response from Extension
-    const messageListener = (event: MessageEvent) => {
-      if (event.source !== window) return;
-      if (event.data && event.data.type === 'VKT_AUTOMATION_RESULT') {
-        const { sceneId: returnedSceneId, videoUrl, error } = event.data.payload;
-        
-        // Match the result with our request
-        if (returnedSceneId === id) {
-          window.removeEventListener('message', messageListener);
-          if (error) {
-            reject(new Error(error));
-          } else {
-            resolve(videoUrl);
-          }
-        }
-      }
-    };
-
-    window.addEventListener('message', messageListener);
-
-    // Send the task to the Extension
-    window.postMessage({
-      type: 'VKT_AUTOMATION_START',
-      payload: {
-        script: [{
-          id: id,
-          prompt: prompt
-        }],
-        config: {
-          aspectRatio,
-          quality,
-          billingMode
-        }
-      }
-    }, '*');
-
-    // Timeout after 5 minutes just in case the extension dies
-    setTimeout(() => {
-      window.removeEventListener('message', messageListener);
-      reject(new Error("Timeout: Chrome Extension không phản hồi sau 5 phút."));
-    }, 300000);
-  });
-}
-
-

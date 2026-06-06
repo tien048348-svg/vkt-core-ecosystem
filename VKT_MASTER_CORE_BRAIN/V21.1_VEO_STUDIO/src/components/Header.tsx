@@ -36,14 +36,20 @@ const Header: React.FC<HeaderProps> = ({ uiLang, onToggleLang, onOpenConfig, key
             <div className="flex items-center space-x-4 ml-6 lg:ml-12 border-l border-amber-900/30 pl-6 h-10">
               <div className="hidden lg:flex items-center px-3 py-1 rounded-full bg-gradient-to-r from-amber-900/40 to-orange-900/20 border border-amber-500/20">
                 <span className="text-xs font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-400 tracking-wider">
-                  V21.8.13 - AUTO FALLBACK CORE
+                  V21.8.14 - V20 ENGINE ROLLBACK
                 </span>
               </div>
             </div>
-            <div className="flex items-center gap-2 mt-0.5">
-              <div className="text-[9px] text-slate-500 font-medium tracking-widest uppercase mt-0.5 opacity-80 flex items-center">
-                CORE BRAIN TESTING ENVIRONMENT <span className="ml-1.5 px-1.5 py-0.5 bg-slate-800 rounded text-slate-400">V21.8.13 - PEAK EDITION</span>
-              </div>
+          </div>
+        </div>
+
+        {/* Info & Core Update (Middle) */}
+        <div className="hidden xl:flex flex-col items-center justify-center -ml-12">
+          <div className="flex flex-col items-center">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold tracking-[0.2em] text-amber-500/80">
+                CORE BRAIN TESTING ENVIRONMENT <span className="ml-1.5 px-1.5 py-0.5 bg-slate-800 rounded text-slate-400">V21.8.14 - V20 ENGINE ROLLBACK</span>
+              </span>
             </div>
           </div>
         </div>
