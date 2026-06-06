@@ -333,6 +333,8 @@ const ScriptModule: React.FC<Props> = ({ referenceLink = '', segments, setSegmen
   const [audioRefinedCount, setAudioRefinedCount] = useState(0);
   const [speakerMode, setSpeakerMode] = useState<'multi' | 'single' | 'asmr'>('single');
   const [progress, setProgress] = useState({ percent: 0, text: '' });
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const timerRef = useRef<any>(null);
   
   // Video Generation States
   const [videoStatus, setVideoStatus] = useState<Record<number, { status: 'idle'|'loading'|'done'|'error', url?: string, error?: string }>>({});
@@ -504,7 +506,7 @@ const ScriptModule: React.FC<Props> = ({ referenceLink = '', segments, setSegmen
     }
 
     // UX Hard Limit: Apply maxDuration from globalSettings
-    let targetDuration = duration;
+    let targetDuration = durationNum;
     const maxAllowed = globalSettings.maxDuration;
     
     if (targetDuration > maxAllowed) {
@@ -521,6 +523,12 @@ const ScriptModule: React.FC<Props> = ({ referenceLink = '', segments, setSegmen
     setAudioRefinedCount(0);
     setProgress({ percent: 2, text: uiLang === 'vi' ? 'Đang khởi tạo lõi AI...' : 'Initializing AI core...' });
     setLoading(true);
+    setElapsedTime(0);
+
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => {
+      setElapsedTime(prev => prev + 1);
+    }, 1000);
 
     try {
       const styleObj = VISUAL_STYLES.find(s => s.id === style);
@@ -796,12 +804,16 @@ CRITICAL INSTRUCTION:
         showToast(`🎉 Successfully woven full script with ${allSegments.length} scenes!`, 'success');
       }
     } catch (e: any) { 
-      showToast(e.message, 'error'); 
+      if (e.message?.includes('Fail to fetch') || e.message?.includes('NetworkError')) {
+        showToast(uiLang === 'vi' ? '❌ Mất kết nối mạng! Vui lòng kiểm tra lại Internet.' : '❌ Network Error! Please check your connection.', 'error');
+      } else {
+        showToast(`❌ Error: ${e.message}`, 'error');
+      }
     } finally { 
-      setTimeout(() => {
-        setLoading(false); 
-        setProgress({ percent: 0, text: '' });
-      }, 1000);
+      if (timerRef.current) clearInterval(timerRef.current);
+      setLoading(false); 
+      setProgress({ percent: 0, text: '' });
+      abortRef.current = false;
     }
   };
 

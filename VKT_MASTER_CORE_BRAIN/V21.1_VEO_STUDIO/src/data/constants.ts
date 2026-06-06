@@ -4,7 +4,7 @@
 // ==================================================================================
 
 export const MODELS = {
-  text: "gemini-2.5-flash",
+  text: "gemini-2.0-flash",
   image: "imagen-3.0-generate-002",
   openrouter_default: "google/gemini-2.0-flash-exp:free",
 };
