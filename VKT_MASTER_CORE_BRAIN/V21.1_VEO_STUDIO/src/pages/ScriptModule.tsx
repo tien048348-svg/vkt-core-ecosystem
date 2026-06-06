@@ -658,7 +658,7 @@ CRITICAL INSTRUCTION:
             }
             if (retries === 0) throw err;
             if (abortRef.current) break;
-            setProgress({ percent: progress.percent, text: uiLang === 'vi' ? `⚠️ Đang thử lại (${3-retries}/3)...` : `⚠️ Retrying (${3-retries}/3)...` });
+            setProgress(prev => ({ percent: prev.percent, text: uiLang === 'vi' ? `⚠️ Đang thử lại (${3-retries}/3)...` : `⚠️ Retrying (${3-retries}/3)...` }));
             showToast(uiLang === 'vi' ? `⚠️ Đợt ${round} bị nghẽn API. Đang thử lại (${3-retries}/3)...` : `⚠️ Round ${round} API overloaded. Retrying (${3-retries}/3)...`, 'warning');
             await new Promise(res => setTimeout(res, 5000));
           }

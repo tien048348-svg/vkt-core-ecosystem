@@ -137,7 +137,15 @@ async function callGoogleWithRetry(prompt: string, systemPrompt: string, retries
           maxOutputTokens: 8192
         },
       };
-      const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 150000); // 150 seconds timeout
+      const res = await fetch(url, { 
+         method: 'POST', 
+         headers: { 'Content-Type': 'application/json' }, 
+         body: JSON.stringify(body),
+         signal: controller.signal
+      });
+      clearTimeout(timeoutId);
       
       if (res.status === 429) {
         throw new Error("API_LIMIT_EXCEEDED: Hạn mức API Gemini của bạn đã hết lượt miễn phí (429 Quota Exceeded). Vui lòng thêm/thay Key mới hoặc đổi sang OpenAI/OpenRouter!");
