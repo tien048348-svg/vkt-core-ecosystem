@@ -31,6 +31,7 @@ export interface ApiConfig {
   openAiModel: string;
   youtubeApiKey: string;
   apiEnabled: ApiEnabledFlags;
+  brokenKeys?: string[];
 }
 
 const defaultConfig: ApiConfig = {
@@ -40,9 +41,9 @@ const defaultConfig: ApiConfig = {
   openRouterModel: MODELS.openrouter_default,
   openAiKey: '',
   openAiModel: 'gpt-4-turbo-preview',
-  openAiModel: 'gpt-4-turbo-preview',
   youtubeApiKey: '',
   apiEnabled: { google: true, openrouter: false, openai: false, youtube: false },
+  brokenKeys: [],
 };
 
 let config: ApiConfig = { ...defaultConfig };
@@ -141,6 +142,16 @@ async function callGoogleWithRetry(prompt: string, systemPrompt: string, retries
       
       if (!res.ok) {
         const errText = await res.text();
+        
+        // Mark key as broken if it's unauthorized, not found, or forbidden
+        if (res.status === 400 || res.status === 404 || res.status === 403 || res.status === 401) {
+           if (!config.brokenKeys) config.brokenKeys = [];
+           if (!config.brokenKeys.includes(apiKey)) {
+             config.brokenKeys.push(apiKey);
+             saveApiConfig(config);
+           }
+        }
+        
         if (res.status === 400 && (errText.includes("API_KEY_INVALID") || errText.includes("invalid"))) {
           throw new Error("API_KEY_INVALID: API Key Gemini này không hợp lệ hoặc đã bị Google khóa! Vui lòng mở Config (chìa khóa) để thay thế Key hoạt động.");
         }
