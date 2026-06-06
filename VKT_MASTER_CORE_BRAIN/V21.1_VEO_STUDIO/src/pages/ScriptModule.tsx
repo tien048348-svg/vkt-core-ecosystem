@@ -705,7 +705,7 @@ CRITICAL INSTRUCTION:
 
         const NEGATIVE_PROMPT = "--no DECAPITATED, MUTATED, EXTRA LIMBS, TEXT, WATERMARK --ar 9:16";
 
-        if (enforce) {
+        if (enforce || finalCharacterLock) {
           roundSegs = roundSegs.map((s: any) => {
             const processPrompt = (prompt: string | undefined) => {
               if (!prompt) return '';
@@ -720,7 +720,9 @@ CRITICAL INSTRUCTION:
               }
               clean = clean.replace(/,+$/, '').trim();
               
-              return `${clean} ${enforce} ${params} ${NEGATIVE_PROMPT}`.trim();
+              // Tích hợp cả finalCharacterLock (Định danh nhân vật) và enforce (Môi trường)
+              const charLock = finalCharacterLock ? `[CHARACTER IDENTITY LOCK: ${finalCharacterLock}] ` : '';
+              return `${charLock}${clean} ${enforce} ${params} ${NEGATIVE_PROMPT}`.trim();
             };
             return {
               ...s,
