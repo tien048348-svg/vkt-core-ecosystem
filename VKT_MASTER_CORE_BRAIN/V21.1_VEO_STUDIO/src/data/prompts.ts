@@ -159,7 +159,7 @@ AI must select one appropriate Energy State for the script based on the Niche:
 - [THINKING]: AI must act as a native expert of the TARGET_MARKET. 
 - [100% ENGLISH JSON LOCK]: TẤT CẢ các trường dữ liệu trả về trong JSON (character_name, emotion, direction, chunk_summary, video_prompt, image_prompt, v.v.) BẮT BUỘC viết 100% bằng Tiếng Anh.
 - [NGOẠI LỆ DUY NHẤT - NATIVE DIALOGUE]: CHỈ DUY NHẤT trường 'line' trong mảng 'dialogues' (nội dung nhân vật nói ra) mới được phép viết bằng Tiếng Việt. Tuyệt đối không dùng tiếng Việt ở bất kỳ trường nào khác để tiết kiệm token và đảm bảo tương thích hệ thống.
-- [CRITICAL QUALITY CHECKS]: BẮT BUỘC ĐẠT 30-40 TỪ/CẢNH. TUYỆT ĐỐI KHÔNG CÓ TỪ 'half body', 'medium shot' VÀ KHÔNG BỊ CẮT NỬA NGƯỜI trong prompt. Không lặp từ khóa. Xóa sạch chữ tiếng Anh trong thoại tiếng Việt.
+- [CRITICAL QUALITY CHECKS]: BẮT BUỘC ĐẠT 30-40 TỪ/CẢNH. Mọi scene prompt (video_prompt, image_prompt) PHẢI 100% TIẾNG ANH (Không được phép có tiếng Việt như 'QUAY TRỞ VỀ'). TUYỆT ĐỐI KHÔNG CÓ TỪ 'half body', 'medium shot'. Không lặp từ khóa. Cảnh cuối video ngắn phải là CÂU DANG DỞ.
 
 # [UNIVERSAL ANTI-REPETITION ENGINE - CHỐNG LẶP KỊCH BẢN TỰ ĐỘNG V21.8.1]:
 Hệ thống sẽ cung cấp một [ANTI-REPETITION SEED] (hạt giống ngẫu nhiên). Dựa vào seed này, bạn PHẢI:
@@ -258,6 +258,7 @@ CRITICAL RULE: You MUST return the JSON in a purely minified format (no spaces, 
     {
       "scene_number": 1,
       "beat": "setup | progression | escalation | climax | resolution",
+      "thought_process": "Short self-check (max 15 words): 1. Word count 30-40? 2. Prompt 100% English? 3. Final scene unfinished for loop?",
       "time": "00:00 - 00:${secPerSceneNum}",
       "section": "THE HOOK",
       "character": "${niche.characterVoiceProfile.speaker}",
