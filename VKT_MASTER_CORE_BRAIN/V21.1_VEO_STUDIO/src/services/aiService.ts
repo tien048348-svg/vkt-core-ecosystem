@@ -127,11 +127,11 @@ async function callGoogleWithRetry(prompt: string, systemPrompt: string, retries
   let currentModelIdx = 0;
 
   for (let i = 0; i < retries; i++) {
-    const apiKey = getNextKey();
+    const apiKey = getNextKey()?.trim();
     if (!apiKey) continue;
     try {
-      const currentModel = fallbackModels[currentModelIdx];
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent?key=${apiKey}`;
+      const currentModel = fallbackModels[currentModelIdx].trim();
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent?key=${encodeURIComponent(apiKey)}`;
       const body = {
         contents: [{ role: "user", parts: [{ text: prompt }] }],
         systemInstruction: { parts: [{ text: systemPrompt }] },
