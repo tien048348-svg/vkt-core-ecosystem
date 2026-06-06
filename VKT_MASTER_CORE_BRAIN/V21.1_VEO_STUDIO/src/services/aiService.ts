@@ -123,7 +123,7 @@ function safeJSONParse(str: string): any {
 // === Google Gemini with Round-Robin ===
 async function callGoogleWithRetry(prompt: string, systemPrompt: string, retries = 6): Promise<any> {
   let lastError: any;
-  const fallbackModels = [MODELS.text, "gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-1.5-flash-8b", "gemini-pro"];
+  const fallbackModels = [MODELS.text, "gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-1.5-flash-8b", "gemini-1.5-pro", "gemini-1.5-pro-latest", "gemini-pro"];
   let currentModelIdx = 0;
 
   for (let i = 0; i < retries; i++) {
