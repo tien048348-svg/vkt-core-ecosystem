@@ -8,10 +8,13 @@ const ApiKeyModal: React.FC<Props> = ({ isOpen, onClose, uiLang }) => {
   const [keys, setKeys] = useState<string[]>(['']);
   const t = translations[uiLang].apiModal;
 
+  const [visibleIndexes, setVisibleIndexes] = useState<Set<number>>(new Set());
+
   useEffect(() => {
     if (isOpen) {
       const cfg = loadApiConfig();
       setKeys(cfg.keyPool.length > 0 ? cfg.keyPool : ['']);
+      setVisibleIndexes(new Set());
     }
   }, [isOpen]);
 
@@ -26,6 +29,21 @@ const ApiKeyModal: React.FC<Props> = ({ isOpen, onClose, uiLang }) => {
     const next = k.length ? k : [''];
     setKeys(next);
     saveApiConfig({ keyPool: next });
+    
+    // Update visibility indexes
+    const newVis = new Set<number>();
+    visibleIndexes.forEach(v => {
+      if (v < i) newVis.add(v);
+      else if (v > i) newVis.add(v - 1);
+    });
+    setVisibleIndexes(newVis);
+  };
+
+  const toggleVisibility = (i: number) => {
+    const next = new Set(visibleIndexes);
+    if (next.has(i)) next.delete(i);
+    else next.add(i);
+    setVisibleIndexes(next);
   };
 
   const validCount = keys.filter(k => k.trim().startsWith('AIza')).length;
@@ -56,12 +74,24 @@ const ApiKeyModal: React.FC<Props> = ({ isOpen, onClose, uiLang }) => {
 
         <div className="space-y-2 mb-4">
           {keys.map((k, i) => (
-            <div key={i} className="flex gap-2">
-              <input type="password" value={k} onChange={e => updateKey(i, e.target.value)}
-                className="flex-1 bg-[#0a0e14] border border-slate-700/50 rounded-lg p-3 text-sm font-mono text-slate-200 placeholder-slate-600 outline-none focus:border-amber-500/50"
-                placeholder="AIza..." />
+            <div key={i} className="flex gap-2 relative items-center">
+              <input 
+                type={visibleIndexes.has(i) ? "text" : "password"} 
+                value={k} 
+                onChange={e => updateKey(i, e.target.value)}
+                className="flex-1 bg-[#0a0e14] border border-slate-700/50 rounded-lg p-3 pr-10 text-sm font-mono text-slate-200 placeholder-slate-600 outline-none focus:border-amber-500/50"
+                placeholder="AIza..." 
+              />
+              <button 
+                type="button"
+                onClick={() => toggleVisibility(i)}
+                className="absolute right-2 text-slate-500 hover:text-amber-400 p-2 transition-colors"
+                title={visibleIndexes.has(i) ? "Ẩn API Key" : "Hiện API Key"}
+              >
+                <i className={`fa-solid ${visibleIndexes.has(i) ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+              </button>
               {keys.length > 1 && (
-                <button onClick={() => removeKey(i)} className="text-red-500/50 hover:text-red-300 p-2"><i className="fa-solid fa-trash"></i></button>
+                <button onClick={() => removeKey(i)} className="text-red-500/50 hover:text-red-300 p-2 ml-1"><i className="fa-solid fa-trash"></i></button>
               )}
             </div>
           ))}
