@@ -568,7 +568,7 @@ const StudioModule: React.FC<Props> = ({ segments: initialSegments, topic = '' }
             </h2>
             <div className="flex items-center gap-2 mt-0.5">
               <div className="text-[9px] text-slate-500 font-medium tracking-widest uppercase mt-0.5 opacity-80 flex items-center">
-                CORE BRAIN TESTING ENVIRONMENT <span className="ml-1.5 px-1.5 py-0.5 bg-slate-800 rounded text-slate-400">V21.8.1</span>
+                CORE BRAIN TESTING ENVIRONMENT <span className="ml-1.5 px-1.5 py-0.5 bg-slate-800 rounded text-slate-400">V21.8.12</span>
               </div>
             </div>
           </div>
