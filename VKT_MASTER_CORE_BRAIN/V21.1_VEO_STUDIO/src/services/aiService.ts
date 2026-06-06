@@ -132,7 +132,10 @@ async function callGoogleWithRetry(prompt: string, systemPrompt: string, retries
       const body = {
         contents: [{ role: "user", parts: [{ text: prompt }] }],
         systemInstruction: { parts: [{ text: systemPrompt }] },
-        generationConfig: { responseMimeType: "application/json" },
+        generationConfig: { 
+          responseMimeType: "application/json",
+          maxOutputTokens: 8192
+        },
       };
       const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       
