@@ -335,7 +335,7 @@ const ScriptModule: React.FC<Props> = ({ referenceLink = '', segments, setSegmen
   const [progress, setProgress] = useState({ percent: 0, text: '' });
   const [elapsedTime, setElapsedTime] = useState(0);
   const timerRef = useRef<any>(null);
-  const [lastGenState, setLastGenState] = useState<{ time: number, status: 'success' | 'error' | 'abort' } | null>(null);
+  const [lastGenState, setLastGenState] = useState<{ time: number, status: 'success' | 'error' | 'abort', errorMsg?: string } | null>(null);
   
   // Video Generation States
   const [videoStatus, setVideoStatus] = useState<Record<number, { status: 'idle'|'loading'|'done'|'error', url?: string, error?: string }>>({});
@@ -653,7 +653,7 @@ CRITICAL INSTRUCTION:
               showToast(uiLang === 'vi' ? '❌ Lỗi API Key (Hết hạn hoặc Không hợp lệ)! Vui lòng kiểm tra lại Cài Đặt.' : '❌ API Key Error (Invalid or Quota Exceeded)!', 'error');
               setLoading(false);
               setProgress({ percent: 0, text: '' });
-              setLastGenState({ time: elapsedTime, status: 'error' });
+              setLastGenState({ time: elapsedTime, status: 'error', errorMsg: err?.message || 'API Key Invalid or Quota Exceeded' });
               return; // Stop completely, don't retry!
             }
             if (retries === 0) throw err;
@@ -814,7 +814,7 @@ CRITICAL INSTRUCTION:
       } else {
         showToast(`❌ Error: ${e.message}`, 'error');
       }
-      setLastGenState({ time: elapsedTime, status: 'error' });
+      setLastGenState({ time: elapsedTime, status: 'error', errorMsg: e.message || 'Unknown Error' });
     } finally { 
       if (timerRef.current) clearInterval(timerRef.current);
       setLoading(false); 
@@ -1473,22 +1473,42 @@ CRITICAL INSTRUCTION:
                   <i className="fa-solid fa-paper-plane" /> {uiLang === 'vi' ? 'KIẾN TẠO KỊCH BẢN CHỮA LÀNH' : 'GENERATE HEALING SCRIPT'}
                 </button>
                 {lastGenState && (
-                  <div className={`text-xs font-bold px-3 py-1.5 rounded-lg flex items-center justify-center gap-2 border ${
-                    lastGenState.status === 'success' ? 'bg-emerald-900/30 text-emerald-400 border-emerald-500/30' : 
-                    lastGenState.status === 'error' ? 'bg-red-900/30 text-red-400 border-red-500/30' : 
-                    'bg-slate-800/50 text-slate-400 border-slate-600/30'
+                  <div className={`text-xs px-3 py-2 rounded-lg flex flex-col justify-center gap-2 border ${
+                    lastGenState.status === 'success' ? 'bg-emerald-900/30 border-emerald-500/30' : 
+                    lastGenState.status === 'error' ? 'bg-red-900/30 border-red-500/30' : 
+                    'bg-slate-800/50 border-slate-600/30'
                   }`}>
-                    <i className={`fa-solid ${
-                      lastGenState.status === 'success' ? 'fa-check-circle' : 
-                      lastGenState.status === 'error' ? 'fa-triangle-exclamation' : 
-                      'fa-ban'
-                    }`} />
-                    {uiLang === 'vi' ? 'Thời gian dệt kịch bản lần trước:' : 'Last generation time:'} 
-                    <span className="font-mono text-sm tracking-wider">
-                      {Math.floor(lastGenState.time / 60).toString().padStart(2, '0')}:{(lastGenState.time % 60).toString().padStart(2, '0')}
-                    </span>
-                    {lastGenState.status === 'error' && <span className="ml-2 uppercase bg-red-500 text-white px-1.5 py-0.5 rounded text-[10px]">Failed</span>}
-                    {lastGenState.status === 'success' && <span className="ml-2 uppercase bg-emerald-500 text-white px-1.5 py-0.5 rounded text-[10px]">Success</span>}
+                    <div className="flex items-center gap-2 font-bold justify-center">
+                      <i className={`fa-solid ${
+                        lastGenState.status === 'success' ? 'fa-check-circle text-emerald-400' : 
+                        lastGenState.status === 'error' ? 'fa-triangle-exclamation text-red-400' : 
+                        'fa-ban text-slate-400'
+                      }`} />
+                      <span className={lastGenState.status === 'success' ? 'text-emerald-400' : lastGenState.status === 'error' ? 'text-red-400' : 'text-slate-400'}>
+                        {uiLang === 'vi' ? 'Thời gian dệt kịch bản lần trước:' : 'Last generation time:'}
+                      </span>
+                      <span className={`font-mono text-sm tracking-wider ${lastGenState.status === 'success' ? 'text-emerald-400' : lastGenState.status === 'error' ? 'text-red-400' : 'text-slate-400'}`}>
+                        {Math.floor(lastGenState.time / 60).toString().padStart(2, '0')}:{(lastGenState.time % 60).toString().padStart(2, '0')}
+                      </span>
+                      {lastGenState.status === 'error' && <span className="ml-2 uppercase bg-red-500 text-white px-1.5 py-0.5 rounded text-[10px]">Failed</span>}
+                      {lastGenState.status === 'success' && <span className="ml-2 uppercase bg-emerald-500 text-white px-1.5 py-0.5 rounded text-[10px]">Success</span>}
+                    </div>
+                    {lastGenState.status === 'error' && lastGenState.errorMsg && (
+                      <div className="mt-1 px-3 py-2 bg-black/40 border border-red-500/20 rounded text-red-300 font-mono text-[10px] break-all relative group flex items-start gap-2">
+                        <i className="fa-solid fa-bug mt-0.5 opacity-60"></i>
+                        <span className="flex-1">{lastGenState.errorMsg}</span>
+                        <button 
+                          onClick={() => {
+                            navigator.clipboard.writeText(lastGenState.errorMsg || '');
+                            showToast('Đã copy mã lỗi!', 'success');
+                          }}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity bg-red-900/60 hover:bg-red-800 text-red-200 px-2 py-1 rounded border border-red-500/30 flex items-center gap-1"
+                          title="Copy mã lỗi"
+                        >
+                          <i className="fa-regular fa-copy"></i> Copy
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
