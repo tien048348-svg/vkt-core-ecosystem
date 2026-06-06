@@ -1,12 +1,12 @@
 // ==================================================================================
-// CONFIGURATION & CONSTANTS �?Dharma Studio
-// Kịch bản chữa lành, triết lý nhân sinh, nhân qu�?Phật giáo
+// CONFIGURATION & CONSTANTS ?Dharma Studio
+// Kịch bản chữa lành, triết lý nhân sinh, nhân qu?Phật giáo
 // ==================================================================================
 
 export const MODELS = {
-  text: "gemini-2.0-flash-exp",
-  image: "imagen-3.0-generate-002",
-  openrouter_default: "google/gemini-2.0-flash-exp:free",
+  text: "gemini-1.5-flash",
+  image: "imagen-3.0-generate-001",
+  openrouter_default: "google/gemini-1.5-flash",
 };
 
 export const GOOGLE_LABS_URLS = {
