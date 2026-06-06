@@ -649,17 +649,18 @@ CRITICAL INSTRUCTION:
           } catch (err: any) {
             retries--;
             const errMsg = err?.message?.toLowerCase() || '';
-            if (errMsg.includes('429') || errMsg.includes('quota') || errMsg.includes('exhausted')) {
-              showToast(uiLang === 'vi' ? '❌ Hết Quota API! Vui lòng thay API Key mới trong Cài Đặt.' : '❌ API Quota Exceeded! Please change API Key in Settings.', 'error');
+            if (errMsg.includes('429') || errMsg.includes('quota') || errMsg.includes('exhausted') || errMsg.includes('api_key_invalid') || errMsg.includes('api_key_forbidden')) {
+              showToast(uiLang === 'vi' ? '❌ Lỗi API Key (Hết hạn hoặc Không hợp lệ)! Vui lòng kiểm tra lại Cài Đặt.' : '❌ API Key Error (Invalid or Quota Exceeded)!', 'error');
               setLoading(false);
               setProgress({ percent: 0, text: '' });
+              setLastGenState({ time: elapsedTime, status: 'error' });
               return; // Stop completely, don't retry!
             }
             if (retries === 0) throw err;
             if (abortRef.current) break;
             setProgress({ percent: progress.percent, text: uiLang === 'vi' ? `⚠️ Đang thử lại (${3-retries}/3)...` : `⚠️ Retrying (${3-retries}/3)...` });
             showToast(uiLang === 'vi' ? `⚠️ Đợt ${round} bị nghẽn API. Đang thử lại (${3-retries}/3)...` : `⚠️ Round ${round} API overloaded. Retrying (${3-retries}/3)...`, 'warning');
-            await new Promise(res => setTimeout(res, 10000));
+            await new Promise(res => setTimeout(res, 5000));
           }
         }
         
