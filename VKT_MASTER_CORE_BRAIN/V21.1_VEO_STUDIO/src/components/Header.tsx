@@ -36,7 +36,7 @@ const Header: React.FC<HeaderProps> = ({ uiLang, onToggleLang, onOpenConfig, key
             <div className="flex items-center space-x-4 ml-6 lg:ml-12 border-l border-amber-900/30 pl-6 h-10">
               <div className="hidden lg:flex items-center px-3 py-1 rounded-full bg-gradient-to-r from-amber-900/40 to-orange-900/20 border border-amber-500/20">
                 <span className="text-xs font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-400 tracking-wider">
-                  V21.8.15 - V20 ENGINE
+                  V21.8.16 - STABLE CORE
                 </span>
               </div>
             </div>
@@ -48,7 +48,7 @@ const Header: React.FC<HeaderProps> = ({ uiLang, onToggleLang, onOpenConfig, key
           <div className="flex flex-col items-center">
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold tracking-[0.2em] text-amber-500/80 whitespace-nowrap">
-                CORE BRAIN TESTING <span className="ml-1.5 px-1.5 py-0.5 bg-slate-800 rounded text-slate-400">V21.8.15</span>
+                CORE BRAIN TESTING <span className="ml-1.5 px-1.5 py-0.5 bg-slate-800 rounded text-slate-400">V21.8.16</span>
               </span>
             </div>
           </div>
