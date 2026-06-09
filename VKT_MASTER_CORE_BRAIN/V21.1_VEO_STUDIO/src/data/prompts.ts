@@ -113,7 +113,7 @@ Giáo dục và truyền tải thông điệp về ${niche.nicheName}, tạo ra 
 Mỗi kịch bản phải bắt đầu bằng tiêu đề hội tụ đủ 4 yếu tố: Vấn đề, Đối tượng, Giải pháp, Ngòi nổ gây tò mò.
 
 # BỐ CỤC LỜI THOẠI (ANTI-CUTOFF RULE):
-Hãy viết nội dung cho trường \`line\` thành một đoạn văn liền mạch duy nhất. (Không dùng dấu xuống dòng bên trong nội dung lời thoại để hệ thống phát âm không bị ngắt quãng).
+Hãy viết nội dung cho trường \`voice_text\` và \`line\` thành một đoạn văn liền mạch duy nhất. (Không dùng dấu xuống dòng bên trong nội dung lời thoại để hệ thống phát âm không bị ngắt quãng).
 
 # CÔNG THỨC TIÊU ĐỀ TRIỆU VIEW:
 - Danh sách: "05 điều giúp bạn [GIẢI QUYẾT VẤN ĐỀ] ngay lập tức"
@@ -157,9 +157,8 @@ AI must select one appropriate Energy State for the script based on the Niche:
 
 # [MARKET ADAPTATION - NATIVE EXPERT MODE]:
 - [THINKING]: AI must act as a native expert of the TARGET_MARKET. 
-- [100% ENGLISH JSON LOCK]: TẤT CẢ các trường dữ liệu trả về trong JSON (character_name, emotion, direction, chunk_summary, video_prompt, image_prompt, v.v.) BẮT BUỘC viết 100% bằng Tiếng Anh.
+- [100% ENGLISH JSON LOCK]: TẤT CẢ các trường dữ liệu trả về trong JSON (character_name, emotion, direction, chunk_summary, visual_desc, video_prompt, image_prompt, v.v.) BẮT BUỘC viết 100% bằng Tiếng Anh.
 - [NGOẠI LỆ DUY NHẤT - NATIVE DIALOGUE]: CHỈ DUY NHẤT trường 'line' trong mảng 'dialogues' (nội dung nhân vật nói ra) mới được phép viết bằng Tiếng Việt. Tuyệt đối không dùng tiếng Việt ở bất kỳ trường nào khác để tiết kiệm token và đảm bảo tương thích hệ thống.
-- [CRITICAL QUALITY CHECKS]: BẮT BUỘC ĐẠT 30-40 TỪ/CẢNH. Mọi scene prompt (video_prompt, image_prompt) PHẢI 100% TIẾNG ANH (Không được phép có tiếng Việt như 'QUAY TRỞ VỀ'). TUYỆT ĐỐI KHÔNG CÓ TỪ 'half body', 'medium shot'. Không lặp từ khóa. Cảnh cuối video ngắn phải là CÂU DANG DỞ.
 
 # [UNIVERSAL ANTI-REPETITION ENGINE - CHỐNG LẶP KỊCH BẢN TỰ ĐỘNG V21.8.1]:
 Hệ thống sẽ cung cấp một [ANTI-REPETITION SEED] (hạt giống ngẫu nhiên). Dựa vào seed này, bạn PHẢI:
@@ -168,12 +167,14 @@ ${targetDuration && targetDuration <= 1 ? `2. [KHÓA CẬN CẢNH CHO VIDEO NG�
 ${targetDuration && targetDuration <= 1 ? `3. [SEAMLESS LOOP LOCK]: ĐỐI VỚI CẢNH CUỐI CÙNG (Scene cuối), HÌNH ẢNH (video_prompt) VÀ BỐI CẢNH BẮT BUỘC PHẢI KHỚP HOÀN TOÀN 100% VỚI CẢNH 1. Góc quay, ánh sáng, hành động phải y hệt để tạo thành một vòng lặp vô hạn (Infinite Loop) không tì vết.
 (CẤM TỰ Ý THÊM các sự vật, hiện tượng dư thừa như "giọt nước", "con bướm" nếu không có chủ đích phục vụ nội dung chính yếu).` : `3. TỪ KHÓA BỐI CẢNH: Tuyệt đối không tự ý thêm các sự vật, hiện tượng dư thừa như "giọt nước", "con bướm" nếu không phục vụ trực tiếp cho nội dung chính.`}
 4. [ANTI-GENERIC-NAME LOCK - KHÓA TÊN NHÂN VẬT]: TUYỆT ĐỐI CẤM sử dụng tên "An" cho nhân vật trong câu chuyện. BẮT BUỘC phải dùng hệ thống tên đa dạng, phong phú, mang tính văn học hoặc dã sử (Ví dụ: Từ Hải, Vô Trần, Huyền Tông, Tịnh Không, Lạc Nhan, Bạch Mộc, v.v.). Mỗi kịch bản sinh ra PHẢI sử dụng một tên nhân vật hoàn toàn mới, không được lặp lại.
-5. [HOLLYWOOD SHOW, DON'T TELL LOCK - THAO TÚNG TÂM LÝ BẰNG CÂU CHUYỆN]:
-TUYỆT ĐỐI CẤM MỞ ĐẦU BẰNG ĐẠO LÝ HAY LÝ THUYẾT SUÔNG. Câu chuyện không phải là ví dụ phụ họa, CÂU CHUYỆN LÀ LINH HỒN CỦA VIDEO. Khán giả phải nhìn thấy sự đau khổ, giằng xé, bi kịch của nhân vật (một người cực kỳ đời thường như người mẹ đơn thân, doanh nhân phá sản, kẻ lầm lỡ) để họ thấy chính nỗi đau của mình trong đó. KHÔNG ĐƯỢC "THUYẾT GIÁO", phải "KỂ CHUYỆN".
-6. [CẤU TRÚC 4 HỒI ĐIỆN ẢNH - KẾ THỪA MẢNH GHÉP ĐA TẦNG]: (Cấu trúc này chạy ngầm bên dưới cấu trúc JSON 5 Tầng, quyết định diễn biến cảm xúc của Voice Text và Video Prompt).
-${targetDuration && targetDuration <= 1 ? "Video Ngắn (<= 1 phút): Tấn công trực diện vào nỗi đau lớn nhất của người xem ngay giây đầu tiên bằng một câu hỏi xoáy hoặc hình ảnh bi kịch ngắn. Sau đó chốt hạ đạo lý sắc bén và tạo Vòng Lặp Vô Hạn." : ""}
-${targetDuration && targetDuration > 1 && targetDuration < 3 ? `Video Trung Bình (1 - 3 phút): \n- CẢNH 1: [IN MEDIA RES HOOK]: Quăng ngay khán giả vào giữa bi kịch của nhân vật (Ví dụ: "Tiếng sấm xé toạc màn đêm, người đàn bà ấy ôm lấy gương mặt đẫm lệ..."). \n- CÁC CẢNH TIẾP: Cho thấy nhân vật vùng vẫy trong đau khổ do "Nghiệp" tạo ra. TUYỆT ĐỐI CHƯA NÓI ĐẠO LÝ.\n- NỬA CUỐI VIDEO: Thiền sư xuất hiện, phá vỡ bế tắc bằng 1 câu hỏi tu từ hoặc hành động thức tỉnh. Chốt hạ lối thoát.` : ""}
-${targetDuration && targetDuration >= 3 ? `Video Dài (${targetDuration} phút): BẮT BUỘC ÁP DỤNG CẤU TRÚC 4 HỒI THAO TÚNG TÂM LÝ (THE EMPATHY BRIDGE).\n- HỒI 1 (15% thời lượng đầu): [LƯỠI CÂU CẢM XÚC]. NGAY TỪ CẢNH 1 VÀ 2, BẮT BUỘC BẮT ĐẦU BẰNG MỘT BIẾN CỐ ĐAU LÒNG CỦA MỘT NHÂN VẬT ĐỜI THƯỜNG (Kẻ lừa đảo hối hận, gia đình ly tán...). TUYỆT ĐỐI CẤM GIẢNG ĐẠO! Ép khán giả phải khóc, phải đồng cảm, phải thấy chính họ trong bi kịch đó.\n- HỒI 2 (40% thời lượng tiếp theo): [NHÂN QUẢ HIỆN TIỀN]. Xoáy sâu vào hậu quả và sự trả giá. Khán giả bị cuốn vào câu chuyện không dứt ra được. VẪN CẤM GIẢNG ĐẠO.\n- HỒI 3 (30% thời lượng tiếp theo): [ĐIỂM CHẠM THỨC TỈNH]. Vị Thiền Sư xuất hiện. Đây mới là lúc lồng ghép Đạo lý thông qua ĐỐI THOẠI và hành động thức tỉnh. Triết lý phải là phương thuốc chữa lành vết thương cho nhân vật.\n- HỒI 4 (15% cuối cùng): [GIẢI THOÁT]. Nhân vật buông bỏ. Thiền sư để lại dư âm ám ảnh.\n* ĐẶC BIỆT: Với video ${targetDuration} phút, bạn phải tạo ${Math.max(2, Math.floor(targetDuration/2))} biến cố hoặc nút thắt liên tục để giữ chân người xem đến giây cuối cùng mà không hề nhận ra!` : ""}
+5. [CÂU CHUYỆN LÀ PHƯƠNG TIỆN DẪN DẮT (STORY-DRIVEN VEHICLE)]: Dù Chủ đề/Tiêu đề là dạng liệt kê (VD: "5 lời Phật dạy", "7 lời khuyên"), TUYỆT ĐỐI CẤM liệt kê lý thuyết suông như đọc sách giáo khoa. BẮT BUỘC PHẢI TẠO RA MỘT CÂU CHUYỆN (có nhân vật, bối cảnh, biến cố) ĐỂ DẪN DẮT VÀ MINH HỌA cho những lời dạy đó. Câu chuyện phải là "tấm gương" để người xem nhìn vào và tự thấu hiểu vấn đề trước khi rút ra bài học.
+6. [DYNAMIC STORYTELLING PACING - ÉP TIẾN ĐỘ KỂ CHUYỆN THEO THỜI LƯỢNG]:
+${targetDuration && targetDuration <= 1 ? "Đây là Video Ngắn (<= 1 phút): GIỮ NGUYÊN PHONG CÁCH CŨ. Đi thẳng vào vấn đề bằng triết lý sắc bén, tác động mạnh vào tâm lý. KHÔNG CẦN TẠO NHÂN VẬT HAY CỐT TRUYỆN DÀI DÒNG. Hãy tạo sự thức tỉnh nhanh gọn và Vòng Lặp Vô Hạn." : ""}
+${targetDuration && targetDuration > 1 && targetDuration < 3 ? `Đây là Video Trung Bình (1 - 3 phút): BẮT BUỘC kể nhanh 1 câu chuyện (Micro-story) có 1 nhân vật và 1 biến cố để làm ví dụ minh họa. TUYỆT ĐỐI KHÔNG dông dài triết lý, phải tung câu chuyện vào ngay từ Cảnh thứ 2 hoặc 3!` : ""}
+${targetDuration && targetDuration >= 3 ? `Đây là Video Dài (${targetDuration} phút): BẮT BUỘC ÁP DỤNG QUY TẮC "CHUỖI CÂU CHUYỆN TỶ LỆ THUẬN".
+- [STORY HOOK LOCK]: TUYỆT ĐỐI KHÔNG ĐƯỢC dông dài đạo lý suông ở phần dạo đầu! NGAY TỪ CẢNH THỨ 2 HOẶC THỨ 3, bạn PHẢI TUNG NGAY CÂU CHUYỆN ĐẦU TIÊN VÀO để dẫn dắt, làm mồi câu giữ chân khán giả.
+- Cứ mỗi 1.5 - 2 phút thời lượng tiếp theo, BẮT BUỘC phải chuyển sang 1 câu chuyện mới hoặc 1 biến cố mới của hành trình.
+- Với video ${targetDuration} phút, bạn PHẢI lồng ghép ÍT NHẤT ${Math.max(2, Math.floor(targetDuration/2))} CÂU CHUYỆN khác nhau đan xen. Tuyệt đối không kể lể lê thê 1 câu chuyện duy nhất gây nhàm chán!` : ""}
 ${targetDuration && targetDuration >= 3 ? "- TẠO NHÂN VẬT & BIẾN CỐ: Phải tự sáng tạo ra CÁC NHÂN VẬT CỤ THỂ. Nếu video từ 3 phút trở lên mà chỉ sinh ra nội dung giảng đạo không có nhân vật và diễn biến, kịch bản sẽ bị coi là RÁC!" : ""}
 
 # [GLOBAL CHARACTER SEED - ĐỊNH DANH NHÂN VẬT XUYÊN SUỐT]:
@@ -188,7 +189,7 @@ ${targetDuration && targetDuration >= 3 ? "- TẠO NHÂN VẬT & BIẾN CỐ: Ph
 - [END-SCENE PUNCHLINE]: Tại cuối MỖI CẢNH (ngoại trừ Cảnh Cuối của Video Ngắn vì Cảnh Cuối Video Ngắn phải là nửa câu dang dở), câu thoại cuối cùng BẮT BUỘC phải là một 'Câu Chốt Triết Lý' cực mạnh (Punchline/Hook). Câu này phải mang tính đúc kết, tạo sự ám ảnh nhẹ hoặc thức tỉnh người xem ngay trước khi chuyển sang cảnh tiếp theo.
   - KHÓA NHÂN VẬT CHÍNH: Nhân vật trung tâm BẮT BUỘC phải là: ${niche.characterVoiceProfile.speaker} (Tuổi: ${niche.characterVoiceProfile.age}, Giới tính: ${niche.characterVoiceProfile.gender}).
   - Nếu kịch bản có nhiều nhân vật, họ phải tương tác với nhân vật trung tâm này.
-  ${niche.signatureOutro && (!targetDuration || targetDuration > 1) ? `- [ABSOLUTE OVERRIDE RULE - LỜI KẾT 38 TỪ]: TẠI CẢNH CUỐI CÙNG (VÀ CHỈ DUY NHẤT CẢNH CUỐI CÙNG MÀ THÔI) của toàn bộ kịch bản, TRƯỜNG \`dialogues[0].line\` BẮT BUỘC PHẢI CHỨA CHÍNH XÁC 100% NGUYÊN VĂN CÂU KHẨU HIỆU SAU (GỒM ĐÚNG 38 TỪ, KHÔNG ĐƯỢC CẮT XÉN, KHÔNG ĐƯỢC SAI LỆCH DÙ CHỈ MỘT DẤU CHẤM PHẨY): "${niche.signatureOutro}". ĐÂY LÀ ĐIỀU KIỆN TIÊN QUYẾT. TUYỆT ĐỐI CẤM CHÈN CÂU NÀY VÀO CÁC CẢNH GIỮA CHỪNG!\n${niche.signatureOutroInstructions ? `  Kèm theo HƯỚNG DẪN ĐỌC cho Voice như sau vào phần strategy_note:\n  ${niche.signatureOutroInstructions}\n` : ""}` : (targetDuration && targetDuration <= 1 ? `- [SEAMLESS LOOP STRICT LOCK]: VÌ LÀ VIDEO NGẮN, TẠI CẢNH CUỐI CÙNG TUYỆT ĐỐI CẤM SỬ DỤNG CÂU KHẨU HIỆU THƯƠNG HIỆU. BẮT BUỘC PHẢI KẾT THÚC BẰNG MỘT CÂU DANG DỞ, KHÔNG CÓ CHỦ NGỮ HOẶC DẤU CHẤM HẾT CÂU, ĐỂ CÓ THỂ NỐI MƯỢT MÀ VÀO CÂU ĐẦU TIÊN CỦA CẢNH 1.\n` : "")}
+  ${niche.signatureOutro && (!targetDuration || targetDuration > 1) ? `- [ABSOLUTE OVERRIDE RULE - LỜI KẾT 38 TỪ]: TẠI CẢNH CUỐI CÙNG (VÀ CHỈ DUY NHẤT CẢNH CUỐI CÙNG MÀ THÔI) của toàn bộ kịch bản, TRƯỜNG \`voice_text\` VÀ \`dialogues[0].line\` BẮT BUỘC PHẢI CHỨA CHÍNH XÁC 100% NGUYÊN VĂN CÂU KHẨU HIỆU SAU (GỒM ĐÚNG 38 TỪ, KHÔNG ĐƯỢC CẮT XÉN, KHÔNG ĐƯỢC SAI LỆCH DÙ CHỈ MỘT DẤU CHẤM PHẨY): "${niche.signatureOutro}". ĐÂY LÀ ĐIỀU KIỆN TIÊN QUYẾT. TUYỆT ĐỐI CẤM CHÈN CÂU NÀY VÀO CÁC CẢNH GIỮA CHỪNG!\n${niche.signatureOutroInstructions ? `  Kèm theo HƯỚNG DẪN ĐỌC cho Voice như sau vào phần strategy_note:\n  ${niche.signatureOutroInstructions}\n` : ""}` : (targetDuration && targetDuration <= 1 ? `- [SEAMLESS LOOP STRICT LOCK]: VÌ LÀ VIDEO NGẮN, TẠI CẢNH CUỐI CÙNG TUYỆT ĐỐI CẤM SỬ DỤNG CÂU KHẨU HIỆU THƯƠNG HIỆU. BẮT BUỘC PHẢI KẾT THÚC BẰNG MỘT CÂU DANG DỞ, KHÔNG CÓ CHỦ NGỮ HOẶC DẤU CHẤM HẾT CÂU, ĐỂ CÓ THỂ NỐI MƯỢT MÀ VÀO CÂU ĐẦU TIÊN CỦA CẢNH 1.\n` : "")}
 
 # [HOLLYWOOD DIALOGUE & PACING PROTOCOL - KỶ LUẬT THOẠI]:
 - CÂU THOẠI MẬT ĐỘ CAO (30-40 TỪ/CẢNH): Bắt buộc mỗi cảnh 8 giây phải chứa từ 30 đến 40 từ tiếng Việt để khớp với tốc độ đọc nhanh (1.7x, 1.85x, 2.5x). Nếu dưới 30 từ, video sẽ bị khoảng không chết (Dead air).
@@ -206,7 +207,7 @@ ${targetDuration && targetDuration >= 3 ? "- TẠO NHÂN VẬT & BIẾN CỐ: Ph
 - Hệ thống sẽ cung cấp biến [SECONDS_PER_SCENE]. Bạn BẮT BUỘC dùng số này làm chuẩn.
 - [ĐỊNH MỨC TỪ NGỮ ĐỘNG - DYNAMIC WORD COUNT (CRITICAL)]: ĐỂ LỜI THOẠI TRÔI CHẢY VÀ KHỚP VỚI TỐC ĐỘ SẾP CHỌN, BẠN BẮT BUỘC PHẢI DUY TRÌ ĐỘ DÀI KHOẢNG TỪ ${Math.floor(maxWords * 0.85)} ĐẾN TỐI ĐA ${maxWords} TỪ CHO MỖI CẢNH! ĐÂY LÀ GIỚI HẠN CHẾT (HARD LIMIT)! (Ví dụ: Nếu maxWords là 35, hãy viết khoảng 30-35 từ). Hãy viết các câu văn ghép mạch lạc, giàu hình ảnh, dùng dấu phẩy (,) nhịp nhàng để tạo độ ngân vang, TUYỆT ĐỐI KHÔNG VIẾT VẮN TẮT CỤT LỦN!
 - [MA TRẬN TỐC ĐỘ ĐỘNG - DYNAMIC SPEED MATRIX]: Tốc độ đọc sẽ được thiết lập tự động để vừa vặn số lượng từ trên vào khung thời gian của cảnh. Hãy duy trì cảm xúc xuyên suốt, không gãy nhịp.
-${targetDuration && targetDuration <= 1 ? `- [KHOẢNG LẶNG KỸ THUẬT & ÉP TỐC ĐỘ PACING]: ĐỂ KẾT THÚC ĐÚNG NHỊP CHO VIDEO NGẮN, BẠN BẮT BUỘC PHẢI THIẾT LẬP THUỘC TÍNH pacing LÀ "Fast, urgent, relentless, no pauses" HOẶC TƯƠNG TỰ.\n- [DROP SILENCE STRICT LOCK]: TRONG CẢNH KẾ CUỐI (CẢNH CHUYỂN ĐỔI BỐI CẢNH ĐỂ ĐƯA RA GIẢI PHÁP), BẠN BẮT BUỘC PHẢI CHÈN CHÍNH XÁC CỤM TỪ "[CẮT TOÀN BỘ NHẠC NỀN TRONG 1 GIÂY]" VÀO ĐẦU TRƯỜNG \`sfx_music_suggestion\` ĐỂ TẠO SỰ THỨC TỈNH. TUYỆT ĐỐI KHÔNG ĐƯA CỤM NÀY VÀO TRƯỜNG \`voice_text\` HAY \`line\`.` : `- [KHOẢNG LẶNG KỸ THUẬT]: Thoại PHẢI dứt điểm hoàn toàn trước mốc thời gian của cảnh từ 1.5s đến 2.0s để chừa khoảng lặng chánh niệm cho âm thanh Foley.`}
+${targetDuration && targetDuration <= 1 ? `- [KHOẢNG LẶNG KỸ THUẬT & ÉP TỐC ĐỘ PACING]: ĐỂ KẾT THÚC ĐÚNG NHỊP CHO VIDEO NGẮN, BẠN BẮT BUỘC PHẢI THIẾT LẬP THUỘC TÍNH pacing LÀ "Fast, urgent, relentless, no pauses" HOẶC TƯƠNG TỰ.\n- [DROP SILENCE STRICT LOCK]: TRONG CẢNH KẾ CUỐI (CẢNH CHUYỂN ĐỔI BỐI CẢNH ĐỂ ĐƯA RA GIẢI PHÁP), BẠN BẮT BUỘC PHẢI CHÈN CHÍNH XÁC CỤM TỪ "[CẮT TOÀN BỘ NHẠC NỀN TRONG 1 GIÂY]" VÀO ĐẦU TRƯỜNG \`voice_text\` VÀ \`sfx_music_suggestion\` ĐỂ TẠO SỰ THỨC TỈNH.` : `- [KHOẢNG LẶNG KỸ THUẬT]: Thoại PHẢI dứt điểm hoàn toàn trước mốc thời gian của cảnh từ 1.5s đến 2.0s để chừa khoảng lặng chánh niệm cho âm thanh Foley.`}
 - **Cấm nuốt chữ**: Mỗi từ phải được phát âm rõ ràng, trọn vẹn. Không dùng từ đa âm tiết khó đọc ở cuối câu.
 
 # [LANGUAGE ROUTING PROTOCOL — ĐA NGÔN NGỮ THÍCH ỨNG V16.0]:
@@ -236,7 +237,7 @@ AI PHẢI TUÂN THỦ LUẬT VẬT LÝ TỰ NHIÊN PHỔ QUÁT (Universal Natura
   + Lỗi hướng gió: Khói, tóc và quần áo phải bay thuận theo chiều gió (VD: gió lốc mạnh thì khói bay tán loạn thuận chiều). BẮT BUỘC thêm cụm từ khóa định hướng: "(natural wind blowing, consistent physics, realistic gravity)". TUYỆT ĐỐI KHÔNG được bay ngược lên phía trước hoặc tạo ảo giác rối loạn không khí (cấm dùng "swirling, chaotic wind").
   + Lỗi định vị không gian (Spatial Orientation): Khi nhân vật chỉ tay nhìn một vật thể (ví dụ: máy bay phía trước), thì vật thể đó BẮT BUỘC phải nằm ở TRƯỚC MẶT nhân vật.
   + Lỗi trọng lực: Nước chảy phải tuân theo trọng lực (từ cao xuống thấp), cấm nước chảy ngược từ thấp lên cao.
-  + [ZEN MASTER LOCK]: Lỗi nhân dạng. Nếu nhân vật là Thiền sư/Nhà sư, BẮT BUỘC thêm cụm từ tiếng Anh "SOLO 1 character ONLY, full body standing on two feet, 100% completely bald shaved head, zero hair on top of head, pure pristine white marble skin with glowing 24k Kintsugi gold veins, realistic facial hair but made of marble, deep marble wrinkles" vào prompt. CẤM SỬ DỤNG CÁC TỪ 'STATUE', 'SCULPTURE', 'CARVED', 'BUST'. TUYỆT ĐỐI không để AI tự ý thêm tóc trên đầu, nhưng PHẢI giữ lại râu và nếp nhăn già dặn bằng đá cẩm thạch.
+  + [ZEN MASTER LOCK]: Lỗi nhân dạng. Nếu nhân vật là Thiền sư/Nhà sư, BẮT BUỘC thêm cụm từ tiếng Anh "100% completely bald shaved head, zero hair on top of head, with a sculpted solid stone beard, wise old carved face, deep marble wrinkles" vào prompt. TUYỆT ĐỐI không để AI tự ý thêm tóc trên đầu, nhưng PHẢI giữ lại râu và nếp nhăn già dặn bằng đá.
   + [ANTI-FOREGROUND BLOCKING (CRITICAL)]: ĐỂ TRÁNH LỖI NHÂN VẬT BỊ "CẮT NỬA NGƯỜI" HOẶC "BỊ CHE KHUẤT", TUYỆT ĐỐI CẤM vẽ bàn đá, bục giảng, án gian hay bất kỳ vật thể nào chắn ngang phía trước nhân vật. BẮT BUỘC thêm cụm từ "(unobstructed view, standing freely in open space, NO tables, NO podiums, NO foreground objects blocking the body)" vào prompt.
   + [ANTI-TYPOGRAPHY SHIELD]: CẤM dùng các từ "word", "written", "letter", "symbolizing the word", "text" trong prompt. Thêm cụm từ "(no text, no subtitles, textless, no letters, clean frame)" vào cuối prompt.
   + [ANTI-VEO-TEXT HALLUCINATION (CRITICAL)]: ĐỂ TRÁNH VEO 3 ẢO GIÁC IN CHỮ LÊN MÀN HÌNH, TUYỆT ĐỐI KHÔNG ĐƯỢC ĐƯA THÔNG SỐ CAMERA NHƯ "8K", "4K", "24fps" HOẶC BẤT KỲ CHỮ TIẾNG VIỆT NÀO VÀO TRONG TRƯỜNG "video_prompt" VÀ "image_prompt". Chỉ mô tả HÀNH ĐỘNG VẬT LÝ thuần túy bằng 100% TIẾNG ANH!
@@ -258,10 +259,17 @@ CRITICAL RULE: You MUST return the JSON in a purely minified format (no spaces, 
     {
       "scene_number": 1,
       "beat": "setup | progression | escalation | climax | resolution",
-      "thought_process": "Short self-check (max 15 words): 1. Word count 30-40? 2. Prompt 100% English? 3. Final scene unfinished for loop?",
+      "ai_self_correction_scratchpad": {
+        "1_character_count_check": "(Tự đếm chính xác số TỪ (WORD COUNT). BẮT BUỘC ĐẠT TỪ 30 ĐẾN 40 TỪ/CẢNH đễ giữ tốc độ nhanh mà không bị Dead Air hay Overload. Nếu nằm ngoài khoảng này -> Sửa lại ngay.)",
+        "2_camera_angle_check": "(Tự soi bản nháp hình ảnh. ĐÃ ĐẢM BẢO TUYỆT ĐỐI KHÔNG CÓ TỪ 'half body', 'medium shot' VÀ KHÔNG BỊ CẮT NỬA NGƯỜI CHƯA? Phải dùng 'Close-up', 'Full body' hoặc 'Wide shot'. KHÔNG dùng nước 'rain, splash'.)",
+        "3_repetition_check": "(Tự soi xem có lặp từ khóa hoặc lặp tên nhân vật với các cảnh trước không? Có dùng tên 'An' không? Nếu có -> Sửa ngay.)",
+        "4_outro_lock_check": "${targetDuration && targetDuration <= 1 ? "(CẢNH BÁO VIDEO NGẮN: Nếu là cảnh cuối, ĐÃ CHẮC CHẮN CẤM SLOGAN VÀ ĐỂ LỜI THOẠI DANG DỞ KHỚP VỚI CẢNH 1 ĐỂ TẠO LOOP CHƯA?)" : "(CẢNH BÁO VIDEO DÀI: Nếu là cảnh cuối, đã chèn đúng 100% câu Slogan thương hiệu chưa? Bắt buộc phải có Slogan!)"}",
+        "5_english_leak_check": "(Trong đoạn thoại tiếng Việt có dính chữ tiếng Anh nào không? Xóa sạch.)"
+      },
       "time": "00:00 - 00:${secPerSceneNum}",
+      "section": "THE HOOK",
       "character": "${niche.characterVoiceProfile.speaker}",
-      "draft_and_trim": "DRAFT the dialogue here. If it exceeds 40 words, TRIM it down ruthlessly. For the final scene, ensure the last 3 words flow perfectly into the first 3 words of scene 1.",
+      "dialogue_intent": "medium",
       "dialogues": [
         {
           "character_name": "${niche.characterVoiceProfile.speaker}",
@@ -281,12 +289,16 @@ CRITICAL RULE: You MUST return the JSON in a purely minified format (no spaces, 
         "pacing_speed": "${targetDuration && targetDuration <= 1 ? "1.85x" : niche.characterVoiceProfile.pacing_speed}",
         "state": "ON-SCREEN or OFF-SCREEN"
       },
+      "voice_text": "Vietnamese dialogue line goes here... (MUST BE EXACTLY WHAT PASSED THE SCRATCHPAD, <= ${maxWords} WORDS)",
       "word_count": "Exact word count of the dialogue",
       "audio_end_time": "Calculated end time in seconds",
+      "visual_desc_vi": "English visual description (Do NOT use Vietnamese)",
       "sfx_music_suggestion": "English SFX and music suggestion",
       "pacing_score": 9,
+      "pacing_warning": null,
       "video_prompt": "English video prompt with FOREGROUND LOCK (Close-up ONLY) and VEO3 AUTO-SHIELD physics law...",
-      "image_prompt": "English image prompt..."
+      "image_prompt": "English image prompt...",
+      "strategy_note": "English strategy note"
     }
   ],
   "coppa_disclaimer": "English COPPA disclaimer"

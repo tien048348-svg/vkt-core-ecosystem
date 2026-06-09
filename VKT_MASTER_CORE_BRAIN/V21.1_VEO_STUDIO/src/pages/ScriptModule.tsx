@@ -549,10 +549,6 @@ const ScriptModule: React.FC<Props> = ({ referenceLink = '', segments, setSegmen
       // 1. Calculate the total requested scenes
       const totalScenes = Math.ceil((Math.max(0.1, targetDuration) * 60) / secPerSceneNum);
       
-      // 2. Define safe chunk size: 20 scenes per API call to balance speed/API cost and prevent output truncation
-      const chunkSize = 20;
-      const totalRounds = Math.ceil(totalScenes / chunkSize);
-      
       let allSegments: any[] = [];
       let finalSuggestedStyle = styleObj?.id || 'auto';
       let finalCharacterLock = '';
@@ -561,13 +557,11 @@ const ScriptModule: React.FC<Props> = ({ referenceLink = '', segments, setSegmen
 
       abortRef.current = false;
 
-      // 3. Process incrementally in rounds to bypass LLM context and response token limits
-      for (let round = 1; round <= totalRounds; round++) {
-        if (abortRef.current) break;
-        const startSceneNum = (round - 1) * chunkSize + 1;
-        const endSceneNum = Math.min(round * chunkSize, totalScenes);
-        const roundSceneCount = endSceneNum - startSceneNum + 1;
-        // Simulate smooth progress for better UX
+      const startSceneNum = 1;
+      const endSceneNum = totalScenes;
+      const roundSceneCount = totalScenes;
+      
+      // Simulate smooth progress for better UX
         let simulatedScene = startSceneNum;
         const estimatedMsPerScene = 1500; // Simulate 1.5s per scene
         
@@ -587,9 +581,9 @@ const ScriptModule: React.FC<Props> = ({ referenceLink = '', segments, setSegmen
         }, estimatedMsPerScene);
         
         if (uiLang === 'vi') {
-          showToast(`⏳ [Đợt ${round}/${totalRounds}] Đang dệt phân cảnh ${startSceneNum} đến ${endSceneNum}...`, 'success');
+          showToast(`⏳ Đang dệt phân cảnh 1 đến ${endSceneNum}...`, 'success');
         } else {
-          showToast(`⏳ [Round ${round}/${totalRounds}] Weaving scenes ${startSceneNum} to ${endSceneNum}...`, 'success');
+          showToast(`⏳ Weaving scenes 1 to ${endSceneNum}...`, 'success');
         }
 
         // Establish previous scenes context to guarantee narrative continuity
@@ -624,8 +618,7 @@ CRITICAL: You MUST write the next scenes continuing this exact storyline seamles
         const prompt = `TOPIC: "${topic}"
 DURATION: ${targetDuration}m (Total video duration)
 SECONDS_PER_SCENE: ${secPerSceneNum}s
-ROUND_GENERATING: Round ${round} of ${totalRounds} (Generating scenes ${startSceneNum} to ${endSceneNum})
-ROUND_SCENE_COUNT: ${roundSceneCount} (Generate exactly ${roundSceneCount} scenes starting at number ${startSceneNum})
+ROUND_SCENE_COUNT: ${roundSceneCount} (Generate exactly ${roundSceneCount} scenes)
 TARGET_MARKET: ${mk.name}
 NATIVE_LANGUAGE: ${mk.voice_lang}
 CULTURAL_CONTEXT: ${mk.culture}
@@ -659,17 +652,17 @@ CRITICAL INSTRUCTION:
             if (retries === 0) throw err;
             if (abortRef.current) break;
             setProgress(prev => ({ percent: prev.percent, text: uiLang === 'vi' ? `⚠️ Đang thử lại (${3-retries}/3)...` : `⚠️ Retrying (${3-retries}/3)...` }));
-            showToast(uiLang === 'vi' ? `⚠️ Đợt ${round} bị nghẽn API. Đang thử lại (${3-retries}/3)...` : `⚠️ Round ${round} API overloaded. Retrying (${3-retries}/3)...`, 'warning');
+            showToast(uiLang === 'vi' ? `⚠️ Bị nghẽn API. Đang thử lại (${3-retries}/3)...` : `⚠️ API overloaded. Retrying (${3-retries}/3)...`, 'warning');
             await new Promise(res => setTimeout(res, 5000));
           }
         }
         
         clearInterval(simInterval);
         
-        if (abortRef.current) break;
+        if (abortRef.current) return;
 
         let roundSegs = json?.script || (Array.isArray(json) ? json : []);
-        if (round === 1 && json) {
+        if (json) {
           if (styleObj?.id === 'auto' && json.suggested_style) {
             finalSuggestedStyle = json.suggested_style;
           }
@@ -746,30 +739,8 @@ CRITICAL INSTRUCTION:
         allSegments = [...allSegments, ...roundSegs];
         
         // Progressive Rendering
-        const completedPercent = Math.floor((round / totalRounds) * 100);
-        setProgress({ percent: completedPercent, text: uiLang === 'vi' ? `Hoàn thành đợt ${round}/${totalRounds}` : `Completed round ${round}/${totalRounds}` });
+        setProgress({ percent: 100, text: uiLang === 'vi' ? `Hoàn thành kịch bản` : `Completed script` });
         setSegments([...allSegments]);
-        
-        // Auto-save partial progress
-        const partialJson = {
-          mode_detected: targetDuration < 3 ? "Quick Dharma" : targetDuration <= 10 ? "Story Weaver" : "Epic Teaching",
-          suggested_style: finalSuggestedStyle,
-          suggested_watermark: suggestedWatermark,
-          character_lock_prompt: finalCharacterLock,
-          script: allSegments,
-          coppa_disclaimer: coppaText || "Video này chứa triết lý sâu sắc, có thể không phù hợp cho trẻ em tự nhận thức."
-        };
-        localStorage.setItem('dharmaP_autosave_script', JSON.stringify({
-          topic: topic,
-          scriptData: partialJson,
-          segments: allSegments
-        }));
-
-        // Sleep to cooldown API
-        if (round < totalRounds && !abortRef.current) {
-          await new Promise(res => setTimeout(res, 8000));
-        }
-      }
 
       if (abortRef.current) {
         setLastGenState({ time: elapsedTime, status: 'abort' });
