@@ -169,6 +169,9 @@ async function callGoogleWithRetry(prompt: string, systemPrompt: string, retries
         if (res.status === 403) {
           throw new Error("API_KEY_FORBIDDEN: API Key Gemini bị từ chối truy cập (403 Forbidden). Hãy chắc chắn rằng bạn đã kích hoạt dịch vụ Google AI Studio cho tài khoản này.");
         }
+        if (res.status === 503 || res.status === 500) {
+          throw new Error(`MÁY CHỦ GOOGLE QUÁ TẢI (503): Google hiện đang bị quá tải cục bộ do nhu cầu sử dụng quá cao. Hệ thống đã cố gắng kết nối lại nhưng không thành công. Vui lòng đợi vài phút rồi thử lại!`);
+        }
         throw new Error(`Google Error ${res.status}: ${errText}`);
       }
       
