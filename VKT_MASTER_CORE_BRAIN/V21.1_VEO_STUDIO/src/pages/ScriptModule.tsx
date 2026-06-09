@@ -549,8 +549,8 @@ const ScriptModule: React.FC<Props> = ({ referenceLink = '', segments, setSegmen
       // 1. Calculate the total requested scenes
       const totalScenes = Math.ceil((Math.max(0.1, targetDuration) * 60) / secPerSceneNum);
       
-      // 2. Define safe chunk size: 10 scenes per API call to prevent output truncation and timeouts with heavy V21.8 prompts
-      const chunkSize = 10;
+      // 2. Define safe chunk size: 20 scenes per API call to balance speed/API cost and prevent output truncation
+      const chunkSize = 20;
       const totalRounds = Math.ceil(totalScenes / chunkSize);
       
       let allSegments: any[] = [];
